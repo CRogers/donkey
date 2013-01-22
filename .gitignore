@@ -7,3 +7,12 @@ cabal-dev
 .virthualenv
 *~
 
+# Latex
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.pdf
+*.toc

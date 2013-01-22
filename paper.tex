@@ -1,0 +1,55 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm,amssymb,amsmath,dsfont,mathrsfs,nicefrac}
+
+\let\stdsection\section
+\renewcommand\section{\newpage\stdsection}
+
+\title{Title of my paper}
+\author{Thomas Dybdahl Ahle}
+\date{March 9, 2013}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Your abstract goes here...
+...
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+5 pagish
+Donkey example to follow through
+
+\section{Formal Stuff}
+10 pagish
+This subsection's content...
+\subsection{DPL}
+This subsection's content...
+\subsection{DRA}
+This subsection's content...
+
+\section{Implementation}
+8pagish
+This subsubsection's content...
+
+\section{Perspectives}
+2pagish
+What I learned
+
+\section*{Acknowledgements}
+Thanks to Samson
+This section's content...\cite{visser1999donkey}
+the PCFG parser\cite{klein2003accurate}
+
+\subsection{Checklist}
+Things learned from courses
+
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
