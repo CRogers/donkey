@@ -1,5 +1,5 @@
 
-module Stanford (Corefs, DepTree, run, PosTree(..), toMapping) where
+module Stanford (Corefs, DepTree, run, PosTree(..), toMapping2, parse, posEither) where
 
 import Text.ParserCombinators.Parsec
 import Data.Map hiding (map, (\\))
@@ -59,16 +59,28 @@ posLeaf =
 		word <- many (noneOf " ()")
 		return (Leaf tag word)
 
-fresh :: Map Int Ref -> Ref
-fresh m = (variables \\ elems m) !! 0
+toMapping2 :: PosTree -> Map Int Ref
+toMapping2 tr = snd (toMapping variables tr)
 
-toMapping :: PosTree -> (Int, Map Int Ref)
-toMapping (Leaf _ _) = (1, empty)
-toMapping (Phrase "NP" subs) = (c, submaps `union` np)
-	where np = foldl (\x i -> insert i (fresh x) x) empty [0..c-1]
-	      (c, submaps) = toMapping (Phrase "" subs)
-toMapping (Phrase _ subs) = foldl meld (0, empty) (map toMapping subs)
-	where meld (cx, mx) (cy, my) = (cx + cy, mx `union` mapKeys (+cx) my)
+toMapping :: [Ref] -> PosTree -> ([Ref], Map Int Ref)
+toMapping vs (Leaf _ _) = (vs, empty)
+
+toMapping vs tr@(Phrase "NP" subs) = (vs', submaps `union` np)
+	where np = setInterval empty 0 (tsize tr) v
+	      (v:vs', submaps) = toMapping vs (Phrase "" subs)
+
+toMapping vs (Phrase _ []) = (vs, empty)
+toMapping vs (Phrase _ (sub:subs)) = (vs'', p `union` shifted)
+	where (vs', subm) = toMapping vs (Phrase "" subs)
+	      shifted = mapKeys (+tsize sub) subm
+	      (vs'', p) = toMapping vs' sub
+
+tsize :: PosTree -> Int
+tsize (Leaf _ _) = 1
+tsize (Phrase _ subs) = sum (map tsize subs)
+
+setInterval :: Map Int Ref -> Int -> Int -> Ref -> Map Int Ref
+setInterval m a b r = foldl (\m i -> insert i r m) m [a..b-1]
 
 -- TODO: The idea is to first use toMapping to create a basic assignment,
 --		and then impose corefs on top
