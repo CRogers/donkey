@@ -1,6 +1,5 @@
 import Stanford
 
--- http://batterseapower.github.com/test-framework/
 import Test.Framework (defaultMain, testGroup)
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck (testProperty)
@@ -45,35 +44,21 @@ instance Arbitrary PosTree where
                 return (Leaf tag word)
     coarbitrary a b = b
 
-test_tomapping1 = toMapping2 tree @?= out
+variables :: [Ref]
+variables = [c:"" | c <- "abcdefghijklmnopqrstuvwxyz"]
+toMapping2 :: PosTree -> Map Int Ref
+toMapping2 tr = snd (toMapping variables tr)
+
+test_tomapping1 = (toMapping2 . postreeS) inp @?= out
     where inp = "(NP (DT The) (NN man))"
           out = fromList [(0, "a"), (1, "a")]
-          Right tree = parse posEither "" inp
 
-test_tomapping2 = toMapping2 tree @?= out
+test_tomapping2 = (toMapping2 . postreeS) inp @?= out
     where inp = "(ROOT (S (NP (DT The) (NN man)) (VP (VBD did) (RB not) (VP (VB make) (S (NP (PRP$ his) (NN donkey)) (VP (VB see))))) (. .)))"
           out = fromList [(0, "b"), (1, "b"), (5, "a"), (6, "a")]
-          Right tree = parse posEither "" inp
 
 prop_tomapping :: PosTree -> Bool
 prop_tomapping postree = cntNp postree <= (length . nub . elems . toMapping2) postree
   where cntNp (Leaf _ _) = 0
         cntNp (Phrase "NP" subs) = 1 + sum (map cntNp subs)
         cntNp (Phrase _ subs) = sum (map cntNp subs)
-
--- main = sequence_ [printf "%-25s: " s >> a | (s,a) <- tests]
-
--- reversing twice a finite list, is the same as identity
--- prop_reversereverse s = (reverse . reverse) s == id s
---     where _ = s :: [Int]
-
-
-
--- prop_size1 :: PosTree -> Bool
--- prop_size1 s = toMapping s ! 0 == "a"
-
--- and add this to the tests list
--- tests  = [
---    ("reverse.reverse/id", quickCheck prop_reversereverse),
---    ("mapping >= 1", verboseCheck prop_size1)]
-

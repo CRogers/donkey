@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Dpl ( parse, deps, corefs, Prop )
+import Stanford (run)
 
 import Data.List
 import Text.XML.Light
@@ -9,30 +9,23 @@ import Data.Maybe
 import System.Process
 
 super :: [String] -> IO [Prop]
-super ss = do
-		sequence (zipWith writeFileLn names ss)
-		writeFileLn "inputlist" (intercalate "\n" names)
-		(_, _, _, h) <- createProcess (shell "stanford-corenlp-full-2012-11-12/corenlp.sh -filelist inputlist")
-		exitCode <- waitForProcess h 
-		putStrLn ("Exit code: " ++ show exitCode)
-		fs <- sequence [readFile (name ++ ".xml") | name <- names]
-		print (corefs ((fromJust.parseXMLDoc) (fs !! 1)) ["x", "y", "z"])
-		print (deps ((fromJust.parseXMLDoc) (fs !! 1)) "basic-dependencies")
-		return (zipWith parse ss fs)
-	where
-		names = ["input" ++ show i | i <- [1..length ss]]
-		writeFileLn path s = writeFile path (s ++ "\n")
+super sentences = run sentences >>= (return . logify)
 
 main :: IO ()
 main = do
 		putStrLn "Test1"
 		props <- super [
-			"If a farmer owns a donkey , he beats it",
+			"If a farmer owns a donkey, he beats it",
 			"If a farmer owns it and he beats it , it is a donkey", -- fails because 'donkey' becomes head somehow. (It even has a nsubj, huh?)
 			"If a farmer owns it and beats it , it is a donkey", -- fails because co-ref doesn't handle single occourences
 			"She is a mother of five", -- mother becomes the root, because is is not a 'real' verb
 			"A farmer . A Donkey . He owns it . He beats it", -- fails because we assume all sentences have a VP root
-			"If you like me , you will hate my cousin"]
+			"If you like me , you will hate my cousin",
+			"Do you still beat your wife?",
+			-- "The man could not make his donkey walk.", fails because SP things walk is a noun
+			"The man couldn't make his donkey see.",
+			"If there's a farmer and a donkey, the farmer beats the donkey.",
+			"If there's a farmer who owns a donkey, the farmer beats the donkey."]
 		putStrLn "Test2"
 		sequence (map print props)
 		return ()

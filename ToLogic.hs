@@ -1,34 +1,32 @@
-module ToLogic ( parse, deps, corefs, Prop ) where
+module ToLogic (logify) where
 
-parseVP :: Sentence -> Corefs -> DepTree -> Scop
-parseVP ws crs (Dep n ds) = foldl sComp sT parts `sComp` predi
+import Dpl
+import Prop
+
+parseVP :: Sentence -> Map Int Ref -> DepTree -> Scop
+parseVP ws refs (Dep n ds) = foldl sComp sT parts `sComp` predi
 	where
 		parts = mapMaybe (\(name, dep) -> (case name of
-			 "nsubj" -> Just (parseNP ws crs dep)
-			 "dobj"  -> Just (parseNP ws crs dep)
-			 "advcl" -> Just (parseAdvcl ws crs dep)
+			 "nsubj" -> Just (parseNP ws refs dep)
+			 "dobj"  -> Just (parseNP ws refs dep)
+			 "advcl" -> Just (parseAdvcl ws refs dep)
 			 otherwise -> Nothing)) ds
 		Just (Dep sub _) = lookup "nsubj" ds
 		Just (Dep obj _) = lookup "dobj" ds
-		predi = sPredi (ws !! n) [takeVar crs sub, takeVar crs obj]
+		predi = sPredi (ws !! n) [refs ! sub, refs ! obj]
 
-parseAdvcl :: Sentence -> Corefs -> DepTree -> Scop
-parseAdvcl ws crs dep = sSwitch `sComp` (parseVP ws crs dep) `sComp` sSwitch
+parseAdvcl :: Sentence -> Map Int Ref -> DepTree -> Scop
+parseAdvcl ws refs dep = sSwitch `sComp` (parseVP ws refs dep) `sComp` sSwitch
 
 -- Check if we are the primary mention, if true then add an exists and a test
-parseNP :: Sentence -> Corefs -> DepTree -> Scop
-parseNP ws crs (Dep n ds) = case isJust (lookup "det" ds) of
+parseNP :: Sentence -> Map Int Ref -> DepTree -> Scop
+parseNP ws refs (Dep n ds) = case isJust (lookup "det" ds) of
 	 True -> sExist var `sComp` sPredi (ws !! n) [var]
 	 False -> sT
-	where var = takeVar crs n
+	where var = refs ! n
 
-parse :: String -> String -> Prop
-parse s xml = conv (parseVP sentence crs dpt)
+logify :: (Sentence, Map Int Refs, DepTree) -> Prop
+logify (sentence, refs, deps) = (simplify . dpl2prop' . s2dpl) logic
 	where
-		sentence = "root" : words s
-		vars = ["x", "y", "z", "t"]
-		Just doc = parseXMLDoc xml
-		crs = corefs doc vars
-		dpt = (deps doc "basic-dependencies") !! 0
-		conv = (fexp simplify 10) . dpl2prop' . s2dpl
+		logic = parseVP sentence refs deps
 

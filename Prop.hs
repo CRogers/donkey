@@ -1,4 +1,4 @@
-module Dpl where
+module Prop (Prop(..), simplify) where
 
 type Ref = String
 
@@ -13,26 +13,30 @@ data Prop =
     | Impl Prop Prop
     deriving (Eq, Show)
 
-simplify :: Prop -> Prop
-simplify (Not (Exist k p)) = simplify (All k (Not p))
-simplify (Not (All k p)) = simplify (Exist k (Not p))
-simplify (Not (And p q)) = simplify (Impl p (Not q))
-simplify (Not (Not p)) = simplify p
-simplify (Not T) = F
-simplify (Not F) = T
+simp :: Prop -> Prop
+simp (Not (Exist k p)) = simp (All k (Not p))
+simp (Not (All k p)) = simp (Exist k (Not p))
+simp (Not (And p q)) = simp (Impl p (Not q))
+simp (Not (Not p)) = simp p
+simp (Not T) = F
+simp (Not F) = T
 
-simplify (Impl p F) = simplify (Not p)
-simplify (Impl p (Impl q r)) = simplify (Impl (And p q) r)
+simp (Impl p F) = simp (Not p)
+simp (Impl p (Impl q r)) = simp (Impl (And p q) r)
 
-simplify (And p T) = simplify p
-simplify (And p F) = F
+simp (And p T) = simp p
+simp (And p F) = F
 
-simplify (And p q) = And (simplify p) (simplify q)
-simplify (All k p) = All k (simplify p)
-simplify (Exist k p) = Exist k (simplify p)
-simplify (Not p) = Not (simplify p)
-simplify (Impl p q) = Impl (simplify p) (simplify q)
+simp (And p q) = And (simp p) (simp q)
+simp (All k p) = All k (simp p)
+simp (Exist k p) = Exist k (simp p)
+simp (Not p) = Not (simp p)
+simp (Impl p q) = Impl (simp p) (simp q)
 
-simplify p = p
+simp p = p
 
+fexp :: (a -> a) -> Int -> (a -> a)
 fexp f e = (iterate (f.) id) !! e
+
+simplify :: Prop -> Prop
+simplify = fexp simp 10
