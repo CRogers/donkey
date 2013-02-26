@@ -2,6 +2,7 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{amsthm,amssymb,amsmath,dsfont,mathrsfs,nicefrac}
+\usepackage{listings}
 
 \let\stdsection\section
 \renewcommand\section{\newpage\stdsection}
@@ -21,20 +22,121 @@ Your abstract goes here...
 \tableofcontents
 
 \section{Introduction}
-5 pagish
-Donkey example to follow through
+5 pagish Donkey example to follow through. There are many reasons why it is interesting to represent information in a logical language. You can do things such as unification, resolution, and question answering.
+
+% It is not possible
+It is clear that not all sentences can be unambigiously translated from natural language to logic. A sentence like 	
+\begin{quotation}
+A farmer beats a donkey
+\end{quotation}
+Might be translated as 
+\begin{equation}
+\exists x ( farmer(x) \wedge \exists y ( donkey(y) \wedge beats(x,y)))
+\end{equation}
+Indicating that ``a farmer'' refers to some specific individual. Or we can might see it as a general rule, and translate it as
+\begin{equation}
+\forall x ( farmer(x) \rightarrow \exists y ( donkey(y) \wedge beats(x,y)))
+\end{equation}
+Indicating that every farmer has some donkey he beats. Or we could even read it as
+\begin{equation}
+\exists y ( donkey(y) \wedge \forall x ( farmer(x) \rightarrow beats(x,y)))
+\end{equation}
+Indicating that the poor donkey is common between all farmers.
+
+In this paper we will not try to solve the above problem. (Though it could be interesting to generate multiple possibilities and perhaps use context to filter out the correct one). Instead we will try to show how some old method for doing this conversion can be enhanced with some new tools
+
+\begin{equation}
+\forall x . farmer(x) \rightarrow (\forall y . donkey(y) \wedge owns(x,y) \rightarrow beats(x,y))
+\end{equation}
+
+lksadjf lakdf jlsak dfjlask dfjlask dfjlsa kdfjasld kfjsald kfjsalkd fjslakd fjlsakd fjlkasd fjlaskd jflsak dfj
+
+If a farmer owns a donkey he beats it
+\begin{equation}
+\forall x . farmer(x) \rightarrow (\forall y . donkey(y) \wedge owns(x,y) \rightarrow beats(x,y))
+\end{equation}
+
+There are a lot of problems with this representation
+\begin{itemize}
+  \item It is not compositional. 
+  dfdf
+  \item It doesn't very well follow the order of the original sentence
+  \item It is just not very easy to get right
+\end{itemize}
 
 \section{Formal Stuff}
 10 pagish
 This subsection's content...
 \subsection{DPL}
+Dynamic semantics: http://plato.stanford.edu/entries/dynamic-semantics/
 This subsection's content...
+\subsection{Using the monad}
+This might be what I call DRA underneath
 \subsection{DRA}
+This might be just the same as DPL
+\subsection{Dependencies}
+This subsection's content...
+\subsection{Montague semantic}
+This subsection's content...
+\subsection{Semantics via dependencies}
 This subsection's content...
 
 \section{Implementation}
 8pagish
 This subsubsection's content...
+
+\subsection{My implementaiton of DPL semantics}
+Maybe this should be in the formal stuff. Nah, there are two versions
+
+Below are some direct implementation of the semantics for DPL. We use the types
+\begin{lstlisting}
+type Assignment = [(Ref, Val)]
+type Relation = [Assignment] -> [Assignment]
+\end{lstlisting}
+This differs from the indirect set of types are used in the earlier formalisms:
+\begin{lstlisting}
+type Assignment = [(Ref, Val)]
+type Relation = [Assignment] -> [Assignment] -> Bool
+\end{lstlisting}
+The later is very difficult to implement, since the semantics require quantification over all assignments. Like for composition.
+
+\begin{lstlisting}
+:: Relation
+true = id
+false = const []
+
+predi1 :: [Val] -> Ref -> Rel
+predi1 f k = filter (\as -> elem (get k as) f)
+
+predi2 :: [(Val,Val)] -> Ref -> Ref -> Rel
+predi2 f k l = filter (\as -> elem (get k as, get l as) f)
+
+:: Relation -> Relation
+neg r = filter (\as -> null (r [as]))
+
+:: Relation -> Relation -> Relation
+comp = flip (.)
+impl s r = rnot (s `comp` (rnot r))
+\end{lstlisting}
+Then comes the most interesting one. To ``randomly reset'' a variable, we have to make sure that we have all assignments in the cross product of new values for the variable and what was there before.
+
+Bum bum. Maybe we should just use a set, then we could overwrite variable assignments
+\begin{lstlisting}
+exist :: Ref -> [Val] -> Rel
+exist k vs ass = [a : as | a <- news, as <- olds]
+	where olds = map (filter ((/=k) . fst)) ass
+	      news = [(k,v) | v <- vs]
+\end{lstlisting}
+
+
+
+\subsection{Using machine learning}
+The $\bowtie$ and $\triangle$ notation makes logic look close enough to natural language that it starts looking tempting to use machine learning methods such as those used in translation to translate.
+
+My main problem here is that such translation requires large ammounts of dualingo data. It was out of scope for my project to try create such.
+
+\subsection{Handcoding}
+This is not as bad as it sounds. It is similar to montague and what the stanfordparser does for dependencies.
 
 \section{Perspectives}
 2pagish

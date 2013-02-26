@@ -1,4 +1,4 @@
-module Prop (Prop(..), simplify) where
+module Prop (Ref, Prop(..), simplify) where
 
 type Ref = String
 

@@ -1,0 +1,140 @@
+Title of my paper
+Thomas Dybdahl Ahle
+March 9, 2013
+Abstract
+Your abstract goes here... ...
+
+1
+
+Contents
+1 Introduction
+
+3
+
+2 Formal Stuﬀ
+2.1 DPL . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+2.2 DRA . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+2.3 Semantics via dependencies . . . . . . . . . . . . . . . . . . .
+
+4
+4
+4
+4
+
+3 Implementation
+
+5
+
+4 Perspectives
+4.1 Checklist . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+6
+7
+
+2
+
+1
+
+Introduction
+
+5 pagish Donkey example to follow through. There are many reasons why
+it is interesting to represent information in a logical language. You can do
+things such as uniﬁcation, resolution, and question answering.
+It is clear that not all sentences can be unambigiously translated from
+natural language to logic. A sentence like
+A farmer beats a donkey
+Might be translated as
+∃x(f armer(x) ∧ ∃y(donkey(y) ∧ beats(x, y)))
+
+(1)
+
+Indicating that “a farmer” refers to some speciﬁc individual. Or we can
+might see it as a general rule, and translate it as
+∀x(f armer(x) → ∃y(donkey(y) ∧ beats(x, y)))
+
+(2)
+
+Indicating that every farmer has some donkey he beats. Or we could even
+read it as
+∃y(donkey(y) ∧ ∀x(f armer(x) → beats(x, y)))
+(3)
+Indicating that the poor donkey is common between all farmers.
+∀x.f armer(x) → (∀y.donkey(y) ∧ owns(x, y) → beats(x, y))
+
+(4)
+
+lksadjf lakdf jlsak dfjlask dfjlask dfjlsa kdfjasld kfjsald kfjsalkd fjslakd
+fjlsakd fjlkasd fjlaskd jﬂsak dfj
+If a farmer owns a donkey he beats it
+∀x.f armer(x) → (∀y.donkey(y) ∧ owns(x, y) → beats(x, y))
+There are a lot of problems with this representation
+• It is not compositional. dfdf
+• It doesn’t very well follow the order of the original sentence
+• It is just not very easy to get right
+
+3
+
+(5)
+
+2
+
+Formal Stuﬀ
+
+10 pagish This subsection’s content...
+
+2.1
+
+DPL
+
+This subsection’s content...
+
+2.2
+
+DRA
+
+This subsection’s content...
+
+2.3
+
+Semantics via dependencies
+
+This subsection’s content...
+
+4
+
+3
+
+Implementation
+
+8pagish This subsubsection’s content...
+
+5
+
+4
+
+Perspectives
+
+2pagish What I learned
+
+6
+
+Acknowledgements
+Thanks to Samson This section’s content...[2] the PCFG parser[1]
+
+4.1
+
+Checklist
+
+Things learned from courses
+
+7
+
+References
+[1] D. Klein and C.D. Manning. Accurate unlexicalized parsing. In Proceedings of the 41st Annual Meeting on Association for Computational
+Linguistics-Volume 1, pages 423–430. Association for Computational Linguistics, 2003.
+[2] A. Visser. The donkey and the monoid: Dynamic semantics with control
+elements. Artiﬁcial Intelligence Preprint Series, 1, 1999.
+
+8
+
+

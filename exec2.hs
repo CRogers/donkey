@@ -1,4 +1,5 @@
 
+-- These direct semantics don't work, since they require quantification over all assignments
 
 import Data.List
 import Data.Maybe
@@ -6,53 +7,35 @@ import Data.Maybe
 type Val = Integer
 type Ref = String
 type Ass = [(Ref, Val)]
-type Rel = [Ass] -> [Ass]
+type Rel = Ass -> Ass -> Bool
 
--- Rel a = [b in ASS | Ez in a (z R b)]
-
-sigma :: [Ref]
 sigma = ["x","y"]
-
-domain :: [Val]
 domain = [0,1,2]
-
-everything :: [Ass]
 everything = sequence [[(k,v) | v <- domain] | k <- sigma]
 
-
-
 true :: Rel
-true = id
+true x y = x == y
 
 false :: Rel
-false = const []
+false x y = False
 
--- like and
 comp :: Rel -> Rel -> Rel
-comp = flip (.)
-
-test :: Rel -> Ass -> Bool
-test s ass = s [ass] /= []
+comp r s x y = or [x `r` z && z `s` y | z <- everything]
 
 rnot :: Rel -> Rel
-rnot s = filter (\as -> not (test s as))
+rnot r x y = x == y && not (r x y)
 
 impl :: Rel -> Rel -> Rel
 impl s r = rnot (s `comp` (rnot r))
 
-exist :: Ref -> [Val] -> Rel
-exist k vs ass = nub [set (k,v) as | v <- vs, as <- ass]
+exist :: Ref -> Rel
+exist key x y = and [lookup k x == lookup k y | k <- sigma \\ [key]]
 
 predi1 :: [Val] -> Ref -> Rel
-predi1 f k = filter (\as -> elem (get k as) f)
+predi1 f k x y = x == y && elem (get k x) f
 
 predi2 :: [(Val,Val)] -> Ref -> Ref -> Rel
-predi2 f k l = filter (\as -> elem (get k as, get l as) f)
-
--- like or
-union :: Rel -> Rel -> Rel
-union s r ass = (s ass) ++ (r ass)
-
+predi2 f k l x y = x == y && elem ((get k x), (get l x)) f
 
 -- Will fail if ref not in ass
 get :: Ref -> Ass -> Val
@@ -61,19 +44,16 @@ get k = fromJust . (lookup k)
 set :: (Ref, Val) -> Ass -> Ass
 set (k,v) as = (k,v) : filter ((/=k).fst) as
 
-
-
-
-farmer = predi1 [0]
-donkey = predi1 [1]
-beats = predi2 [(0,1)]
+farmer = [0]
+donkey = [1]
+beats = [(0,1)]
 
 -- If a farmer owns a donkey, he beats it.
 -- This doesn't work because E doesn't bind over -> it does
 -- Ex.farmer(x).Ey.donkey(y) -> beats(x,y)
 
 
-r = ((exist "x" domain) `comp` (farmer "x") `comp` (exist "y" domain) `comp` (donkey "y")) `impl` (beats "x" "y")
+r = ((exist "x") `comp` (predi1 farmer "x") `comp` (exist "y") `comp` (predi1 donkey "y")) `impl` (predi2 beats "x" "y")
 
 --[(v,k) | v <- vals, k <- ["x","y","z"]]
 -- test r []

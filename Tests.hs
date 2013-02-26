@@ -1,5 +1,3 @@
-import Stanford
-
 import Test.Framework (defaultMain, testGroup)
 import Test.Framework.Providers.HUnit
 import Test.Framework.Providers.QuickCheck (testProperty)
@@ -7,9 +5,14 @@ import Test.Framework.Providers.QuickCheck (testProperty)
 import Test.QuickCheck
 import Test.HUnit
 
+import System.IO.Unsafe
+
 import Data.List
 import Data.Map hiding (map)
 import Data.Char (chr, ord)
+
+import Stanford
+import Prop(Ref)
 
 main = defaultMain tests
 
@@ -17,7 +20,8 @@ tests = [
     testGroup "Stanford tests" [
         testCase "test1" test_tomapping1,
         testCase "test2" test_tomapping2,
-        testProperty "test3" prop_tomapping
+        testProperty "test3" prop_tomapping,
+        testCase "test4" test_stanford
      ],
     testGroup "Dpl tests" [
 
@@ -58,7 +62,13 @@ test_tomapping2 = (toMapping2 . postreeS) inp @?= out
           out = fromList [(0, "b"), (1, "b"), (5, "a"), (6, "a")]
 
 prop_tomapping :: PosTree -> Bool
-prop_tomapping postree = cntNp postree <= (length . nub . elems . toMapping2) postree
+prop_tomapping postree = cntNp postree >= (length . nub . elems . toMapping2) postree
   where cntNp (Leaf _ _) = 0
         cntNp (Phrase "NP" subs) = 1 + sum (map cntNp subs)
         cntNp (Phrase _ subs) = sum (map cntNp subs)
+
+test_stanford = (sentence, refs, deps) @?= (sout, rout, dout)
+    where (sentence, refs, deps) = unsafePerformIO (runOnFile "test.xml")
+          sout = ["if", "a", "farmer", "own", "a", "donkey", ",", "he", "beat", "it"]
+          rout = fromList [(1, "e"), (2, "e"), (4, "f"), (5, "f"), (7, "e"), (9, "f")]
+          dout = Dep 8 [("advcl",Dep 3 [("mark",Dep 0 []),("nsubj",Dep 2 [("det",Dep 1 [])]),("dobj",Dep 5 [("det",Dep 4 [])])]),("nsubj",Dep 7 []),("dobj",Dep 9 [])]

@@ -1,9 +1,7 @@
-module Dpl ( parse, deps, corefs, Prop ) where
+module Dpl (dpl2prop, Type2, s2dpl,
+	sT, sF, sSwitch, sScope, sPredi, sExist, sComp, sTest0, sTest1) where
 
-import Data.List
-import Text.XML.Light
-import Control.Monad
-import Data.Maybe
+import Prop (Ref, Prop(..))
 
 -- Type 1: Basic dynamic predicate logic
 ----------------------------------------
@@ -17,19 +15,20 @@ data DPL =
 	  | DImpl DPL DPL
 	  deriving (Eq, Show)
 
--- TODO: Move run code here
+-- TODO: Move exec code here
 
-dpl2prop' dpl = dpl2prop PT [dpl]
+dpl2prop :: DPL -> Prop
+dpl2prop dpl = addDpl T [dpl]
 
-dpl2prop :: Prop -> [DPL] -> Prop
-dpl2prop p [] = p
-dpl2prop p (DF:ds) = PF
-dpl2prop p (DT:ds) = dpl2prop p ds
-dpl2prop p ((DPredi f ks):ds) = dpl2prop (PAnd (PPredi f ks) p) ds
-dpl2prop p ((DExist k):ds) = dpl2prop (PExist k p) ds
-dpl2prop p ((DComp d1 d2):ds) = dpl2prop p (d2:d1:ds)
-dpl2prop p ((DNot d):ds) = dpl2prop (PAnd (PNot (dpl2prop PT [d])) p) ds
-dpl2prop p ((DImpl d1 d2):ds) = dpl2prop p ((DNot (DComp d1 (DNot d2))):ds)
+addDpl :: Prop -> [DPL] -> Prop
+addDpl p [] = p
+addDpl p (DF:ds) = F
+addDpl p (DT:ds) = addDpl p ds
+addDpl p ((DPredi f ks):ds) = addDpl (And (Predi f ks) p) ds
+addDpl p ((DExist k):ds) = addDpl (Exist k p) ds
+addDpl p ((DComp d1 d2):ds) = addDpl p (d2:d1:ds)
+addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
+addDpl p ((DImpl d1 d2):ds) = addDpl p ((DNot (DComp d1 (DNot d2))):ds)
 
 -- If there's a farmer and a donkey, the farmer beats the donkey
 r1 = DImpl (DComp (DComp (DComp (DExist "x") (DPredi "farmer" ["x"])) (DExist "y")) (DPredi "donkey" ["y"])) (DPredi "beats" ["x", "y"])
@@ -40,6 +39,9 @@ r1 = DImpl (DComp (DComp (DComp (DExist "x") (DPredi "farmer" ["x"])) (DExist "y
 ---------------------------------------
 
 type Type1 = (DPL, DPL, Integer)
+
+-- there is a weird syntax / semnatics thing going on here
+-- We should implement a much more normal syntax + interpretaion halloj
 
 pT = (DT, DT, 1)
 pF = (DT, DF, 1)
@@ -63,7 +65,7 @@ r2 = pSwitch `pComp` pExist "x" `pComp` pSwitch `pComp` pPredi "farmer" ["x"] `p
 
 -- Type 2: Logic with polarity and scope switcher
 -------------------------------------------------
-
+-- sT, sF, sSwitch, sScope, sPredi, sExist, sComp, sTest0, sTest1
 type Type2 = (DPL, DPL, DPL, DPL, Integer, Integer)
 sT = (DT, DT, DT, DT, 1, 0)
 sF = (DT, DT, DT, DF, 1, 0)
@@ -104,5 +106,5 @@ r6 = sTest0 (sScope `sComp` sExist "x" `sComp` sPredi "farmer" ["x"] `sComp` sSc
 -- Type 3: Logic with polarity and scope switcher and disjunction
 -----------------------------------------------------------------
 
-type Type3 = ([Dpl], [Dpl], [Dpl], [Dpl], Integer, Integer)
+type Type3 = ([DPL], [DPL], [DPL], [DPL], Integer, Integer)
 

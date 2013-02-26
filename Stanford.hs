@@ -1,5 +1,6 @@
+module Stanford (DepTree(..), Word, Sentence, run, runDry, runOnFile, PosTree(..), toMapping, postreeS) where
 
-module Stanford (DepTree, Ref, run, PosTree(..), toMapping, postreeS) where
+import Prop (Ref)
 
 import Text.ParserCombinators.Parsec
 import Data.Map hiding (map, (\\))
@@ -10,14 +11,13 @@ import Control.Monad
 import Data.Maybe
 import System.Process
 
-type Ref = String
 type Word = String
 type Sentence = [Word]
 
 type PosTag = String
-data PosTree = Phrase PosTag [PosTree] | Leaf PosTag Word deriving (Show)
+data PosTree a = Phrase PosTag [PosTree a] | Leaf PosTag a deriving (Show)
 
-data DepTree = Dep Int [(Ref, DepTree)] deriving Show
+data DepTree = Dep Int [(Ref, DepTree)] deriving (Show, Eq)
 
 ------------------
 
@@ -27,16 +27,16 @@ data DepTree = Dep Int [(Ref, DepTree)] deriving Show
 -- (did -> do, n't -> not)
 
 lemmas :: Element -> Sentence
-lemmas doc = map strContent (findElements (unqual "word") doc)
+lemmas doc = map strContent (findElements (unqual "lemma") doc)
 
 ------------------
 
-postree :: Element -> PosTree
+postree :: Element -> PosTree Word
 postree doc = postreeS dat
 	where
 		dat = (strContent . fromJust) (findElement (unqual "parse") doc)
 
-postreeS :: String -> PosTree
+postreeS :: String -> PosTree Word
 postreeS dat = tree
 	where
 		Right tree = parse posEither "(unknown)" dat
@@ -60,7 +60,7 @@ posLeaf =
 		word <- many (noneOf " ()")
 		return (Leaf tag word)
 
-toMapping :: [Ref] -> PosTree -> ([Ref], Map Int Ref)
+toMapping :: [Ref] -> PosTree Word -> ([Ref], Map Int Ref)
 toMapping vs (Leaf _ _) = (vs, empty)
 
 toMapping vs tr@(Phrase "NP" subs) = (vs', submaps `union` np)
@@ -73,7 +73,7 @@ toMapping vs (Phrase _ (sub:subs)) = (vs'', p `union` shifted)
 	      shifted = mapKeys (+tsize sub) subm
 	      (vs'', p) = toMapping vs' sub
 
-tsize :: PosTree -> Int
+tsize :: PosTree Word -> Int
 tsize (Leaf _ _) = 1
 tsize (Phrase _ subs) = sum (map tsize subs)
 
@@ -100,7 +100,7 @@ listDeps doc name = map parseDep deps
 		deps = findElements (unqual "dep") dep
 
 parseDep :: Element -> (String, Int, Int)
-parseDep e = (typ, read gov, read dep)
+parseDep e = (typ, read gov - 1, read dep - 1)
 	where
 		Just typ = findAttr (unqual "type") e
 		Just gov = findChild (unqual "governor") e >>= (findAttr (unqual "idx"))
@@ -127,10 +127,20 @@ allRefs doc vs = comap `union` posmap
 	where (vs', posmap) = toMapping vs (postree doc)
 	      (vs'', comap) = corefs doc vs'
 
+-- TODO: To help us avoid running out of variables, we might want to
+--       flatten the map once in a while
+
 --------------------
 
 variables :: [Ref]
 variables = [c:"" | c <- "abcdefghijklmnopqrstuvwxyz"]
+
+runDry :: [String] -> IO [(Sentence, Map Int Ref, DepTree)]
+runDry sentences =
+	do
+		sequence [runOnFile (name ++ ".xml") | name <- names]
+	where
+		names = ["input" ++ show i | i <- [1..length sentences]]
 
 run :: [String] -> IO [(Sentence, Map Int Ref, DepTree)]
 run sentences =
