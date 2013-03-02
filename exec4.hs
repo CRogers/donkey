@@ -6,7 +6,7 @@ import Control.Monad ((>=>))
 type Val = Integer
 type Ref = String
 type Ass = [(Ref, Val)]
-type Rel = Ass -> [Ass]
+type Rel = Maybe Ass -> [Maybe Ass]
 
 -- Rel a = [b in ASS | Ez in a (z R b)]
 -- tanke: den initielle assignment er til de fri variable.
@@ -27,43 +27,50 @@ true = return
 false :: Rel
 false = const []
 
+panic :: Rel
+panic = const [Nothing]
+
 -- like and
 comp :: Rel -> Rel -> Rel
 comp = (>=>)
 
-test :: Rel -> Rel
-test r a = if r a == [] then [] else [[]]
+test :: Rel -> Ass -> Bool
+test r a = case sequence (r (Just a)) of
+    Just [] -> False
+    Just _ -> True
+    Nothing -> undefined
 -- test = (rnot . rnot)
 -- test = impl true
 
--- notice 'not' cannot bring anybody back 'from the dead'
 rnot :: Rel -> Rel
-rnot r a = if r a == [] then [a] else []
+rnot r ma = case sequence (r ma) of
+    Just [] -> [Just []]
+    Just _ -> []
+    Nothing -> [Nothing]
 
 impl :: Rel -> Rel -> Rel
--- impl r s = rnot (r `comp` (rnot s))
-impl r s a = if all (\z -> s z /= []) (r a) then [a] else []
+impl r s = rnot (r `comp` (rnot s))
+-- impl r s a = if all (\z -> s z /= []) (r a) then [a] else []
 
 exist :: Ref -> Rel
-exist k a = [set k v a | v <- domain]
+exist k ma = fromMaybe [Nothing] (do
+    a <- ma
+    return [Just (set k v a) | v <- domain])
 
 predi1 :: [Val] -> Ref -> Rel
-predi1 f k a = if elem (get k a) f then [a] else []
+predi1 f k ma = fromMaybe [Nothing] (do
+    a <- ma
+    e <- lookup k a
+    if elem e f then return [Just a] else return [])
 
 predi2 :: [(Val,Val)] -> Ref -> Ref -> Rel
-predi2 f k l a = if elem (get k a, get l a) f then [a] else []
-
--- like or
-union :: Rel -> Rel -> Rel
-union s r a = s a ++ r a
-
-forall :: Ref -> Rel -> Rel
-forall k r = exist k `impl` r
---forall k r = rnot (exist k (rnot r))
+predi2 f k1 k2 ma = fromMaybe [Nothing] (do
+    a <- ma
+    e1 <- lookup k1 a
+    e2 <- lookup k2 a
+    if elem (e1, e2) f then return [Just a] else return [])
 
 -- Will fail if ref not in ass
-get :: Ref -> Ass -> Val
-get k = fromJust . (lookup k)
 
 set :: Ref -> Val -> Ass -> Ass
 set k v a = (k,v) : filter ((/=k).fst) a
@@ -82,11 +89,13 @@ owns = predi2 [(0,1)]
 -- Ex.farmer(x).Ey.donkey(y) -> beats(x,y)
 
 
-r1 = ((exist "x") `comp` (farmer "x") `comp` (exist "y") `comp` (donkey "y")) `impl` (beats "x" "y")
+r1 = ((exist "x") >=> (farmer "x") >=> (exist "y") >=> (donkey "y")) >=> (beats "x" "y")
 
-r2 = ((exist "x" >=> farmer "x") `union` (exist "x" >=> donkey "x")) >=> beats "x" "x"
+r2 = beats "x" "y"
 
-r3 = exist "x" >=> (farmer "x" `union` (exist "y" >=> donkey "y")) -- >=> beats "x" "y"
+--r2 = ((exist "x" >=> farmer "x") `union` (exist "x" >=> donkey "x")) >=> beats "x" "x"
+
+--r3 = exist "x" >=> (farmer "x" `union` (exist "y" >=> donkey "y")) -- >=> beats "x" "y"
 
 
 --[(v,k) | v <- vals, k <- ["x","y","z"]]

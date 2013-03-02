@@ -7,6 +7,7 @@ data Prop =
 	| F
 	| Not   Prop
     | And   Prop Prop
+    | Or    Prop Prop
     | Predi Ref [Ref]
     | Exist Ref Prop
     | All Ref Prop

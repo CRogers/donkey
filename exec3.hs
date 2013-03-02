@@ -1,84 +1,110 @@
 
 
-import Data.List
 import Data.Maybe
+import Data.Either
+import Control.Monad ((>=>), liftM, liftM2)
 
 type Val = Integer
 type Ref = String
 type Ass = [(Ref, Val)]
-type Rel = [Ass] -> [Ass]
+type Rel = Ass -> [Ass]
 
--- "The correct way to go is undoubtly to replace relations by indexed sets of relations read disjunctively"
+-- We don't have to used indexed sets and disjoint union, since we don't eliminate duplicates
+type DRel = [Maybe Rel]
 
+-- Rel a = [b in ASS | Ez in a (z R b)]
+-- tanke: den initielle assignment er til de fri variable.
+
+--
+
+sigma :: [Ref]
 sigma = ["x","y"]
+
+domain :: [Val]
 domain = [0,1,2]
+
+everything :: [Ass]
 everything = sequence [[(k,v) | v <- domain] | k <- sigma]
 
-true :: [Rel]
-true = [id]
 
-false :: [Rel]
-false = [const []]
+true :: DRel
+true = [Just return]
 
--- like and, conjunction, cross product
--- (a -> b eller c -> d) og (d -> e eller f -> g)
-comp :: [Rel] -> [Rel] -> [Rel]
-comp rs ss = [s.r | r <- rs, s <- ss]
+false :: DRel
+false = [Just (const [])]
 
-disj :: [Rel] -> [Rel] -> [Rel]
+err :: DRel
+err = [Nothing]
+
+
+-- like and
+comp :: DRel -> DRel -> DRel
+comp rs ss = [liftM2 (>=>) r s | r <- rs, s <- ss]
+
+test :: DRel -> Ass -> [Maybe [Ass]]
+test rs a = map (liftM ($a)) rs
+
+--test :: Rel -> Ass -> Rel
+--test r a = if r a == [] then [] else [[]]
+-- test = (rnot . rnot)
+-- test = impl true
+
+-- notice 'not' cannot bring anybody back 'from the dead'
+rnot :: Rel -> Rel
+rnot r a = if r a == [] then [a] else []
+
+-- just use 'all' and 'test'. Doh
+dnot :: DRel -> DRel
+dnot rs = [foldl (liftM2 (\a b -> a >=> (rnot b))) (Just return) rs]
+
+impl :: DRel -> DRel -> DRel
+impl rs ss = dnot (rs `comp` (dnot ss))
+--impl r s a = if all (\z -> s z /= []) (r a) then [a] else []
+
+exist :: Ref -> DRel
+exist k = [Just (\a -> [set k v a | v <- domain])]
+
+-- Problem: Vi ved f'rst ved runtime om vi har en error eller ej
+predi1 :: [Val] -> Ref -> DRel
+predi1 f k = [(\a -> get k a >>= (\e -> if elem e f then [a] else []))]
+
+predi2 :: [(Val,Val)] -> Ref -> Ref -> DRel
+predi2 f k l = [Just (\a -> if elem (get k a, get l a) f then [a] else [])]
+
+-- like or
+disj :: DRel -> DRel -> DRel
 disj = (++)
 
-test :: [Rel] -> Ass -> Bool
-test rs as = any (not.null) [r [as] | r <- rs]
-
-rtest :: Rel -> Ass -> Bool
-rtest r as = (not.null) (r [as])
-
--- not in dpl works by filtering out exactly those assignments that would before have been accepted
--- (not rel) ass = ass - (rel ass)
-rnot :: Rel -> Rel
-rnot r = filter (\as -> not (rtest r as))
-
--- not (a -> b eller c -> d)
--- we must push the not through the disjunction with de-morgan
-dnot :: [Rel] -> [Rel]
-dnot rs = foldl comp true [[rnot r] | r <- rs]
-
-impl :: [Rel] -> [Rel] -> [Rel]
-impl rs ss = dnot (rs `comp` (dnot ss))
---impl rs ss = (dnot rs) `disj` ss
--- This bottom one somehow doesn't allow left E's to be used in right. Hm
--- So di morgan er ikke rigtig paa plads
-
-exist :: Ref -> [Rel]
-exist k = [\ass -> [set (k,v) as | v <- domain, as <- ass]]
-
-predi1 :: [Val] -> Ref -> [Rel]
-predi1 f k = [filter (\as -> elem (get k as) f)]
-
-predi2 :: [(Val,Val)] -> Ref -> Ref -> [Rel]
-predi2 f k l = [filter (\as -> elem (get k as, get l as) f)]
+forall :: Ref -> DRel -> DRel
+forall k rs = exist k `impl` rs
 
 -- Will fail if ref not in ass
---runp1 f k as = elem (get k as) (map Just f)
-
 get :: Ref -> Ass -> Val
 get k = fromJust . (lookup k)
 
-set :: (Ref, Val) -> Ass -> Ass
-set (k,v) as = (k,v) : filter ((/=k).fst) as
---set (k,v) as = (k,v) : [a | a <- as, fst a /= k]
+set :: Ref -> Val -> Ass -> Ass
+set k v a = (k,v) : filter ((/=k).fst) a
 
-farmer = [0]
-donkey = [1]
-beats = [(0,1)]
+
+
+
+farmer = predi1 [0]
+donkey = predi1 [1]
+horse = predi1 [2]
+beats = predi2 [(0,1)]
 
 -- If a farmer owns a donkey, he beats it.
 -- This doesn't work because E doesn't bind over -> it does
 -- Ex.farmer(x).Ey.donkey(y) -> beats(x,y)
 
 
-r = ((exist "x") `comp` (predi1 farmer "x") `comp` (exist "y") `comp` (predi1 donkey "y")) `impl` (predi2 beats "x" "y")
+r1 = ((exist "x") `comp` (farmer "x") `comp` (exist "y") `comp` (donkey "y")) `impl` (beats "x" "y")
+
+r2 = ((exist "x" `comp` farmer "x") `disj` (exist "x" `comp` donkey "x")) `comp` beats "x" "x"
+
+r3 = exist "x" `comp` farmer "x" `comp` ((exist "y" `comp` donkey "y") `disj` false) `comp` beats "x" "y"
+
+r4 = exist "x" `comp` farmer "x" `comp` ((exist "y" `comp` donkey "y") `disj` true) `comp` beats "x" "y"
 
 --[(v,k) | v <- vals, k <- ["x","y","z"]]
 -- test r []

@@ -1,0 +1,84 @@
+
+advcl : adverbial clause modifier
+An adverbial clause modifier of a VP or S is a clause modifying the verb (temporal clause,
+consequence, conditional clause, etc.).
+  “The accident happened as the night was falling” advcl(happened, falling)
+  “If you know who did it, you should tell the teacher” advcl(tell, know)
+
+advmod: adverbial modifier
+An adverbial modifier of a word is a (non-clausal) adverb or adverbial phrase (ADVP) that
+serves to modify the meaning of the word.
+  “Genetically modified food” advmod(modified, genetically)
+  “less often” advmod(often, less)
+
+ccomp: clausal complement
+A clausal complement of a verb or adjective is a dependent clause with an internal subject
+which functions like an object of the verb, or adjective. Clausal complements for nouns are
+limited to complement clauses with a subset of nouns like “fact” or “report”. We analyze them
+the same (parallel to the analysis of this class as “content clauses” in Huddleston and Pullum
+2002). Such clausal complements are usually finite (though there are occasional remnant English
+subjunctives).
+  “He says that you like to swim” ccomp(says, like)
+  “I am certain that he did it” ccomp(certain, did)
+  “I admire the fact that you are honest” ccomp(fact, honest)
+
+conj : conjunct
+A conjunct is the relation between two elements connected by a coordinating conjunction, such
+as “and”, “or”, etc. We treat conjunctions asymmetrically: The head of the relation is the first
+conjunct and other conjunctions depend on it via the conj relation.
+  “Bill is big and honest” conj (big, honest)
+  “They either ski or snowboard” conj (ski, snowboard)
+
+cop: copula
+A copula is the relation between the complement of a copular verb and the copular verb. (We
+normally take a copula as a dependent of its complement; see the discussion in section 4.)
+  “Bill is big” cop(big, is)
+  “Bill is an honest man” cop(man, is)
+
+det: determiner
+A determiner is the relation between the head of an NP and its determiner.
+  “The man is here” det(man, the)
+  “Which book do you prefer?” det(book, which)
+
+dobj : direct object
+The direct object of a VP is the noun phrase which is the (accusative) object of the verb.
+  “She gave me a raise” dobj (gave, raise)
+  “They win the lottery” dobj (win, lottery)
+
+mark: marker
+A marker of an adverbial clausal complement (advcl) is the word introducing it. It will be a subordinating
+conjunction different from “that” or “whether”: e.g. “because”, “when”, “although”,
+etc.
+  “Forces engaged in fighting after insurgents attacked” mark(attacked, after)
+
+nsubj : nominal subject
+A nominal subject is a noun phrase which is the syntactic subject of a clause. The governor of
+this relation might not always be a verb: when the verb is a copular verb, the root of the clause
+is the complement of the copular verb, which can be an adjective or noun.
+  “Clinton defeated Dole” nsubj (defeated, Clinton)
+  “The baby is cute” nsubj (cute, baby)
+
+rcmod: relative clause modifier
+A relative clause modifier of an NP is a relative clause modifying the NP. The relation points
+from the head noun of the NP to the head of the relative clause, normally a verb.
+  “I saw the man you love” rcmod(man, love)
+  “I saw the book which you bought” rcmod(book,bought)
+
+"advcl", "advmod", "ccomp", "conj_and", "conj_or", "cop", "det", "dobj", "mark", "nsubj", "rcmod"
+-- all farmers who own a donkey beat it
+if a farmer owns a donkey, he beats it
+if a farmer owns all donkeys, he will beat them
+always, if a farmer owns a donkey, he beats it
+
+possesive: and (make: VBD)
+the farmer made his donkey understand
+
+passives:
+no donkey likes a farmer to beat it
+
+prepositions:
+the farmer beats the donkey with a belt
+
+more:
+A donkey does what it is told
+

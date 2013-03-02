@@ -1,9 +1,8 @@
 \documentclass[12pt]{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage{amsthm,amssymb,amsmath,dsfont,mathrsfs,nicefrac}
+\usepackage{amsthm,amssymb,amsmath,dsfont,mathrsfs,nicefrac,wasysym}
 \usepackage{listings}
-
 \let\stdsection\section
 \renewcommand\section{\newpage\stdsection}
 
@@ -42,6 +41,7 @@ Indicating that every farmer has some donkey he beats. Or we could even read it 
 \exists y ( donkey(y) \wedge \forall x ( farmer(x) \rightarrow beats(x,y)))
 \end{equation}
 Indicating that the poor donkey is common between all farmers.
+% This seams wrong to me
 
 In this paper we will not try to solve the above problem. (Though it could be interesting to generate multiple possibilities and perhaps use context to filter out the correct one). Instead we will try to show how some old method for doing this conversion can be enhanced with some new tools
 
@@ -69,11 +69,153 @@ There are a lot of problems with this representation
 This subsection's content...
 \subsection{DPL}
 Dynamic semantics: http://plato.stanford.edu/entries/dynamic-semantics/
-This subsection's content...
-\subsection{Using the monad}
+
+growth of information in time
+Inspired by programming language
+not philosofically, states can be anything. I don't want to get into that
+isomorphic with normal logic (visser siger generalization/projection)
+doen't promise to be a perfect dual of natural language, but it's closer, and has been rewarding
+Dynamic semantics aims to model meaning and interpretation. You can do that without answering broader philosophical questions
+takes the meaning of concepts for given
+discourse representation theory, file change, update semantics, 
+Hans Kamp, Veltman, Groenendijk
+
+compoitionality. A man comes in. He sees a dog. He smiles.
+
+Vi har brug for en logik, der ikke behøver at vide alting fra starten
+
+direct translation not possible
+`He saw the man with the telescope'
+and even if we understand the syntax
+`The students all attended one class'
+has at least two meanings.
+interpretation of discourse is influenced and guided by the common ground that exists between speaker and hearer
+
+relation between sets of assignments
+$\{\overline{PQR}, \overline{PQ}R, \overline{P}Q\overline{R}, \overline{P}QR, P\overline{QR}, P\overline{Q}R, PQ\overline{R}, PQR\}$
+
+example
+
+real world example
+
+something about more information, less models
+the interpretation of false
+
+Something about kleiski combinator?
+
+the thing about quantifiers
+how they would work in a programming language
+$\exists x; A$
+$\exists x; x = 4$ hvis $x=4$ skal virke og reducere mængden af modeller, så må exists gøre dem alle sammen mulige
+
+A man comes in. En fri variabel vi ikke ved noget om.
+A man comes in. It's Thomas..
+
+we take as DPL-meanings binary relations between assignments
+
+later we will use an isomorphism and take them as functions from assignments to sets of assignments.
+
+\begin{equation}
+\phi ::= \bot \mid \top \mid \pi \mid \epsilon \mid \phi \cdot \phi \mid \lnot(\phi)
+\end{equation}
+\begin{equation}
+\alpha [\bot] \beta :\equiv False
+\end{equation}
+\begin{equation}
+\alpha [\top] \beta :\equiv \alpha = \beta
+\end{equation}
+\begin{equation}
+\alpha[P(x_0, ..., xn-1)]\beta :\equiv \alpha = \beta and (\alpha x0, ..., \alpha x n-1 ) \in I(P)
+\end{equation}
+
+\subsection{The problem with disjunction}
+
+
+a farmer doesn't own a horse or a donkey
+
+Ex.farmer(x) . ~(Ey.horse(y).owns(x,y) v Ey.donkey(y).owns(x,y))
+Ex.farmer(x) . ~Ey.horse(y).owns(x,y) . ~Ey.donkey(y).owns(x,y)
+
+a farmer beats a horse or a donkey
+
+Ex.farmer(x).(Ey.horse(y) v Ez.donkey(z)).beats(x,y) = {Nothing, Ex.farmer(x).EyJust .horse(y).beats(x,y)}
+
+Ex.farmer(x).~((Ey.horse(y) v Ez.donkey(z)).beats(x,y)) =
+Ex.farmer(x).(~Ey.horse(y).~Ez.donkey(z) v ~beats(x,y)) = {Nothing, Ex.farmer(x).~Ey.horse(y).~Ez.donkey(z)}
+
+Ex.farmer(x).~(tall(x) v blue(x)) = Ex.famer(x).~tall(x).~blue(x)
+
+There is a farmer who maybe has a donkey. He beats it.
+Ex.farmer(x).(Ey.donkey(y) v false).beats(x,y)
+With union semantics for v this would be equal to
+Ex.farmer(x).Ey.donkey(y).beats(x,y)
+which is stupid.
+Intead with sets of relations, this would be equal to
+Ex.farmer(x).Ey.donkey(y).beats(x,y) v Ex.farmer(x).false.beats(x,y)
+the right side being an error? no
+
+If a farmer is not poor he owns a donkey. He beats it.
+Ex.farmer(x).~poor(x) -> Ey.donkey(y).owns(x,y).beats(x,y)
+
+A farmer is either poor or he owns a donkey. He beats it.
+Ex.farmer(x).(poor(x) v Ey.donkey(y).owns(x,y)).beats(x,y) =
+
+(Ex v false) . f(x)
+(exist x `union` false) [] = [[("x",0)],[("x",1)],[("x",2)]
+[Nothing, Just [[("x",0)],[("x",1)],[("x",2)]]]
+
+
+(Ex v false) = [Just [[("x",0)],[("x",1)],[("x",2)], Just []]
+not (Ex v false) =
+
+not (Ex v f(x))
+= ~Ex.~f(x)
+
+A farmer owns a horse or a donkey
+Ex.farmer(x).~(~(Ey.horse(y)).~(Ey.donkey(y))).owns(x,y)   this surely doesn't work
+
+
+nothing survives out of a not (or impl) it's normal. Don't worry about it
+
+Let's just say that if some of 
+maybe not (bla v bla v bla v ERROR) should be ERROR
+it could also be something more involved, like ERROR(bla v bla v bla v ERROR), but let's not do that
+fmap
+
+\subsection{Monadic variants}
 This might be what I call DRA underneath
-\subsection{DRA}
-This might be just the same as DPL
+In the previous subsection we saw that DPL allowed us to rewrite the donkey sentence as 
+
+\begin{equation}
+\exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot owns(x,y) \rightarrow beats(x,y)
+\end{equation}
+
+($\cdot$ binds stronger than $\rightarrow$)
+
+But think about the slight modification to the sentence:
+
+\begin{quotation}
+A farmer owns a donkey, if he beats it
+\end{quotation}
+
+We would have to write that as
+
+\begin{equation}
+\exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot beats(x,y) \rightarrow owns(x,y)
+\end{equation}
+
+The problem here is that reorderings like this work against our sought property of linearity: of being able to add new information as we go. We cannot compose `A farmer owns a donkey' and `if he beats it' in a meaningful way.
+
+To resque us from this problem Albert Visser suggests constructing a special e-monoid over the dynamic relational algebra. The idea is that we are going to simultaniously work on two `streams' of dpl, and switch easily between them with a special element $\Bowtie$.
+
+Our sentence from above will then be expressible as
+
+\begin{equation}
+\Bowtie \cdot \exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot \Bowtie \cdot owns(x,y) \Bowtie \cdot beats(x,y)
+\end{equation}
+
+This is however still not quite as close to natural language as we would like. Specially 
+
 \subsection{Dependencies}
 This subsection's content...
 \subsection{Montague semantic}

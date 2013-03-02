@@ -11,6 +11,7 @@ data DPL =
 	  | DPredi Ref [Ref]
 	  | DExist Ref
 	  | DComp DPL DPL
+	  | DOr DPL DPL
 	  | DNot DPL
 	  | DImpl DPL DPL
 	  deriving (Eq, Show)
@@ -26,9 +27,10 @@ addDpl p (DF:ds) = F
 addDpl p (DT:ds) = addDpl p ds
 addDpl p ((DPredi f ks):ds) = addDpl (And (Predi f ks) p) ds
 addDpl p ((DExist k):ds) = addDpl (Exist k p) ds
-addDpl p ((DComp d1 d2):ds) = addDpl p (d2:d1:ds)
+addDpl p ((DComp d1 d2):ds) = addDpl p (d2:d1:ds) -- backwards
 addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
 addDpl p ((DImpl d1 d2):ds) = addDpl p ((DNot (DComp d1 (DNot d2))):ds)
+addDpl p ((DOr d1 d2):ds) = addDpl (And (Or (addDpl T [d1]) (addDpl T [d2])) p) ds
 
 -- If there's a farmer and a donkey, the farmer beats the donkey
 r1 = DImpl (DComp (DComp (DComp (DExist "x") (DPredi "farmer" ["x"])) (DExist "y")) (DPredi "donkey" ["y"])) (DPredi "beats" ["x", "y"])
