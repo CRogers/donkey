@@ -6,6 +6,11 @@
 \let\stdsection\section
 \renewcommand\section{\newpage\stdsection}
 
+\renewcommand{\arraystretch}{1.1}
+
+
+
+
 \title{Title of my paper}
 \author{Thomas Dybdahl Ahle}
 \date{March 9, 2013}
@@ -22,6 +27,8 @@ Your abstract goes here...
 
 \section{Introduction}
 5 pagish Donkey example to follow through. There are many reasons why it is interesting to represent information in a logical language. You can do things such as unification, resolution, and question answering.
+
+In this paper we won't do anything about animal violence
 
 % It is not possible
 It is clear that not all sentences can be unambigiously translated from natural language to logic. A sentence like 	
@@ -193,28 +200,128 @@ In the previous subsection we saw that DPL allowed us to rewrite the donkey sent
 ($\cdot$ binds stronger than $\rightarrow$)
 
 But think about the slight modification to the sentence:
-
+%
 \begin{quotation}
 A farmer owns a donkey, if he beats it
 \end{quotation}
-
+%
 We would have to write that as
-
+%
 \begin{equation}
 \exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot beats(x,y) \rightarrow owns(x,y)
 \end{equation}
-
+%
 The problem here is that reorderings like this work against our sought property of linearity: of being able to add new information as we go. We cannot compose `A farmer owns a donkey' and `if he beats it' in a meaningful way.
 
 To resque us from this problem Albert Visser suggests constructing a special e-monoid over the dynamic relational algebra. The idea is that we are going to simultaniously work on two `streams' of dpl, and switch easily between them with a special element $\Bowtie$.
 
 Our sentence from above will then be expressible as
-
+%
 \begin{equation}
-\Bowtie \cdot \exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot \Bowtie \cdot owns(x,y) \Bowtie \cdot beats(x,y)
+\Bowtie \cdot \exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot \Bowtie \cdot owns(x,y) \cdot \Bowtie \cdot beats(x,y)
 \end{equation}
+%
+which can be written in `stream form' as
+%
+\begin{equation}
+\begin{tabular}{|clll|}
+    \hline
+    $(-)$ & $\exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y)$ & ~ & $beats(x,y)$ \\\hline
+    $(+)$ & ~ & $owns(x,y)$ & ~ \\\hline
+\end{tabular}
+\end{equation}
+%
+The meaning of the above is $(-) \rightarrow (+)$
 
-This is however still not quite as close to natural language as we would like. Specially 
+Should we have one more example here?
+
+So how do we define this nifty $\Bowtie$? The trick is to move the entire dynamic relation algebra from before into an e-monoid that will help us keep track of some details.
+
+If $\phi$ from before is the basic algebra, we specify the construction of our monoid $\Phi$ as follows.
+%
+\begin{flalign}
+&\top := \langle \top, \top, + \rangle & \\
+&\bot := \langle \top, \bot, + \rangle & \\
+&\Bowtie := \langle \top, \top, - \rangle & \\
+&\langle q_-, q_+, \alpha \rangle \cdot \langle r_-, r_+, \beta \rangle := \langle q_- \cdot r_{-\alpha}, q_+ \cdot r_{+\alpha}, \alpha\beta \rangle&
+\end{flalign}
+%
+Notice how we keep the negative stream in the first position of the tuple, and the positive stream at the second position. The third position idicates to what stream we are currently writing. For example, if we are writing to the negative stream, and we apply an element that itself asks us to continue at its negative stream, we go back to the positive stream.
+
+More examples on the utilities of the above monad can be found in Vissers paper.
+
+An even more interesting element than $\Bowtie$ is $\triangle$. $\triangle$ is a scope modifier, and it allows us to write:
+%
+\begin{quote}
+A farmer owns a donkey. He beats it.
+\end{quote}
+%
+(that is just some single farmer and donkey) as
+%
+\begin{equation}
+\triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot beats(x,y)
+\end{equation}
+%
+That is pretty close to the order of the natural language!
+
+And combining the two monads we can do our original sentence as
+%
+\begin{quote}
+If a farmer owns a donkey, he beats it
+\end{quote}
+%
+as
+\begin{equation}
+\Bowtie \cdot \triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \Bowtie \cdot beats(x,y)
+\end{equation}
+%
+In stream form, that is:
+%
+\begin{equation}
+\begin{tabular}{|cllll|}
+    \hline
+    $(-,1)$ & $\exists x \cdot farmer(x)$ & ~ & ~ $ \exists y \cdot donkey(y)$ & ~ \\\hline
+    $(-,0)$ & ~ & $owns(x,y)$ & ~ & ~ \\\hline
+    $(+,1)$ & ~ & ~ & ~ & ~ \\\hline
+    $(+,0)$ & ~ & ~ & ~ & $beats(x,y)$ \\\hline
+\end{tabular}
+\end{equation}
+%
+With the meaning being $(-,1) \cdot (-,0) \rightarrow (+,1) \cdot (+,0)$. Notice that the negative relations are again put on the left side of the implication, and the relations with larger scope value are put before those of lower value.
+
+Notice $\Bowtie$ and $\triangle$ are commutative, since they work entirely on their own indicator. It's an interesting question to consider what sentences might require three or more levels of scoping, but those seam to be so rare that it doesn't now make much sense to clutter our algebra with an extra infinity of streams.
+
+We define the monad as follows:
+%
+\begin{flalign}
+&\top := \langle \top, \top, \top, \top, +, 0 \rangle & \\
+&\bot := \langle \top, \top, \top, \bot, +, 0 \rangle & \\
+&\Bowtie := \langle \top, \top, \top, \top -, 0 \rangle & \\
+&\triangle := \langle \top, \top, \top, \top +, 1 \rangle & \\
+&\langle q_{-,1}, q_{-,0}, q_{+,1}, q_{+,0}, \alpha, i \rangle \cdot \langle r_{-,1}, r_{-,0}, r_{+,1}, r_{+,0}, \beta, j \rangle := &\\
+&\hspace{1cm}\langle q_{-,1} \cdot r_{-\alpha,1+i}, q_{-,0} \cdot r_{-\alpha,i}, q_{+,1} \cdot r_{\alpha,1+i}, q_{+,0} \cdot r_{\alpha,i}, \alpha\beta, i+j \rangle& \nonumber
+\end{flalign}
+
+In his paper Visser now goes on to define $\triangleleft$ and $\triangleright$ which work similarly to $\Bowtie$ except they work in different directions. 
+%
+\begin{equation}
+\Bowtie \cdot \triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \triangleleft \cdot beats(x,y)
+\end{equation}
+%
+This is quite interesting for certain centences containing `surprises', like
+%
+\begin{quotation}
+He sees... no donkey
+\end{quotation}
+%
+In this case we would compositionally assume to start out with
+$sees(x,y)$ and finish with $\cdot \exists y \cdot donkey(y)\triangle$ hence we want to write something like:
+%
+\begin{equation}
+sees(x,y) \cdot \triangleleft \cdot \bot \cdot \triangleright \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle
+\end{equation}
+%
+Notice that that means the word `no'/`not' must be $\triangleleft\cdot\bot\cdot\triangleright$. Unfortunately these retrospective triangles tend to mess sentence enough up, that they require lots of `stream unification brackets', and don't generally give very nice formulas. In the semantic parsing in the next section, they wont be used at all.
 
 \subsection{Dependencies}
 This subsection's content...
