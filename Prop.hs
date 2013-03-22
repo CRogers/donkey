@@ -1,4 +1,6 @@
-module Prop (Ref, Prop(..), simplify) where
+module Prop (Ref, Prop(..), simplify, tostring) where
+
+import Data.List
 
 type Ref = String
 
@@ -18,9 +20,11 @@ simp :: Prop -> Prop
 simp (Not (Exist k p)) = simp (All k (Not p))
 simp (Not (All k p)) = simp (Exist k (Not p))
 simp (Not (And p q)) = simp (Impl p (Not q))
+simp (Not (Impl p q)) = simp (And p (Not q))
 simp (Not (Not p)) = simp p
 simp (Not T) = F
 simp (Not F) = T
+
 
 simp (Impl p F) = simp (Not p)
 simp (Impl p (Impl q r)) = simp (Impl (And p q) r)
@@ -34,6 +38,9 @@ simp (Exist k p) = Exist k (simp p)
 simp (Not p) = Not (simp p)
 simp (Impl p q) = Impl (simp p) (simp q)
 
+-- We still don't have too many rules for Or, as we are quite interested in things like `foo v false`
+simp (Or p q) = Or (simp p) (simp q)
+
 simp p = p
 
 fexp :: (a -> a) -> Int -> (a -> a)
@@ -41,3 +48,13 @@ fexp f e = (iterate (f.) id) !! e
 
 simplify :: Prop -> Prop
 simplify = fexp simp 10
+
+tostring T = "T"
+tostring F = "F"
+tostring (Not p) = "!(" ++ tostring p ++ ")"
+tostring (And p q) = tostring p ++ "&" ++ tostring q
+tostring (Or p q) = "(" ++ tostring p ++ ")|(" ++ tostring q ++ ")"
+tostring (Impl p q) = "(" ++ tostring p ++ ")->(" ++ tostring q ++ ")"
+tostring (Predi f ks) = f ++ "(" ++ concat (intersperse "," ks) ++ ")"
+tostring (Exist k p) = "E" ++ k ++ "(" ++ tostring p ++ ")"
+tostring (All k p) = "A" ++ k ++ "(" ++ tostring p ++ ")"

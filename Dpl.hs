@@ -1,4 +1,4 @@
-module Dpl (dpl2prop, Type2, s2dpl,
+module Dpl (DPL(..), dpl2prop, Type2, s2dpl,
 	sT, sF, sSwitch, sScope, sPredi, sExist, sComp, sTest0, sTest1) where
 
 import Prop (Ref, Prop(..))
@@ -7,14 +7,14 @@ import Prop (Ref, Prop(..))
 ----------------------------------------
 
 data DPL =
-	    DT | DF
-	  | DPredi Ref [Ref]
-	  | DExist Ref
-	  | DComp DPL DPL
-	  | DOr DPL DPL
-	  | DNot DPL
-	  | DImpl DPL DPL
-	  deriving (Eq, Show)
+    DT | DF
+  | DComp DPL DPL
+  | DOr DPL DPL
+  | DNot DPL
+  | DImpl DPL DPL
+  | DExists Ref
+  | DPredi Ref [Ref]
+  deriving (Eq, Show)
 
 -- TODO: Move exec code here
 
@@ -26,16 +26,21 @@ addDpl p [] = p
 addDpl p (DF:ds) = F
 addDpl p (DT:ds) = addDpl p ds
 addDpl p ((DPredi f ks):ds) = addDpl (And (Predi f ks) p) ds
-addDpl p ((DExist k):ds) = addDpl (Exist k p) ds
-addDpl p ((DComp d1 d2):ds) = addDpl p (d2:d1:ds) -- backwards
+addDpl p ((DExists k):ds) = addDpl (Exist k p) ds
+addDpl p ((DComp d1 d2):ds) = addDpl p (d2:d1:ds) -- backwards: explain
 addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
 addDpl p ((DImpl d1 d2):ds) = addDpl p ((DNot (DComp d1 (DNot d2))):ds)
-addDpl p ((DOr d1 d2):ds) = addDpl (And (Or (addDpl T [d1]) (addDpl T [d2])) p) ds
+-- This rule is no good at all. Scoping becomes weird
+--addDpl p ((DOr d1 d2):ds) = addDpl (And (Or (addDpl T [d1]) (addDpl T [d2])) p) ds
+
+addDpl p ((DOr d1 d2):ds) = Or (addDpl p (d1:ds)) (addDpl p (d2:ds))
+
 
 -- If there's a farmer and a donkey, the farmer beats the donkey
-r1 = DImpl (DComp (DComp (DComp (DExist "x") (DPredi "farmer" ["x"])) (DExist "y")) (DPredi "donkey" ["y"])) (DPredi "beats" ["x", "y"])
+r1 = DImpl (DComp (DComp (DComp (DExists "x") (DPredi "farmer" ["x"])) (DExists "y")) (DPredi "donkey" ["y"])) (DPredi "beats" ["x", "y"])
 
-
+r7 = DComp (DOr (DExists "x") DF) (DPredi "farmer" ["x"])
+r8 = DComp (DOr (DComp (DExists "x") (DPredi "farmer" ["x"])) (DComp (DExists "x") (DPredi "donkey" ["x"]))) (DPredi "farmer" ["x"])
 
 -- Type 1: Logic with polarity switcher
 ---------------------------------------
@@ -51,7 +56,7 @@ pSwitch = (DT, DT, -1)
 pPredi :: Ref -> [Ref] -> Type1
 pPredi f ks = (DT, DPredi f ks, 1)
 pExist :: Ref -> Type1
-pExist k = (DT, DExist k, 1)
+pExist k = (DT, DExists k, 1)
 pComp :: Type1 -> Type1 -> Type1
 pComp (qm, qp, 1) (rm, rp, b) = (DComp qm rm, DComp qp rp, b)
 pComp (qm, qp, -1) (rm, rp, b) = (DComp qm rp, DComp qp rm, -b)
@@ -76,7 +81,7 @@ sScope = (DT, DT, DT, DT, 1, 1)
 sPredi :: Ref -> [Ref] -> Type2
 sPredi f ks = (DT, DT, DT, DPredi f ks, 1, 0)
 sExist :: Ref -> Type2
-sExist k = (DT, DT, DT, DExist k, 1, 0)
+sExist k = (DT, DT, DT, DExists k, 1, 0)
 sComp :: Type2 -> Type2 -> Type2
 sComp (qm1, qm0, qp1, qp0, 1, 0) (rm1, rm0, rp1, rp0, b, j) =  (DComp qm1 rm1, DComp qm0 rm0, DComp qp1 rp1, DComp qp0 rp0, b, j)
 sComp (qm1, qm0, qp1, qp0, 1, 1) (rm1, rm0, rp1, rp0, b, j) =  (DComp qm1 rm0, DComp qm0 rm1, DComp qp1 rp0, DComp qp0 rp1, b, 1-j)
