@@ -51,7 +51,7 @@
                {`elem`}{{$\in$}}1
     }
 
-\title{Title of my paper}
+\title{Musings in Dynamic Semantics for Donkeys}
 \author{Thomas Dybdahl Ahle}
 \date{March 9, 2013}
 
@@ -61,7 +61,23 @@
 \begin{abstract}
 Your abstract goes here...
 
-Érica is super hot
+donkeys sentences
+dynamic logic
+disjunction, errors
+monads
+dependencies
+
+From Donkeys to Predicates: Musings Into Dynamic Semantics and Logification
+Donkification and Logification
+Donkeys into Logic
+From Farmers and Donkeys to Grammars and Predicates
+Dependency ased
+Discourse and Donkeys: A Dependency Based 
+Discourse and Donkeys: A Monoid Based Language Grammar
+Discourse and Donkeys: Monoid Based Language Semantics
+Discourse and Donkeys: Using Monoids for Language Semantics
+Dynamic Discourse and Donkeys: Using Monoids for Language Semantics
+
 
 ‘a brief description of what you did; no more than a page.’
 The abstract provides a summary of the project report. It may contain some or all of the following moves, 
@@ -76,26 +92,135 @@ Move 5: Results
 Move 6: Conclusions or implications
 Move 7: Achievements of the project
 
+Let's try it then
+
+How to treat determinants/indeterminants
+  1) ref
+  2) quant
+  3) vp -> sentence function
+
+Ambiguity
+  1) Strong/Weak
+
+How to get a good logical representation
+  1) Looking like language
+  2) Compositionality
+
 \end{abstract}
 
 \tableofcontents
 
 
-\section{Introduction}
-5 pagish Donkey example to follow through. There are many reasons why it is interesting to represent information in a logical language. You can do things such as unification, resolution, and question answering.
+\section{Introduction (5)}
+% 5 pagish Donkey example to follow through.
 
-Move 1 Background 
-Possible Steps 1. Why the area is important
-2. Giving background information
-3. Reviewing previous research
-Move 2 Indicating a Problem or Need
-Move 3 Presenting the Project
-Possible Steps 1. Purposes, aims, objectives
-2. Work carried out
-3. Justification or importance of the project
-4. Outline of the structure of the report
+% Move 1 Background 
+% Possible Steps 1. Why the area is important
+% 2. Giving background information
+% 3. Reviewing previous research
+% Move 2 Indicating a Problem or Need
+% Move 3 Presenting the Project
+% Possible Steps 1. Purposes, aims, objectives
+% 2. Work carried out
+% 3. Justification or importance of the project
+% 4. Outline of the structure of the report
 
-In this paper we won't do anything about animal violence
+There are many reasons why it is interesting to represent information in a logical language. For a computer scientist, the biggest advantage is the computational aspect. There is a horde of algorithms for doing querying, question answering, reasoning, unification and resolution. All are they at your disposal if only you can obtain a first order logic form.
+
+Getting computers to understand and work with natural language is arguably on of the biggest challenges in information technologies this day. Hence if we could move the problem into the space of formal logic, it would be a fantastic accomplishment. Unfortunately many people have pointed out, that classical logic doesn't have the power to express most of the sentences people casually express on a daily basis.
+
+To draw up this point, let's first look at a sentence that easily lets itself convert and then a couple that dont:
+\begin{itemize}
+\item `Socrates is a donkey': $donkey(Socrates)$. This is a classical logical example, treating Socrates as a constant. If we want to do without constants we can write: $\forall x(Socrates(x)\rightarrow donkey(x))$, though this does allow more than one Socrates to exist.
+\item `All his donkeys are treated well': This sentence somewhat willingly let's itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ refering to some person from earlier in the discourse.
+\item `Every farmer beats his donkey': This sentence clearly has two possible meanings: $\exists y(his(x,y)\wedge donkey(y)\wedge \forall z(farmer(z) \rightarrow beats(z,y))$ if there is only one donkey, and $\forall x(farmer(x)\rightarrow \exists y (beats(x,y)\wedge his(x,y)\wedge donkey(y))$ if there is a donkey for each farmer.
+\item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesnt\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'.
+\item `They donkeys are cold': This is an often used example of an `implied action sentence' and thought to have the same meaning as `Please close the stable door'. The best we can do here seems to be $please\_close\_the\_stable\_door()$ or perhaps $\exists x(stable\_door(x)\wedge please\_close(x))$.
+\end{itemize}
+
+In this paper we will work with a subset of English that translate reasonably well into logic. This unfortunately means that arguably the majority of sentences will be unaccesible to our methods. We will take a shot at ambigious sentences like the third one though.
+
+%TODO: Perhaps this should be moved to the aknowledgements or something. It sets a very demoralizing tone during the rest of the paper.
+Even more unfortunate than the problems above is it that we won't be able to do anything about the concerning welfare for donkeys around the world\cite{donkey2013sanctuary}, but must restrict ourselves to simply pointing it out. We will follow Geach\cite{geach1962reference} on this, and make `If a farmer owns a donkey, he beats it' our primary object of study.
+%
+\begin{align}
+\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y))) \rightarrow beats(x,y)
+\end{align}
+%
+This is arguably the sentence that first comes to mind for a moderately trained logician. Translating an indeterminate `a farmer' into $\exists x(farmer(x))$ seems correct, but clearly the formula has problems with scope.
+%
+\begin{align}
+\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y) \rightarrow beats(x,y))) \label{wrong_donkey_2}
+\end{align}
+%
+Moving the implication into the scope of $x$ and $y$ also doesn't work. Sentence \eqref{wrong_donkey_2} evaluates to true as long as a single farmer beats his donkey. In fact as long as a farmer exists it evaluates to true, since plugging the farmer into the $donkey$ predicate makes the anticedent false.
+%
+\begin{align}
+\forall x (farmer(x) \rightarrow \forall y ( owns(x,y) \wedge donkey(y) \rightarrow beats(x,y))) \label{correct_donkey}
+\end{align}
+%
+This turns out to be the correct formula. At least as long as you consider the use of `all' in natural language equal to the `all' in logic, which can be vacously true.
+
+So what is going on? Most people think of determinates `the donkey' and indeterminates `a donkey' as being a reference to an existing donkey and an `introduction' of some new donkey into the conversation. However in a lot of sentences this turns out to not be the case.
+
+How to treat determinants/indeterminants
+  1) ref
+  2) quant
+  3) vp -> sentence function
+
+Another problem with sentence \eqref{correct_donkey} is a lack of compositionality.
+
+How to get a good logical representation
+  1) Looking like language
+  2) Compositionality
+
+Finally let's have a look at the ambiguity we noted in the beginning of this chapter
+
+Ambiguity
+  1) Strong/Weak
+
+
+
+
+
+
+If a farmer owns a donkey he beats it
+\begin{equation}
+\forall x . farmer(x) \rightarrow (\forall y . donkey(y) \wedge owns(x,y) \rightarrow beats(x,y))
+\end{equation}
+
+There are a lot of problems with this representation
+\begin{itemize}
+  \item It is not compositional. 
+  dfdf
+  \item It doesn't very well follow the order of the original sentence
+  \item It is just not very easy to get right
+\end{itemize}
+
+More stuff from wikipedia:
+
+Unfortunately, this translation leads to a serious problem of inconsistency. Indefinites must sometimes be interpreted as existential quantifiers, and other times as universal quantifiers, without any apparent regularity
+
+
+
+
+Another reason for studying to so called `donkey sentences' is their particular use of referants.
+
+
+
+The upshot of the foregoing observations is that, apparently, indefinites are neither quantifiers (dårlig konstruktion) nor referential (no farmer, etc.) terms, and this problem entrains another one, for as long as it unclear what indefinites mean, it will also remain obscure how they can serve as antecedents to pronouns. Later on we will see that very similar problems arise in seemingly disparate domains, like the interpretation of tense and presuppositions.
+
+(1)  A definite is used to refer to something that is already familiar at the current stage 
+of the conversation. An indefinite is used to introduce a new referent. 
+This has been  labeled the `familiarity  theory of definiteness.'
+When confronted with (l), the logically minded semanticist will notice immediately 
+that it  presumes  something  very  objectionable:  that  definites and indefinites  are 
+referring expressions.  For  only  if  there  is  a referent at  all  can there be  any question 
+of its familiarity or novelty
+
+In montague it is a function from verb to sentence
+
+If there is a Chompsky universal grammar, we should be able to make a simple logic over it??
 
 % Define block styles
 \tikzstyle{decision} = [diamond, draw, fill=blue!20,
@@ -109,7 +234,7 @@ In this paper we won't do anything about animal violence
     \node [block] (nl) {Natural Language};
     \node [block, right of=nl] (dr) {Dependency Representation};
     \node [block, right of=dr] (monad) {Enhanced DPL Representation};
-    \node [block, right of=monad] (dpl) {Dynamic Propositional Logic};
+    \node [block, right of=monad] (dpl) {Dynamic Predicate Logic};
     \node [block, right of=dpl] (prop) {First Order Logic};
     % Draw edges
     \path [line] (nl) -- (dr);
@@ -144,37 +269,10 @@ Week and strong readings, check this out \cite{kanazawa1994weak}
 
 In this paper we will not try to solve the above problem. (Though it could be interesting to generate multiple possibilities and perhaps use context to filter out the correct one). Instead we will try to show how some old method for doing this conversion can be enhanced with some new tools
 
-\begin{equation}
-\forall x . farmer(x) \rightarrow (\forall y . donkey(y) \wedge owns(x,y) \rightarrow beats(x,y))
-\end{equation}
-
-This one has problems with scope
-\begin{equation}
-\forall x (farmer(x) \wedge \exists y (donkey(y) \wedge owns(x,y) \rightarrow beats(x,y)))
-\end{equation}
-
-Moving the scope doesn't solve it, since now if there are two donkeys and he only owns one of them, the sentence will be true nomatter if he beats them or not. Also if he owns say a donkey and a horse, the left part of the implication would be vacously true and hence the beats part wouldn't matter.
-\begin{equation}
-\forall x \exists y (farmer(x) \wedge donkey(y) \wedge owns(x,y) \rightarrow beats(x,y))
-\end{equation}
 
 
-If a farmer owns a donkey he beats it
-\begin{equation}
-\forall x . farmer(x) \rightarrow (\forall y . donkey(y) \wedge owns(x,y) \rightarrow beats(x,y))
-\end{equation}
 
-There are a lot of problems with this representation
-\begin{itemize}
-  \item It is not compositional. 
-  dfdf
-  \item It doesn't very well follow the order of the original sentence
-  \item It is just not very easy to get right
-\end{itemize}
 
-More stuff from wikipedia:
-
-Unfortunately, this translation leads to a serious problem of inconsistency. Indefinites must sometimes be interpreted as existential quantifiers, and other times as universal quantifiers, without any apparent regularity
 
 More questions:
 
@@ -183,36 +281,6 @@ Should those three have the same meaning?
 [1b]  It is not the case that Jane doesn't like a painting.
 [1c]  Jane likes a painting and either it is raining or it isn't.
 
-
-\section{Formal Stuff}
-10 pagish
-
-This subsection's content...
-
-Background should introduce any information that is necessary for the examiner to understand your project. 
-The information here is generally more specific than the background given in the Introduction.
-Requirements gives the program requirements. These chapters prepare the ground for the Design chapter.
-That is: What do we need to handle to be able to solve this problem
-
-In particular, anaphora resolution is part of DRT, but in dynamic semantic systems anaphora resolution is assumed to be performed by a separate component of the theory
-
-\subsection{DPL}
-Dynamic semantics: http://plato.stanford.edu/entries/dynamic-semantics/
-
-growth of information in time
-Inspired by programming language
-not philosofically, states can be anything. I don't want to get into that
-isomorphic with normal logic (visser siger generalization/projection)
-doen't promise to be a perfect dual of natural language, but it's closer, and has been rewarding
-Dynamic semantics aims to model meaning and interpretation. You can do that without answering broader philosophical questions
-takes the meaning of concepts for given
-dynamic assignment language, discourse representation theory, file change, update semantics, 
-Jan van Eijck, Hans Kamp, Veltman, Groenendijk
-
-compoitionality. A man comes in. He sees a dog. He smiles.
-
-Vi har brug for en logik, der ikke behøver at vide alting fra starten
-
 direct translation not possible
 `He saw the man with the telescope'
 and even if we understand the syntax
@@ -220,222 +288,253 @@ and even if we understand the syntax
 has at least two meanings.
 interpretation of discourse is influenced and guided by the common ground that exists between speaker and hearer
 
-relation between sets of assignments
-$\{\overline{PQR}, \overline{PQ}R, \overline{P}Q\overline{R}, \overline{P}QR, P\overline{QR}, P\overline{Q}R, PQ\overline{R}, PQR\}$
 
-example
+\section{Formal Stuff (10)}
 
-real world example
+% This should be around 10 pages
+%Background should introduce any information that is necessary for the examiner to understand your project. 
+%The information here is generally more specific than the background given in the Introduction.
+%Requirements gives the program requirements. These chapters prepare the ground for the Design chapter.
+%That is: What do we need to handle to be able to solve this problem
 
-hvad med sudoku. I started er alle assignments mulige. Nae.. Men. hm
+Since we are going to experiment with converting language into logic, a natural place to start is with classical logic. Classical logic, also called Predicate logic (PL), is the logic of conjunction, disjunction and negation extended with universal and existential quantifiers.
 
-something about more information, less models
-the interpretation of false
+In the introduction chapter we saw that PL was rather lacking in terms of compositionality and we predicted that what we really wanted was an `update logic' (a logic with update semantics) of some sort. Update semantics are well known and studied in computer language theory, and have in the past couple of decades found their way into a wider range of philosophies.
 
-Something about kleiski combinator?
+The idea of all of those is a `growth of information in time'. Starting from little, and with each statement adding more. Information is here seen in the information theoretic way, where no information is when everything is possible ($\top$) and total information is when nothing is possible ($\bot$).
 
-the thing about quantifiers
-how they would work in a programming language
-$\exists x; A$
-$\exists x; x = 4$ hvis $x=4$ skal virke og reducere mængden af modeller, så må exists gøre dem alle sammen mulige
-
-A man comes in. En fri variabel vi ikke ved noget om.
-A man comes in. It's Thomas..
-
-we take as DPL-meanings binary relations between assignments
-
-later we will use an isomorphism and take them as functions from assignments to sets of assignments.
-
-\begin{equation}
-\phi ::= \bot \mid \top \mid \pi \mid \epsilon \mid \phi \cdot \phi \mid \lnot(\phi)
-\end{equation}
-\begin{equation}
-\alpha [\bot] \beta :\equiv False
-\end{equation}
-\begin{equation}
-\alpha [\top] \beta :\equiv \alpha = \beta
-\end{equation}
-\begin{equation}
-\alpha[P(x_0, ..., xn-1)]\beta :\equiv \alpha = \beta and (\alpha x0, ..., \alpha x n-1 ) \in I(P)
-\end{equation}
-
-\subsection{Connection with first order logic}
-
-normal logik kan også laves om til dpl. Nemt, bare brug not.not til at scope E.
-
-An alternative way of defining the semantics
-
-Shows that we aren't doing anything `odd' or `fancy'
-
-shows sound and complete wrt.
-
-Preconditions
-weakest phi sa <phi> pi <T> is still true
-
-Like hoare stuff
-
-inspired Dynamic assignment language \cite{eijck1992dynamic}
-Jan van Eijck 
-Fer-Jan de Vries 
-
-like using a stack
-
-$\alpha \models \langle\psi\rangle\phi$ iff there is an assignment $\beta$ with $\alpha[\psi]\beta$, and $\beta \models \phi$
-
-Definition of true and false $\alpha\models\phi :\leftrightarrow \exists\beta(alpha\phi\beta)$.
-
-%{
-
-%Det her skal med for at vi kan forsvare ligningerne
-
-%α[⊥]β :⇔ 0 ≠ 0.
-%α[⊤]β :⇔ α = β.
-%α[P(x0, …, xn−1)]β :⇔ α = β and ⟨αx0, …, αxn−1 ⟩ ∈ I(P), 
-%where P is a predicate symbol of Σ with arity n.
-%α[∃v]β :⇔ α[v]β, where α[v]β iff αw = βw, for all variables w ≢ v.
-%α[φ · ψ]β :⇔ ∃γ  α[φ]γ[ψ]β.
-%α[~(φ)]β :⇔ α = β and ∀γ  ¬ α[φ]γ.
+Logicians and lingusts have come up with many different update logics since the 80s. I will quickly describe the four most cited ones, to give an idea of the landscape we're working in:
 %
+\begin{itemize}
+\item Discourse Representation Theory, 1981 by Hans Kamp\cite{kamp1981theory}, is perhaps the best known approach to using update semantics for understanding language. Kamp takes a very philosophical approach, thinking of his logic as a model for how a person builds up a context during a conversation.
 
-Det giver ikke mening at skrive $\not\models[\psi]$ da typen af $[\psi]$ er en relation. Eller hvad?
-
+For example, say you you listen to `Some farmer owns no donkey. He beats it'. Discourse Representation Theory (DRT) builds this up from two blocks. Each consists of a set of referents and a set of properties using those. Underlined referents are referents that need to be `merged' with a properly `introduced' one:
+%
 \begin{align}
-\alpha[\psi_1\cdot\psi_2]\beta &:\leftrightarrow \exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma[\psi_2]\beta) \label{sem_and} \\
-\alpha[\psi_1\cup\psi_2]\beta &:\leftrightarrow \alpha[\psi_1]\beta \vee \alpha[\psi_2]\beta \label{sem_or} \\
-\alpha[P(x_1,\dots,x_n)]\beta &:\leftrightarrow \alpha = \beta \wedge P(\alpha_{x_1},\dots,\alpha_{x_n}) \label{sem_pred} \\
-\alpha[\neg\psi]\beta &:\leftrightarrow \alpha = \beta \wedge \alpha\not\models[\psi] \label{sem_neg}\\
-\alpha[\exists x]\beta &:\leftrightarrow \forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \label{sem_exists} \\
-\intertext{Using these we can derive the following:}
-\alpha[\bot]\beta &\leftrightarrow \alpha = \beta \wedge \bot \nonumber\\
-                  &\leftrightarrow \bot \label{sem_bot}\\
-\alpha[\top]\beta &\leftrightarrow \alpha = \beta \wedge \top \nonumber\\
-                  &\leftrightarrow \alpha = \beta \label{sem_top}\\
+&[_1 x\mid farmer(x), \neg[_2 y\mid donkey(y), owns(x,y)] ] \nonumber\\
+\oplus\ & [_1 \underline{v}, \underline{w}\mid beats(v,w) ] \nonumber
+\end{align}
+%
+The rule for `$\oplus$' is simply to do a disjoint union of the referents and the properties:
+%
+\begin{align}
+&[_1 x, \underline{v}, \underline{w}\mid farmer(x), \neg[_2 y\mid donkey(y), owns(x,y)], beats(v,w) ] \nonumber
+\end{align}
+%
+At this step it is possible to perform anaphora related heuristics. Since $x$ is the first paramter of $farmer$, we assume it should be so for $beats$ as well:
+%
+\begin{align}
+&[_1 x, \underline{v}, w\mid farmer(x), v=x, \neg[_2 y\mid donkey(y), owns(x,y)], beats(v,w) ] \nonumber\\
+&[_1 x, w\mid farmer(x), \neg[_2 y\mid donkey(y), owns(x,y)], beats(x,w) ]\nonumber
+\end{align}
+%
+On the other hand $y$ is not known in the scope of $beats$, so there is no way we can get rid of $w$. And we shouldn't, because in the sentence there is of course no way `it' can refer to `a donkey'.
+
+To deal with our example of `If a farmer owns...', DRT introduces more symbols for weak and strong conditionals.
+
+%In Discourse Representation Theory (DRT) our donkey sentence `If a farmer owns a donkey, he beats it' is represented as
+%\begin{align}
+%&[_1 x\mid Pedro(x), [_2 y, z\mid owns(y,z), donkey(z)] \Rightarrow [_3 v, w\mid beats(v,w)]] \nonumber
+%\intertext{This form is created from the syntax tree, and DRT then provides rules for eliminating variables and thus providing anaphora:}
+%&[_1 x, v: v = x, Pedro(x), [_2 y, z, w: y = x, w = y, owns(y,z), donkey(z)] \Rightarrow [_3 : beats(v,w)] ] \nonumber\\
+%&[_1 x: Pedro(x), [_2 z: donkey(z), owns(x,z)] \Rightarrow [_3 : beats(x,z)] ] \nonumber
+%\end{align}
+%The DRT merge
+
+\item File Change Semantics, 1982 by Irene Heim\cite{heim1983file}, are based around the puzzle of discourse `referents' which may, as we have seen, sometimes act like quantifiers, sometimes referents and sometimes anticedents. Heim suggests using so called `file cards' which though developed independently, has a lot in common with DRT.
+
+However, where DRT defines complex rules for merging different `discourse referents', in File Change Semantics (FCS) the part `added onto' a file gets to decide how the merge is made. Some how similar to how lambda functions in montague grammers give you a lot of flexibility. For example in case of `adding' $p$, an n-ary atomic predicate, to a file $F$:
+%
+\begin{align}
+&Sat(F + p) = \{a \in Sat(F) \mid R(a_{i_1}, \dots, a_{i_n})\} \nonumber
+\end{align}
+%
+Where $Sat$ is the function that takes a file to the set of `individuals' `satisfying' it.
+
+\item Mental Spaces, 1984 by Fauconnier\cite{fauconnier1984espaces}, is not really a logic in that it's not build on a model theoretic interpretation. It does however build on the same idea of `information growth' on a context representation. Mental Spaces (MS) represent the current context as a graph of predicates and variables:
+
+\tikzstyle{round} = [circle, draw, text width=3em, text centered]
+\begin{tikzpicture}[->, >=stealth', semithick, node distance = 3cm, auto]
+    % Place nodes
+    \node [round] (beats) {beats};
+    \node [round, below left of=beats] (x) {x};
+    \node [round, left of=x] (farmer) {farmer};
+    \node [round, below right of=beats] (z) {z};
+    \node [round, right of=z] (donkey) {donkey};
+    \node [round, below right of=x] (owns) {owns};
+    \node [round, below left of=owns] (y) {y};
+    % Draw edges
+    \path (beats) edge node {agt} (x);
+    \path (beats) edge node {obj} (z);
+    \path (z) edge node {dependent} (x);
+    \path (z) edge node {a} (donkey);
+    \path (x) edge node {every} (farmer);
+    \path (x) edge node {def-as} (y);
+    \path (owns) edge node {agt} (y);
+    \path (owns) edge node {obj} (z);
+\end{tikzpicture}
+
+Notice here in particular the interesting the `dependent' arrow. This arrow communicates that there is a one-many relationship between farmer and donkey, and hence that we are talking about a specific donkey for each farmer, not a single poor donkey beaten by everyone.
+
+\item Dynamic Predicate Logic, 1991 by Groenendijk and Stokhof\cite{groenendijk1991dynamic}, is what I will focus on in the remains of this paper. In contrast to some of the previous models, the authors of Dynamic Predicate Logic (DPL) don't make any big philosophical claims on connections between their model and the brain. Instead they simply create a logic that is isomorphic to PL, while keeping a reasonable ammount of `update semantics' like properties, such as being closer syntactically to natural language.
+
+DPL also doesn't provide any guidiance into resolving anaphora. Just like giving meaning to the actual concepts, this must be handled outside of the logic. We will see later in this paper that this stance makes sence, since the current state of the art anaphora resolvers are simply based on simple heuristics over noun phrases.
+
+In the end of this chapter we will see how a certain monadic construction by Visser can give us as much flexibility in DPL as we would get with a more involved system such as DRT or FCS.
+\end{itemize}
+
+\subsection{DPL}
+
+Dynamic Predicate Logic has been developed by a wide group of people: Jan van Eijck and Fer-Jan de Vries\cite{eijck1992dynamic}, Hans Kamp, Veltman, Groenendijk and Stokhof. It is the linguist version of Dynamic Logic invented by Pratt\cite{pratt1976semantical} which is again build on top of Floyd-Hoare Logic for reasoning about computer programs.
+
+The logic cleverly uses these advances in logical understanding to create an update logic in a pragmatic way, without any external constructs and a minimum of new syntax, while still getting all the benefits of compoitionality etc.
+
+To model a simple sentence `A man comes in. He sees a donkey. He smiles.', we write:
+%
+\begin{align}
+&(\exists x \cdot man(x) \cdot comes\_in(x)) \nonumber\\
+\cdot\ &(\exists y \cdot donkey(y) \cdot sees(x,y)) \nonumber\\
+\cdot\ &(smiles(x)) \nonumber
+\end{align}
+
+(The parenthesis is only for clarity. The logic is 100\% associative). Notice how we introduce referants casually as we progress in the discourse. We even manage to look pretty similar to PL at the same time. 
+
+Too understand the semantics of the above, let's start by only considering a dynamic propositional logic with three propositions: $P$, $Q$ and $R$. We'll write $p$ to indicate a predicate is true and $\overline{p}$ if it's false. We talked about earlier, that the update semantics modeled `growth of information over time', so we'll start with case that every $2^3$ state is possible:
+%
+\begin{align}
+\{\overline{PQR}, \overline{PQ}R, \overline{P}Q\overline{R}, \overline{P}QR, P\overline{QR}, P\overline{Q}R, PQ\overline{R}, PQR\} \label{dpl_all_states}
+\end{align}
+
+Now we'll consider a statement in our predicate logic as a relation between possible states. For example $P\overline{Q}R[P\cdot Q]P\overline{Q}R$ is false, while $P\overline{Q}R[P\cup Q]PQR$ is true. If we take the image of \eqref{dpl_all_states} under $P\cdot\neg Q$ we get
+%
+\begin{align}
+\{P\overline{QR}, P\overline{Q}R\} \label{dpl_PnQ_states}
+\end{align}
+
+If we then take the image of \eqref{dpl_PnQ_states} under $\overline{P}$ we end up with the empty set of states. That is there is no possible assignment satisfying our formula, and we consider it a falsum.
+
+The most interesting question is how we work with quantifiers. Which on earth relation could $\exists S$ be? We are going to take a hint from computer programming and consider the variable decleration: $S:=\bot$. We want to write this in DPL as $\exists S \cdot \neg S$, such that e.g. $P\overline{Q}[\exists S \cdot \neg S]P\overline{QS}$ is true. Now since $\cdot\neg S$ acts as a filter, removing all assignments that doesn't have $\overline{S}$, it must be that $\exists S$ is a `random reset, introducing $S$ and allowing it every value, such that $P\overline{Q}[\exists S]P\overline{QS}$ and $P\overline{Q}[\exists S]P\overline{Q}S$ are both true. The image of \eqref{dpl_all_states} under $\exists S$ has 16 possible states.
+
+Let's have a look at the model theoretic definition of the semantics. Visser builds this up in two steps: First a relational algebra and then DPL on top of it. But since DPL is bascailly identical to the relational algebra, we are going to try and do it in one step.
+
+Let a signature $\Sigma$ for DPL be a structure $\langle Pred, Ar, Var\rangle$. $Pred$ is the set of predicate symbols containing at least $=$, $\top$ and $\bot$. $Ar$ is the function from predicate symbols to their arity and in particular we have $Ar(=) \mapsto 2$, $Ar(\top) \mapsto 0$, $Ar(\bot) \mapsto 0$. Finally $Var$ is the set of variable symbols we may use. We are not going to work with constants in this treatment.
+
+We are further going to define:
+%
+\begin{align}
+Prop_\Sigma &= \{P(x_1,\dots,x_n) \mid P \in Pred,\ Ar(P)=n,\ x_1,\dots,x_n\in Var\}\\
+Reset_\Sigma &= \{\exists x \mid x\in Var\}\\
+Atom_\Sigma &= Var \cup Prop_\Sigma \cup Reset_\Sigma
+\end{align}
+
+A model $\mathcal{M}$ of a signature $\Sigma$ is a tuple $\langle\mathcal{D},\mathcal{I}\rangle$ where $\mathcal{D}$ is a domain which we will always set as $\{\top,\bot\}$, and $\mathcal{I}$ is the interpretation function $Prop_\Sigma\to\mathcal{D}$.
+
+The set of formulas we will say to be the smallest set $Form_\Sigma$ satisfying:
+\begin{align}
+&Atom_\Sigma \subseteq Form_\Sigma\\
+\text{If } \psi\in Form_\Sigma \text{ then } &\neg(\psi)\in Form_\Sigma\\
+\text{If } \psi_1,\psi_2\in Form_\Sigma \text{ then } &\psi_1\cdot\psi_2\in Form_\Sigma\\
+\text{If } \psi_1,\psi_2\in Form_\Sigma \text{ then } &\psi_1\cup\psi_2\in Form_\Sigma
+\end{align}
+
+We are also going to say that an assignment can satisfy a formula, defined as:
+\begin{align}
+\alpha\models\psi :\equiv \exists\beta(\alpha[\psi]\beta)
+\end{align}
+
+Let $[\cdot]$ be the interpretation function from syntax to relation. Then we define the semantics of our logic pointwise for all assignments $\alpha$ and $\beta$:
+\begin{align}
+\alpha[\psi_1\cdot\psi_2]\beta :\equiv&\ \exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma[\psi_2]\beta) \label{sem_and} \\
+\alpha[\psi_1\cup\psi_2]\beta :\equiv&\ \alpha[\psi_1]\beta \vee \alpha[\psi_2]\beta \label{sem_union} \\
+\alpha[P(x_1,\dots,x_n)]\beta :\equiv&\ \alpha = \beta \wedge \mathcal{I}(P(\alpha_{x_1},\dots,\alpha_{x_n})) \label{sem_pred} \\
+\alpha[\neg\psi]\beta :\equiv&\ \alpha = \beta \wedge \alpha\not\models[\psi] \label{sem_neg}\\
+\alpha[\exists x]\beta :\equiv&\ \forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \label{sem_exists} \\
+\intertext{Using those basic axioms we can derive for our built in propositions:}
+\alpha[\bot]\beta \leftrightarrow&\ \alpha = \beta \wedge \bot \nonumber\\
+                  \leftrightarrow&\ \bot \label{sem_bot}\\
+\alpha[\top]\beta \leftrightarrow&\ \alpha = \beta \wedge \top \nonumber\\
+                  \leftrightarrow&\ \alpha = \beta \label{sem_top}\\
 \intertext{Taking $\psi_1\rightarrow\psi_2$ to mean $\neg(\psi_1\wedge\neg\psi_2)$ we also get the following neat equation, originally by Groenendijk and Stokhof\cite{groenendijk1991dynamic}:}
 \alpha[\psi_1\rightarrow\psi_2]\beta
- &:\leftrightarrow \alpha[\neg(\psi_1\wedge\neg\psi_2)]\beta \nonumber\\
- &\leftrightarrow \alpha = \beta \wedge \alpha\not\models[\psi_1\wedge\neg\psi_2] \nonumber\\
- &\leftrightarrow \alpha = \beta \wedge \neg\exists\gamma(\alpha[\psi_1\wedge\neg\psi_2]\gamma) \nonumber\\
- &\leftrightarrow \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha[\psi_1]\delta\wedge\delta[\neg\psi_2]\gamma)) \nonumber\\
- &\leftrightarrow \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha[\psi_1]\delta\wedge\delta=\gamma\wedge\delta\not\models[\psi_2])) \nonumber\\
- &\leftrightarrow \alpha = \beta \wedge \forall\gamma(\forall\delta(\delta=\gamma\rightarrow(\alpha[\psi_1]\delta\rightarrow\delta\models[\psi_2]))) \nonumber\\
- &\leftrightarrow \alpha = \beta \wedge \forall\gamma(\alpha[\psi_1]\gamma\rightarrow\gamma\models[\psi_2]) \label{sem_impl}
+ :\equiv&\ \alpha[\neg(\psi_1\wedge\neg\psi_2)]\beta \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \alpha\not\models[\psi_1\wedge\neg\psi_2] \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\alpha[\psi_1\wedge\neg\psi_2]\gamma) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha[\psi_1]\delta\wedge\delta[\neg\psi_2]\gamma)) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha[\psi_1]\delta\wedge\delta=\gamma\wedge\delta\not\models[\psi_2])) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\forall\delta(\delta=\gamma\rightarrow(\alpha[\psi_1]\delta\rightarrow\delta\models[\psi_2]))) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha[\psi_1]\gamma\rightarrow\gamma\models[\psi_2]) \label{sem_impl}
 \end{align}
 
-Hence we can read implication as a the filter, that if you can get `through' $\psi_1$ then you must also be able to get through $\psi_2$. Also notice that $\gamma$ doesn't have to equal $\alpha$. Hence variables introduced in $\psi_1$ can bind variables in $\psi_2$. This will show to be extreamly important in the treatment of donkey sentences later.
+In my implementation section, I describe how the above can be efficiently implemented in Haskell using an isomorphism between relations $\mathcal{P}(A\times B)$ and functions $A\to\mathcal{P}(B)$. I also show how the kleiski combinator takes the role of $\cdot$.
 
-Talking about binding, also notice that our union or `or' construct is a bit special. $\psi_1$ and $\psi_2$ cannot bind variables in each other, but in $(\psi_1\cup\psi_2)\cdot\psi_3$ they can both bind variables in $\psi_3$. This is going to introduce a lot of weird situations later. An alternative definition of `or': $\neg(\neg\psi_1\cdot\neg\psi_2)$ will also be considered.
+However let's first look at some of the implications of the above definitions. For example, how can we intuitively understand the DPL notion of $\rightarrow$? Well, first notice that many of the eqations start with $\alpha=\beta\wedge\dots$. These equations we can think of intuitively as having a closed scope. We saw earlier how DRT nicely determined that the `it' in `A farmer doesn't own a donkey. He beats it' couldn't refer to `a donkey' because the negation didn't let it's variable out. In DPL we get the same effect. Because an assignment must be the same before and after a negated clause, all new variables introduced inside the clause have disappeared.
 
-For \eqref{sem_pred} $P$ is a predicate symbol of $\Sigma$ with arity n.
+The DPL $\psi_1\rightarrow\psi_2$ in particular can be seen as the filter, that if you can get `through' $\psi_1$ then you must also be able to get through $\psi_2$. But notice that $\gamma$ doesn't have to equal $\alpha$. Hence variables introduced in $\psi_1$ can well bind variables in $\psi_2$. This will show to be extreamly important in the treatment of donkey sentences later.
 
-static negation. DOesn't allow new things. LIke a filter
-
-some people have a closed/static or: $\neg(\neg\psi_1\wedge\neg\psi_2)$ \cite{groenendijk1991dynamic}
-
-%Notice that \eqref{sem_bot} and \eqref{sem_top} are special cases of \eqref{sem_pred}.
-
-We are going to introduce formuals that allow us to recursively convert any DRA formula into PL.
-
-To smoothen the following proofs, we will introduce a special syntax `$\langle\psi\rangle\phi$' where $\psi$ is a DRA formula, $\phi$ is a PL formula and the whole thing is a PL formula. For some assignment $\alpha$, we define `$\alpha\models\langle\psi\rangle\phi$' to mean $\exists\beta(\alpha[\psi]\beta \wedge \beta\models\phi)$.
-
-\begin{align}
-\alpha\models\langle\exists x\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\exists x]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\exists\nu (\forall\omega (\alpha[x:=\nu]_{\omega} = \beta_{\omega})) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\exists\nu (\alpha[x:=\nu] = \beta) \wedge \beta\models\phi) \nonumber\\
-% & \leftrightarrow \exists\nu (\exists\beta (\alpha[x:=\nu] = \beta \wedge \beta\models\phi)) \nonumber\\
- & \leftrightarrow \exists\nu (\alpha[x:=\nu]\models\phi) \nonumber\\
- & \leftrightarrow \alpha\models\exists x (\phi) \label{conv_exists}\\\nonumber\\
-%
-\alpha\models\langle\psi_1\cdot\psi_2\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\psi_1\cdot\psi_2]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta(\exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma[\psi_2]\beta) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\gamma (\alpha[\psi_1]\gamma \wedge \exists\beta(\gamma[\psi_2]\beta \wedge \beta\models\phi)) \nonumber\\
- & \leftrightarrow \exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma\models\langle\psi_2\rangle\phi) \nonumber\\
- & \leftrightarrow \alpha\models\langle\psi_1\rangle\langle\psi_2\rangle\phi \label{conv_and}\\\nonumber\\
-%
-\alpha\models\langle\psi_1 \cup \psi_2\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\psi_1 \cup \psi_2]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta ((\alpha[\psi_1]\beta \vee \alpha[\psi_2]\beta) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha[\psi_1]\beta \wedge \beta\models\phi) \vee \exists\beta (\alpha[\psi_2]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow (\alpha\models\langle\psi_1\rangle\phi) \vee (\alpha\models\langle\psi_2\rangle\phi) \nonumber\\
- & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi \label{conv_or}\\\nonumber\\
-%
-\alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[P(x_1,\dots,x_n)]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha = \beta \wedge P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \alpha\models P(x_1,\dots,x_n) \wedge \phi \label{conv_pred}\\\nonumber\\
-%
-\alpha\models\langle\neg\psi\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\neg\psi]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha=\beta \wedge \neg\exists\gamma(\alpha[\psi]\gamma) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \neg\exists\gamma(\alpha[\psi]\gamma) \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \neg\exists\gamma(\alpha[\psi]\gamma \wedge \gamma\models\top) \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \alpha\not\models\langle\psi\rangle\top \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \alpha\models \neg\langle\psi\rangle\top \wedge \phi \label{conv_neg}
-\end{align}
-
-Notice that $\alpha\models\langle\bot\rangle\phi$ and $\alpha\models\langle\top\rangle\phi$ follow trivially from \eqref{conv_pred}.
-
-\begin{haskell}
-addDpl :: Prop -> [DPL] -> Prop
-addDpl p [] = p
-addDpl p (DF:ds) = F
-addDpl p (DT:ds) = addDpl p ds
-addDpl p ((DPredi f ks):ds) = addDpl (And (Predi f ks) p) ds
-addDpl p ((DExists k):ds) = addDpl (Exist k p) ds
-addDpl p ((DComp d1 d2):ds) = addDpl p (d2:d1:ds) -- backwards
-addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
-addDpl p ((DImpl d1 d2):ds) = addDpl p ((DNot (DComp d1 (DNot d2))):ds)
-addDpl p ((DOr d1 d2):ds) = addDpl (And (Or (addDpl T [d1]) (addDpl T [d2])) p) ds
-\end{haskell}
+Talking about binding, also notice that our union or `or' construct is a bit special. $\psi_1$ and $\psi_2$ cannot bind variables in each other, but in $(\psi_1\cup\psi_2)\cdot\psi_3$ they can both bind variables in $\psi_3$. This is going to introduce a lot of weird situations later. In the next section we will look closer at these problems, and also consider the alternative definition of `or': $\neg(\neg\psi_1\cdot\neg\psi_2)$.
 
 \subsection{The problem with disjunction}
 
+Having defined seamingly very sound semantics for DPL above, we may start to notice certain oddities about our choice of using the relation union for `or'. An obvious alternative would have been the closed/static $\neg(\neg\psi_1\wedge\neg\psi_2)$ or $\neg\psi_1\rightarrow\psi_2$ considered by Groenendijk\cite{groenendijk1991dynamic}.
+
+Actually there is an obvious definition of `or' that we have totally ignored in the previous chapter:
+\begin{align}
+\alpha[\psi_1\vee\psi_2]\beta
+ :\equiv&\ \alpha[\neg(\neg\psi_1\wedge\neg\psi_2)]\beta \nonumber\\
+ \leftrightarrow&\ \alpha[\neg\psi_1\rightarrow\psi_2)]\beta \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha[\neg\psi_1]\gamma\rightarrow\gamma\models[\psi_2]) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma((\alpha=\gamma\wedge\gamma\not\models\psi_1)\rightarrow\gamma\models[\psi_2]) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha=\gamma\rightarrow(\gamma\models\psi_1\vee\gamma\models\psi_2)) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge (\alpha\models\psi_1\vee\alpha\models\psi_2) \label{sem_or}
+\end{align}
+
+So does this fix our problem of binding between clauses? No. In fact this definition doesn't even allow binding from a clause and out.
 
 a farmer doesn't own a horse or a donkey
-
-Ex.farmer(x) . ~(Ey.horse(y).owns(x,y) v Ey.donkey(y).owns(x,y))
-Ex.farmer(x) . ~Ey.horse(y).owns(x,y) . ~Ey.donkey(y).owns(x,y)
+\begin{align}
+\exists x\cdot farmer(x) \cdot \neg(\exists y\cdot horse(y)\cdot owns(x,y) v \exists y\cdot donkey(y)\cdot owns(x,y))\nonumber\\
+\exists x\cdot farmer(x) \cdot \neg\exists y\cdot horse(y)\cdot owns(x,y) \cdot \neg \exists y\cdot donkey(y)\cdot owns(x,y)\nonumber
+\end{align}
 
 a farmer beats a horse or a donkey
-
-Ex.farmer(x).(Ey.horse(y) v Ez.donkey(z)).beats(x,y) = {Nothing, Ex.farmer(x).EyJust .horse(y).beats(x,y)}
-
-Ex.farmer(x).~((Ey.horse(y) v Ez.donkey(z)).beats(x,y)) =
-Ex.farmer(x).(~Ey.horse(y).~Ez.donkey(z) v ~beats(x,y)) = {Nothing, Ex.farmer(x).~Ey.horse(y).~Ez.donkey(z)}
-
-Ex.farmer(x).~(tall(x) v blue(x)) = Ex.famer(x).~tall(x).~blue(x)
+\begin{align}
+&Ex.farmer(x).(Ey.horse(y) v Ez.donkey(z)).beats(x,y) = \\
+&\{Nothing, Ex.farmer(x).EyJust .horse(y).beats(x,y)\}\\
+\\
+&Ex.farmer(x).~((Ey.horse(y) v Ez.donkey(z)).beats(x,y)) = \\
+&Ex.farmer(x).(~Ey.horse(y).~Ez.donkey(z) v ~beats(x,y)) = \\
+&\{Nothing, Ex.farmer(x).&~Ey.horse(y).~Ez.donkey(z)\}\\
+\\
+&Ex.farmer(x).~(tall(x) v blue(x)) = Ex.famer(x).~tall(x).~blue(x)
+\end{align}
 
 There is a farmer who maybe has a donkey. He beats it.
-Ex.farmer(x).(Ey.donkey(y) v false).beats(x,y)
+$Ex.farmer(x).(Ey.donkey(y) v false).beats(x,y)$
 With union semantics for v this would be equal to
-Ex.farmer(x).Ey.donkey(y).beats(x,y)
+$Ex.farmer(x).Ey.donkey(y).beats(x,y)$
 which is stupid.
 Intead with sets of relations, this would be equal to
-Ex.farmer(x).Ey.donkey(y).beats(x,y) v Ex.farmer(x).false.beats(x,y)
+$Ex.farmer(x).Ey.donkey(y).beats(x,y) v Ex.farmer(x).false.beats(x,y)$
 the right side being an error? no
 
 If a farmer is not poor he owns a donkey. He beats it.
-Ex.farmer(x).~poor(x) -> Ey.donkey(y).owns(x,y).beats(x,y)
+$Ex.farmer(x).~poor(x) -> Ey.donkey(y).owns(x,y).beats(x,y)$
 
 A farmer is either poor or he owns a donkey. He beats it.
-Ex.farmer(x).(poor(x) v Ey.donkey(y).owns(x,y)).beats(x,y) =
+$Ex.farmer(x).(poor(x) v Ey.donkey(y).owns(x,y)).beats(x,y) =$
 
-(Ex v false) . f(x)
-(exist x `union` false) [] = [[("x",0)],[("x",1)],[("x",2)]
-[Nothing, Just [[("x",0)],[("x",1)],[("x",2)]]]
+%(Ex v false) . f(x)
+%(exist x `union` false) [] = [[("x",0)],[("x",1)],[("x",2)]
+%[Nothing, Just [[("x",0)],[("x",1)],[("x",2)]]]
 
+%(Ex v false) = [Just [[("x",0)],[("x",1)],[("x",2)], Just []]
+%not (Ex v false) =
 
-(Ex v false) = [Just [[("x",0)],[("x",1)],[("x",2)], Just []]
-not (Ex v false) =
-
-not (Ex v f(x))
-= ~Ex.~f(x)
+%not (Ex v f(x))
+%= ~Ex.~f(x)
 
 A farmer owns a horse or a donkey
-Ex.farmer(x).~(~(Ey.horse(y)).~(Ey.donkey(y))).owns(x,y)   this surely doesn't work
+$Ex.farmer(x).~(~(Ey.horse(y)).~(Ey.donkey(y))).owns(x,y)$   this surely doesn't work
 
 
 nothing survives out of a not (or impl) it's normal. Don't worry about it
@@ -466,6 +565,52 @@ This is needed for a treatment of examples such as:
 not on the ground floor.
 
 Den ene giver mulighed for at binde fra a til b. Den anden giver mulighed for at begge dele binder res
+
+hvad hvis vi puttede vissers disjoint union stuff into the monad?
+
+\subsection{Connection with first order logic}
+
+An interesting property of DPL is that it is isomorphic with classical logic. Any PL formula corresponds to one in DPL and vice versa. This gives an alternative way to define and understand the semantics of DPL, and it relaxes us that nothing `weird' is going on. We might also be a bit disappointed that after all this, we don't possess any extra power, but let's forget about that for now, and see how the conversion works.
+
+Let $\phi$ be a formula in negation normal form, or something. Hmm, come back here once the disjunction chapter is done.
+\begin{align}
+&[\exists x(\phi)] \equiv \neg(\neg(\exists x \cdot [\phi]))\\
+&[\forall x(\phi)] \equiv \exists x \rightarrow [\phi]\\
+&[\phi_1\wedge\phi_2] \equiv [\phi_1]\cdot[\phi_2]\\
+&[\phi_1\vee\phi_2] \equiv \dots\\
+&[\neg(\exists x)] \equiv \dots\\
+&[\neg(\phi_1\wedge\phi_2)] \equiv \neg[\phi_1]\cdot\neg[\phi_2]\\
+&[\neg(\phi_1\vee\phi_2)] \equiv \dots
+\end{align}
+
+Similarly we may create PL formulas with the same meaning as any DPL formula. But perhaps we should be a bit conserned on how to interpret the meaning of a PL formula and a DPL formula being equivalent. After all DPL formulas are relations where PL formulas a propositions. In the above it was all easy, but let's think again about what we are doing.
+
+Remember that we said an assignment could model a DPL relation. If we consider the truth value of a DPL relation to be whether there exists any relation that models it $\exists\alpha(\alpha\models\psi)$, we can use a trick. The trick is to think of the weakest precondion such an assignment must satisfy, and model that in PL. In fact the precondition is not just for our assignment, but for the entire model. For example to model $\exists x\cdot farmer(x)$ the starting assignment might well be empty ($\bot$), but our model must contain an entity for which $farmer$ is true.
+
+To smoothen the following derivations, we will introduce a special syntax `$\langle\psi\rangle\phi$' where $\psi$ is a DRA formula, $\phi$ is a PL formula and the whole thing is a PL formula. For some assignment $\alpha$, we define `$\alpha\models\langle\psi\rangle\phi$' to mean $\exists\beta(\alpha[\psi]\beta \wedge \beta\models\phi)$.
+%
+\begin{align}
+\alpha\models\langle\exists x\rangle\phi
+ & \leftrightarrow \alpha\models\exists x (\phi) \label{conv_exists}\\
+\alpha\models\langle\psi_1\cdot\psi_2\rangle\phi
+ & \leftrightarrow \alpha\models\langle\psi_1\rangle\langle\psi_2\rangle\phi \label{conv_and}\\
+\alpha\models\langle\psi_1 \cup \psi_2\rangle\phi
+ & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi \label{conv_or}\\
+\alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
+ & \leftrightarrow \alpha\models P(x_1,\dots,x_n) \wedge \phi \label{conv_pred}\\
+\alpha\models\langle\neg\psi\rangle\phi
+ & \leftrightarrow \alpha\models \neg\langle\psi\rangle\top \wedge \phi \label{conv_neg}
+\end{align}
+
+Notice that $\alpha\models\langle\bot\rangle\phi\leftrightarrow a\models\bot$ and $\alpha\models\langle\top\rangle\phi\leftrightarrow a\models\phi$ follow trivially from \eqref{conv_pred}. For my full derivation of these equations, see the appendix.
+
+In the implementation we will use the above equations to recursively convert our DPL formulas to PL. The $\langle\rangle$ notation easily lends itself to calculation by a stak manipulation function.
+
+The rules will look like:
+\begin{haskell}
+addDpl :: Prop -> [DPL] -> Prop
+addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
+\end{haskell}
 
 \subsubsection{Weird disjunctive subjects}
 
@@ -662,6 +807,8 @@ quantified noun phrases or negations - are often ambiguous.
 %- ∀x(student(x) ⇒ ∃y(book(y) ∧ read(y)(x)))
 %- ∃y(book(y) ∧ ∀x(student(x) ⇒ read(y)(x)))
 
+Every farmer owns a donkey. It is pink. Second sentence decides the reading.
+
 \subsection{Dependencies}
 
 Extracted from parse trees using tregex\cite{de2006generating}
@@ -819,9 +966,7 @@ The Stanford procedure above is currently the strongest competitor in various co
 \subsection{Semantics via dependencies}
 This subsection's content...
 
-\section{Implementation}
-8pagish
-This subsubsection's content...
+\section{Implementation (8)}
 
 There is not a big first order logic component in my project, but in the following it will often be useful to refer to the following structure
 
@@ -1000,8 +1145,7 @@ JDT debugger itself. However, this test still shows the usability of the code in
 that the code can cope with the different types of back links and cross links that can occur in a memory 
 graph.
 
-\section{Perspectives/Conclusions}
-2pagish
+\section{Perspectives/Conclusions (2)}
 
 What I learned
 
@@ -1041,7 +1185,7 @@ Should I make my latex file literate haskell? %bhttp://www.haskell.org/haskellwi
 
 \lstinputlisting[language=Haskell]{Main.hs}
 
-\section*{Acknowledgements}
+\section{Acknowledgements}
 Thanks to Samson
 
 This section's content...\cite{visser1999donkey}
@@ -1053,6 +1197,57 @@ the PCFG parser\cite{klein2003accurate}
 \subsection{Checklist}
 Things learned from courses
 
+\newpage
+\section{Appendix}
+\subsection{Derivation of DPL preconditions}
+\begin{align}
+\alpha\models\langle\exists x\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha[\exists x]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\exists\nu (\forall\omega (\alpha[x:=\nu]_{\omega} = \beta_{\omega})) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\exists\nu (\alpha[x:=\nu] = \beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\nu (\exists\beta (\alpha[x:=\nu] = \beta \wedge \beta\models\phi)) \nonumber\\
+ & \leftrightarrow \exists\nu (\alpha[x:=\nu]\models\phi) \nonumber\\
+ & \leftrightarrow \alpha\models\exists x (\phi) \\
+%
+\intertext{Here we take $\alpha[x:=\nu]$ to mean the $\alpha$ with $\alpha_x$ assigned to the value of $\nu$.}
+%
+\alpha\models\langle\psi_1\cdot\psi_2\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha[\psi_1\cdot\psi_2]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta(\exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma[\psi_2]\beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\gamma (\alpha[\psi_1]\gamma \wedge \exists\beta(\gamma[\psi_2]\beta \wedge \beta\models\phi)) \nonumber\\
+ & \leftrightarrow \exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma\models\langle\psi_2\rangle\phi) \nonumber\\
+ & \leftrightarrow \alpha\models\langle\psi_1\rangle\langle\psi_2\rangle\phi
+%
+\intertext{c}
+%
+\alpha\models\langle\psi_1 \cup \psi_2\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha[\psi_1 \cup \psi_2]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta ((\alpha[\psi_1]\beta \vee \alpha[\psi_2]\beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha[\psi_1]\beta \wedge \beta\models\phi) \vee \exists\beta (\alpha[\psi_2]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow (\alpha\models\langle\psi_1\rangle\phi) \vee (\alpha\models\langle\psi_2\rangle\phi) \nonumber\\
+ & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi
+%
+\intertext{d}
+%
+\alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha[P(x_1,\dots,x_n)]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha = \beta \wedge P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \alpha\models P(x_1,\dots,x_n) \wedge \phi
+%
+\intertext{f}
+%
+\alpha\models\langle\neg\psi\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha[\neg\psi]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha=\beta \wedge \neg\exists\gamma(\alpha[\psi]\gamma) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \neg\exists\gamma(\alpha[\psi]\gamma) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \neg\exists\gamma(\alpha[\psi]\gamma \wedge \gamma\models\top) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \alpha\not\models\langle\psi\rangle\top \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \alpha\models \neg\langle\psi\rangle\top \wedge \phi
+%
+\intertext{e}\nonumber
+\end{align}
 
 \bibliographystyle{plain}
 \bibliography{refs}
