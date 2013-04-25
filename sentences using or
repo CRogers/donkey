@@ -1,0 +1,46 @@
+
+a farmer doesn't own a horse or a donkey
+\begin{align}
+\exists x\cdot farmer(x) \cdot \neg(\exists y\cdot horse(y)\cdot owns(x,y) \vee \exists y\cdot donkey(y)\cdot owns(x,y))\nonumber\\
+\exists x\cdot farmer(x) \cdot \neg\exists y\cdot horse(y)\cdot owns(x,y) \cdot \neg \exists y\cdot donkey(y)\cdot owns(x,y)\nonumber
+\end{align}
+
+a farmer beats a horse or a donkey
+\begin{align}
+&Ex.farmer(x).(Ey.horse(y) v Ez.donkey(z)).beats(x,y) = \\
+&\{Nothing, Ex.farmer(x).EyJust .horse(y).beats(x,y)\}\\
+\\
+&Ex.farmer(x).~((Ey.horse(y) v Ez.donkey(z)).beats(x,y)) = \\
+&Ex.farmer(x).(~Ey.horse(y).~Ez.donkey(z) v ~beats(x,y)) = \\
+&\{Nothing, Ex.farmer(x).&~Ey.horse(y).~Ez.donkey(z)\}\\
+\\
+&Ex.farmer(x).~(tall(x) v blue(x)) = Ex.famer(x).~tall(x).~blue(x)
+\end{align}
+
+There is a farmer who maybe has a donkey. He beats it.
+$Ex.farmer(x).(Ey.donkey(y) v false).beats(x,y)$
+With union semantics for v this would be equal to
+$Ex.farmer(x).Ey.donkey(y).beats(x,y)$
+which is stupid.
+Intead with sets of relations, this would be equal to
+$Ex.farmer(x).Ey.donkey(y).beats(x,y) v Ex.farmer(x).false.beats(x,y)$
+the right side being an error? no
+
+If a farmer is not poor he owns a donkey. He beats it.
+$Ex.farmer(x).~poor(x) -> Ey.donkey(y).owns(x,y).beats(x,y)$
+
+A farmer is either poor or he owns a donkey. He beats it.
+$Ex.farmer(x).(poor(x) v Ey.donkey(y).owns(x,y)).beats(x,y) =$
+
+%(Ex v false) . f(x)
+%(exist x `union` false) [] = [[("x",0)],[("x",1)],[("x",2)]
+%[Nothing, Just [[("x",0)],[("x",1)],[("x",2)]]]
+
+%(Ex v false) = [Just [[("x",0)],[("x",1)],[("x",2)], Just []]
+%not (Ex v false) =
+
+%not (Ex v f(x))
+%= ~Ex.~f(x)
+
+A farmer owns a horse or a donkey
+$Ex.farmer(x).~(~(Ey.horse(y)).~(Ey.donkey(y))).owns(x,y)$   this surely doesn't work

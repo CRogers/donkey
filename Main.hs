@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Stanford (run, runDry)
-import Prop (Prop)
+import Prop (Prop, tostring)
 import ToLogic (logify)
 
 import Data.List
@@ -36,7 +36,7 @@ main = do
 			"A man comes in. He sees a dog. He smiles." -- very sequential
 			]
 		putStrLn "Test2"
-		sequence (map print props)
+		sequence (map (print.tostring) props)
 		return ()
 
 {-

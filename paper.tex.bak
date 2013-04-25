@@ -84,7 +84,7 @@
 
 A donkey sentence is a sentence with a pronoun that is bound in semantics, but not in syntax. This make them difficult to capture in the scope of ordinary logic. In this paper we explore some of the ways that have been proposed to tackle this problem, in particular Albert Visser's e-monoid extension of Dynamic Predicate Logic, which allows us to write formulas deceivingly similarly looking to natural language.
 
-We explain those concepts in depth, deriving or proving every result stated. We then start looking into implementing the logic on a computer, experimenting with different ways of defining the semantics. We further explore state of the art tools for dependency parsing and coreference resolution, the workings of which we also explain in depth.
+We explain those concepts in depth, deriving or proving every result stated. We then start looking into implementing the logic on a computer, experimenting with different ways of defining the semantics. We further explore state of the art tools for dependency parsing and corefference resulution, the workings of which we also explain in depth.
 
 Finally we put it all together in the Haskell programming language. We test out our machinery on a range of different sentences, showing all the converting steps from natural language to propositional logic. The problem is hard and the result is far from perfect, but it shows some interesting and less explored possibilities in computational linguistics.
 
@@ -111,17 +111,17 @@ There are many reasons why it is interesting to represent information in a logic
 
 Getting computers to understand and work with natural language is arguably on of the biggest challenges in information technologies this day. Hence if we could move the problem into the space of formal logic, it would be a fantastic accomplishment. Unfortunately many people have pointed out, that classical logic doesn't have the power to express most of the sentences people casually express on a daily basis.
 
-To draw up this point, let's first look at a sentence that easily lets itself convert and then a couple that don't:
+To draw up this point, let's first look at a sentence that easily lets itself convert and then a couple that dont:
 \begin{itemize}
 \item `Socrates is a donkey': $donkey(Socrates)$. This is a classical logical example, treating Socrates as a constant. If we want to do without constants we can write: $\forall x(Socrates(x)\rightarrow donkey(x))$, though this does allow more than one Socrates to exist.
-\item `All his donkeys are treated well': This sentence somewhat willingly let's itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ referring to some person from earlier in the discourse.
+\item `All his donkeys are treated well': This sentence somewhat willingly let's itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ refering to some person from earlier in the discourse.
 \item `Every farmer beats his donkey': This sentence clearly has two possible meanings: $\exists y(his(x,y)\wedge donkey(y)\wedge \forall z(farmer(z) \rightarrow beats(z,y))$ if there is only one donkey, and $\forall x(farmer(x)\rightarrow \exists y (beats(x,y)\wedge his(x,y)\wedge donkey(y))$ if there is a donkey for each farmer.
-\item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesn't\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'.
+\item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesnt\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'.
 \item `They donkeys are cold': This is an often used example of an `implied action sentence' and thought to have the same meaning as `Please close the stable door'. The best we can do here seems to be $please\_close\_the\_stable\_door()$ or perhaps $\exists x(stable\_door(x)\wedge please\_close(x))$.
-\item `Jane likes a painting': This is easy to translate to logic, but are we comfortable that it has the same meaning as the sentence `It is not the case that Jane doesn't like a painting' and even `Jane likes a painting and either it is raining or it isn't'? It is hard to imagine a language with strong logical foundations, where those three sentences wouldn't be equal.
+\item `Jane likes a painting': This is easy to translate to logic, but are we comfortable that it has the same meaning as the sentence `It is not the case that Jane doesn't like a painting' and even `Jane likes a painting and either it is raining or it isn't'? It is hard to immagine a language with strong logical foundations, where those three sentences wouldn't be equal.
 \end{itemize}
 
-In this paper we will work with a subset of English that translate reasonably well into logic. This unfortunately means that arguably the majority of sentences will be inaccessible to our methods. We will take a shot at ambiguous sentences like the third one though.
+In this paper we will work with a subset of English that translate reasonably well into logic. This unfortunately means that arguably the majority of sentences will be unaccesible to our methods. We will take a shot at ambigious sentences like the third one though.
 
 %TODO: Perhaps this should be moved to the aknowledgements or something. It sets a very demoralizing tone during the rest of the paper.
 Even more unfortunate than the problems above is it that we won't be able to do anything about the concerning welfare for donkeys around the world\cite{donkey2013sanctuary}, but must restrict ourselves to simply pointing it out. We will follow Geach\cite{geach1962reference} on this, and make `If a farmer owns a donkey, he beats it' our primary object of study.
@@ -136,38 +136,38 @@ This is arguably the formula that first comes to mind for a moderately trained l
 \exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y) \rightarrow beats(x,y))) \label{wrong_donkey_2}
 \end{align}
 %
-Moving the implication into the scope of $x$ also doesn't work. Sentence \eqref{wrong_donkey_2} evaluates to true as long as a single farmer beats his donkey. In fact as long as a farmer exists it evaluates to true, since plugging the farmer into the $donkey$ predicate makes the antecedent false.
+Moving the implication into the scope of $x$ also doesn't work. Sentence \eqref{wrong_donkey_2} evaluates to true as long as a single farmer beats his donkey. In fact as long as a farmer exists it evaluates to true, since plugging the farmer into the $donkey$ predicate makes the anticedent false.
 %
 \begin{align}
 \forall x (farmer(x) \rightarrow \forall y ( owns(x,y) \wedge donkey(y) \rightarrow beats(x,y))) \label{correct_donkey}
 \end{align}
 %
-This turns out to be the correct formula. At least as long as you consider the use of `all' in natural language equal to the `all' in logic, which can be vacuously true.
+This turns out to be the correct formula. At least as long as you consider the use of `all' in natural language equal to the `all' in logic, which can be vacously true.
 
 So what is going on? Most people think of determinates `the donkey' and indeterminates `a donkey' as being a reference to an existing donkey and an `introduction' of some new donkey into the conversation. However in a lot of sentences this turns out to not be the case. There doesn't seam to any simple way to translate them into logic. Even less does it seem intuitive how to use them as antecedents to pronouns.
 
-The common way to deal with this problem is to make a big jump in power. Using a Montague Grammar we can define any noun phrase (NP) as a function from a verb phrase (VP) to a sentence. This way `if a farmer' might be a function $VP \to S \to S$, but even with this power, a working function is not easy to construct\cite{montague1973proper}.
+The comon way to deal with this problem is to make a big jump in power. Using a Montague Grammar we can define any noun phrase (NP) as a function from a verb phrase (VP) to a sentence. This way `if a farmer' might be a function $VP \to S \to S$, but even with this power, a working function is not easy to construct\cite{montague1973proper}.
 
-Another problem with sentence \eqref{correct_donkey} is a lack of compositionality. This property which is vital if we want to build up a meaning of a conversation piece by piece. Say for example that our primary sentence was followed by the sentence `He also feeds it': $feed(x,y)$. How do we combine the first and the second sentence to give the meaning $\forall x(farmer(x)\rightarrow \forall y(owns(x,y)\wedge donkey(y)\rightarrow beat(x,y)\wedge feed(x,y)))$?
+Another problem with sentence \eqref{correct_donkey} is a lack of compositionality. This property which is vital if we want ot build up a meaning of a conversation piece by piece. Say for example that our primary sentence was followed by the sentence `He also feeds it': $feed(x,y)$. How do we combine the first and the second sentence to give the meaning $\forall x(farmer(x)\rightarrow \forall y(owns(x,y)\wedge donkey(y)\rightarrow beat(x,y)\wedge feed(x,y)))$?
 
 The point is that there is simply not a way to do this in PL. All variables in a formula are always closed off in their scope, and there are no logical operators that can `push' a new predicate into a closed scope. Our previous case might be a bit unfair, since we were trying to push something into a complicated implication, but even in case of the simple sentences `There is a farmer. He owns a donkey.' we wouldn't be able to build a meaning from the pieces.
 
 One could argue that we can simply obtain compositionality using Montague functions like we discussed earlier (and will discuss more deeply in a later chapter), but what would be really nice is to have a simple logic that simply has these things built in. In this paper we are going to look into not only one, but a couple of such logics. In these logics we will be able to write things such as:
 %
 \begin{align}
-(\exists x \cdot farmer(x)) \cdot (\exists y \cdot donkey \cdot owns(x,y))
+(\exists x \cdot famer(x)) \cdot (\exists y \cdot donkey \cdot owns(x,y))
 \end{align}
 %
 Here the variables survive throughout the formula, which allows us to concatenate it with other formulas. The parenthesis are associative, so we don't even need them.
 Later in the paper we will also look at a logic allowing us to write:
 %
 \begin{align}
-(\bowtie \cdot \exists x \cdot Farmer(x) \cdot \exists y \cdot donkey(y) \cdot owns(x,y) \cdot \bowtie beats(x,y)) \cdot feeds(x,y)
+(\bowtie \cdot \exists x \cdot famer(x) \cdot \exists y \cdot donkey(y) \cdot owns(x,y) \cdot \bowtie beats(x,y)) \cdot feeds(x,y)
 \end{align}
 %
 Which allows us to be compositional even in the case of implications.
 
-It is interesting to consider whether such logics can give us something on the way of translating speech to logic. In this paper we are going to look into exactly that, and we will combine it with the best available tools for dependency analysis and coreference resolution. This is the game plan:
+It is interesting to consider whether such logics can give us something on the way of translating speach to logic. In this paper we are going to look into exactly that, and we will combine it with the best available tools for dependency analysis and coreference resolution. This is the game plan:
 \vspace{1em}
 \tikzstyle{decision} = [diamond, draw, fill=blue!20,
     text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
@@ -204,7 +204,7 @@ In the introduction chapter we saw that PL was rather lacking in terms of compos
 
 The idea of all of those is a `growth of information in time'. Starting from little, and with each statement adding more. Information is here seen in the information theoretic way, where no information is when everything is possible ($\top$) and total information is when nothing is possible ($\bot$).
 
-Logicians and linguists have come up with many different update logics since the 80s. I will quickly describe the four most cited ones, to give an idea of the landscape we're working in:
+Logicians and lingusts have come up with many different update logics since the 80s. I will quickly describe the four most cited ones, to give an idea of the landscape we're working in:
 %
 \begin{itemize}
 \item Discourse Representation Theory, 1981 by Hans Kamp\cite{kamp1981theory}, is perhaps the best known approach to using update semantics for understanding language. Kamp takes a very philosophical approach, thinking of his logic as a model for how a person builds up a context during a conversation.
@@ -222,7 +222,7 @@ The rule for `$\oplus$' is simply to do a disjoint union of the referents and th
 &[_1 x, \underline{v}, \underline{w}\mid farmer(x), \neg[_2 y\mid donkey(y), owns(x,y)], beats(v,w) ] \nonumber
 \end{align}
 %
-At this step it is possible to perform anaphora related heuristics. Since $x$ is the first parameter of $farmer$, we assume it should be so for $beats$ as well:
+At this step it is possible to perform anaphora related heuristics. Since $x$ is the first paramter of $farmer$, we assume it should be so for $beats$ as well:
 %
 \begin{align}
 &[_1 x, \underline{v}, w\mid farmer(x), v=x, \neg[_2 y\mid donkey(y), owns(x,y)], beats(v,w) ] \nonumber\\
@@ -242,9 +242,9 @@ To deal with our example of `If a farmer owns...', DRT introduces more symbols f
 %\end{align}
 %The DRT merge
 
-\item File Change Semantics, 1982 by Irene Heim\cite{heim1983file}, are based around the puzzle of discourse `referents' which may, as we have seen, sometimes act like quantifiers, sometimes referents and sometimes antecedents. Heim suggests using so called `file cards' which though developed independently, has a lot in common with DRT.
+\item File Change Semantics, 1982 by Irene Heim\cite{heim1983file}, are based around the puzzle of discourse `referents' which may, as we have seen, sometimes act like quantifiers, sometimes referents and sometimes anticedents. Heim suggests using so called `file cards' which though developed independently, has a lot in common with DRT.
 
-However, where DRT defines complex rules for merging different `discourse referents', in File Change Semantics (FCS) the part `added onto' a file gets to decide how the merge is made. Some how similar to how lambda functions in Montague grammars give you a lot of flexibility. For example in case of `adding' $p$, an n-ary atomic predicate, to a file $F$:
+However, where DRT defines complex rules for merging different `discourse referents', in File Change Semantics (FCS) the part `added onto' a file gets to decide how the merge is made. Some how similar to how lambda functions in montague grammers give you a lot of flexibility. For example in case of `adding' $p$, an n-ary atomic predicate, to a file $F$:
 %
 \begin{align}
 &Sat(F + p) = \{a \in Sat(F) \mid R(a_{i_1}, \dots, a_{i_n})\} \nonumber
@@ -277,9 +277,9 @@ Where $Sat$ is the function that takes a file to the set of `individuals' `satis
 
 Notice here in particular the interesting the `dependent' arrow. This arrow communicates that there is a one-many relationship between farmer and donkey, and hence that we are talking about a specific donkey for each farmer, not a single poor donkey beaten by everyone.
 
-\item Dynamic Predicate Logic, 1991 by Groenendijk and Stokhof\cite{groenendijk1991dynamic}, is what I will focus on in the remains of this paper. In contrast to some of the previous models, the authors of Dynamic Predicate Logic (DPL) don't make any big philosophical claims on connections between their model and the brain. Instead they simply create a logic that is isomorphic to PL, while keeping a reasonable amount of `update semantics' like properties, such as being closer syntactically to natural language.
+\item Dynamic Predicate Logic, 1991 by Groenendijk and Stokhof\cite{groenendijk1991dynamic}, is what I will focus on in the remains of this paper. In contrast to some of the previous models, the authors of Dynamic Predicate Logic (DPL) don't make any big philosophical claims on connections between their model and the brain. Instead they simply create a logic that is isomorphic to PL, while keeping a reasonable ammount of `update semantics' like properties, such as being closer syntactically to natural language.
 
-DPL also doesn't provide any guidance into resolving anaphora. Just like giving meaning to the actual concepts, this must be handled outside of the logic. We will see later in this paper that this stance makes sense, since the current state of the art anaphora resolvers are simply based on simple heuristics over noun phrases.
+DPL also doesn't provide any guidiance into resolving anaphora. Just like giving meaning to the actual concepts, this must be handled outside of the logic. We will see later in this paper that this stance makes sence, since the current state of the art anaphora resolvers are simply based on simple heuristics over noun phrases.
 
 In the end of this chapter we will see how a certain monadic construction by Visser can give us as much flexibility in DPL as we would get with a more involved system such as DRT or FCS.
 \end{itemize}
@@ -288,7 +288,7 @@ In the end of this chapter we will see how a certain monadic construction by Vis
 
 Dynamic Predicate Logic has been developed by a wide group of people: Jan van Eijck and Fer-Jan de Vries\cite{eijck1992dynamic}, Hans Kamp, Veltman, Groenendijk and Stokhof. It is the linguist version of Dynamic Logic invented by Pratt\cite{pratt1976semantical} which is again build on top of Floyd-Hoare Logic for reasoning about computer programs.
 
-The logic cleverly uses these advances in logical understanding to create an update logic in a pragmatic way, without any external constructs and a minimum of new syntax, while still getting all the benefits of compositionality etc.
+The logic cleverly uses these advances in logical understanding to create an update logic in a pragmatic way, without any external constructs and a minimum of new syntax, while still getting all the benefits of compoitionality etc.
 
 To model a simple sentence `A man comes in. He sees a donkey. He smiles.', we write:
 %
@@ -298,7 +298,7 @@ To model a simple sentence `A man comes in. He sees a donkey. He smiles.', we wr
 \cdot\ &(smiles(x)) \nonumber
 \end{align}
 
-(The parenthesis is only for clarity. The logic is 100\% associative). Notice how we introduce referents casually as we progress in the discourse. We even manage to look pretty similar to PL at the same time. 
+(The parenthesis is only for clarity. The logic is 100\% associative). Notice how we introduce referants casually as we progress in the discourse. We even manage to look pretty similar to PL at the same time. 
 
 Too understand the semantics of the above, let's start by only considering a dynamic propositional logic with three propositions: $P$, $Q$ and $R$. We'll write $p$ to indicate a predicate is true and $\overline{p}$ if it's false. We talked about earlier, that the update semantics modeled `growth of information over time', so we'll start with case that every $2^3$ state is possible:
 %
@@ -314,9 +314,9 @@ Now we'll consider a statement in our predicate logic as a relation between poss
 
 If we then take the image of \eqref{dpl_PnQ_states} under $\overline{P}$ we end up with the empty set of states. That is there is no possible assignment satisfying our formula, and we consider it a falsum.
 
-The most interesting question is how we work with quantifiers. Which on earth relation could $\exists S$ be? We are going to take a hint from computer programming and consider the variable declaration: $S:=\bot$. We want to write this in DPL as $\exists S \cdot \neg S$, such that e.g. $P\overline{Q}[\exists S \cdot \neg S]P\overline{QS}$ is true. Now since $\cdot\neg S$ acts as a filter, removing all assignments that doesn't have $\overline{S}$, it must be that $\exists S$ is a `random reset, introducing $S$ and allowing it every value, such that $P\overline{Q}[\exists S]P\overline{QS}$ and $P\overline{Q}[\exists S]P\overline{Q}S$ are both true. The image of \eqref{dpl_all_states} under $\exists S$ has 16 possible states.
+The most interesting question is how we work with quantifiers. Which on earth relation could $\exists S$ be? We are going to take a hint from computer programming and consider the variable decleration: $S:=\bot$. We want to write this in DPL as $\exists S \cdot \neg S$, such that e.g. $P\overline{Q}[\exists S \cdot \neg S]P\overline{QS}$ is true. Now since $\cdot\neg S$ acts as a filter, removing all assignments that doesn't have $\overline{S}$, it must be that $\exists S$ is a `random reset, introducing $S$ and allowing it every value, such that $P\overline{Q}[\exists S]P\overline{QS}$ and $P\overline{Q}[\exists S]P\overline{Q}S$ are both true. The image of \eqref{dpl_all_states} under $\exists S$ has 16 possible states.
 
-Let's have a look at the model theoretic definition of the semantics. Visser builds this up in two steps: First a relational algebra and then DPL on top of it. But since DPL is basically identical to the relational algebra, we are going to try and do it in one step.
+Let's have a look at the model theoretic definition of the semantics. Visser builds this up in two steps: First a relational algebra and then DPL on top of it. But since DPL is bascailly identical to the relational algebra, we are going to try and do it in one step.
 
 Let a signature $\Sigma$ for DPL be a structure $\langle Pred, Ar, Var\rangle$. $Pred$ is the set of predicate symbols containing at least $=$, $\top$ and $\bot$. $Ar$ is the function from predicate symbols to their arity and in particular we have $Ar(=) \mapsto 2$, $Ar(\top) \mapsto 0$, $Ar(\bot) \mapsto 0$. Finally $Var$ is the set of variable symbols we may use. We are not going to work with constants in this treatment.
 
@@ -368,17 +368,17 @@ Let $[\cdot]$ be the interpretation function from syntax to relation. Then we de
 
 In my implementation section, I describe how the above can be efficiently implemented in Haskell using an isomorphism between relations $\mathcal{P}(A\times B)$ and functions $A\to\mathcal{P}(B)$. I also show how the kleiski combinator takes the role of $\cdot$.
 
-However let's first look at some of the implications of the above definitions. For example, how can we intuitively understand the DPL notion of $\rightarrow$? Well, first notice that many of the equations start with $\alpha=\beta\wedge\dots$. These equations we can think of intuitively as having a closed scope. We saw earlier how DRT nicely determined that the `it' in `A farmer doesn't own a donkey. He beats it' couldn't refer to `a donkey' because the negation didn't let it's variable out. In DPL we get the same effect. Because an assignment must be the same before and after a negated clause, all new variables introduced inside the clause have disappeared.
+However let's first look at some of the implications of the above definitions. For example, how can we intuitively understand the DPL notion of $\rightarrow$? Well, first notice that many of the eqations start with $\alpha=\beta\wedge\dots$. These equations we can think of intuitively as having a closed scope. We saw earlier how DRT nicely determined that the `it' in `A farmer doesn't own a donkey. He beats it' couldn't refer to `a donkey' because the negation didn't let it's variable out. In DPL we get the same effect. Because an assignment must be the same before and after a negated clause, all new variables introduced inside the clause have disappeared.
 
 Of course this `static negation' might not always be the right thing. Consider the sentences `It is not that case that a farmer doesn't own a donkey. He beats it'. This should be a good sentence, but we can't handle it. In the next chapter we will look at how this might be handled.
 
-The DPL $\psi_1\rightarrow\psi_2$ in particular can be seen as the filter, that if you can get `through' $\psi_1$ then you must also be able to get through $\psi_2$. But notice that $\gamma$ doesn't have to equal $\alpha$. Hence variables introduced in $\psi_1$ can well bind variables in $\psi_2$. This will show to be extremely important in the treatment of donkey sentences later.
+The DPL $\psi_1\rightarrow\psi_2$ in particular can be seen as the filter, that if you can get `through' $\psi_1$ then you must also be able to get through $\psi_2$. But notice that $\gamma$ doesn't have to equal $\alpha$. Hence variables introduced in $\psi_1$ can well bind variables in $\psi_2$. This will show to be extreamly important in the treatment of donkey sentences later.
 
 Talking about binding, also notice that our union or `or' construct is a bit special. $\psi_1$ and $\psi_2$ cannot bind variables in each other, but in $(\psi_1\cup\psi_2)\cdot\psi_3$ they can both bind variables in $\psi_3$. This is going to introduce a lot of weird situations later. In the next section we will look closer at these problems, and also consider the alternative definition of `or': $\neg(\neg\psi_1\cdot\neg\psi_2)$.
 
 \subsection{The problem with disjunction}
 
-A major problem with our use of `relation union' as disjunction is the way it allows seemingly sound sentences to combine into syntactically invalid ones. Consider the sentence `Either a farmer owns a donkey or he doesn't'. We would write that as
+A major problem with our use of `relation union' as disjunction is the way it allows seamingly sound sentences to combine into syntactically invalid ones. Consider the sentence `Either a farmer owns a donkey or he doesn't'. We would write that as
 \begin{align}
 \exists x\cdot farmer(x)\cdot(\exists y\cdot owns(x,y)\cdot donkey(y)\vee \bot) \label{owns_donkey_or_not}
 \end{align}
@@ -404,15 +404,15 @@ A trick we could consider is to declare an `object' variable outside of the disj
       &\vee \exists z\cdot owns(s,z)\cdot horse(z)\cdot o=z)\cdot beats(s,o)
 \end{align}
 %
-This even inspires on idea that we might be able to build everything up around subjects, objects, indirect objects etc. This is explored in the implementation, but it does suffer from many problems. E.g. we might well have a sentence very similar to the above: `A farmer owns a donkey and owns a horse. He beat them'. Here we suddenly have two objects in the same sentence.
+This even inspires on idea that we might be able to build everything up around subjects, objects, indirect objects etc. This is explored in the implementation, but it does suffer from many problems. E.g. we might well have a sentence very similar to the above: `A farmer owns a donkey and owns a horse. He beat them'. Here we suddently have two objects in the same sentence.
 
-Sentences like the above are easy to make in English because the absence of noun genders make it easy to use the same pronoun to refer to a lot of things at once. By choosing the right actors however, it is always possible to run into problems.
+Sentences like the above are easy to make in English because the absense of noun genders make it easy to use the same pronoun to refer to a lot of things at once. By choosing the right actors however, it is always possible to run into problems.
 
 The problem is perhaps the non-linearity in the way variables pass through the disjunction. Somehow we lose track of their history when the `results' are merged together.
 
-This leads on to the other question we mentioned: Is the binding flow through our disjunction operator really any good? We are is inspired by the sentence `Either a farmer or his scapegoat must go to court. In any case he will be picked up by sunset'. In terms of DPL formulas, this would be modelled something like $(\psi_1\cup\psi_2)\cdot\psi_3$. Clearly we have a problem here: Variables bound in $\psi_1$ are not accessible in $\psi_2$.
+This leads on to the other question we mentioned: Is the binding flow through our disjunction operator really any good? We are is inspired by the sentence `Either a farmer or his scapegoat must go to court. In any case he will be picked up by sunset'. In terms of DPL formulas, this would be modled something like $(\psi_1\cup\psi_2)\cdot\psi_3$. Clearly we have a problem here: Variables bound in $\psi_1$ are not accesible in $\psi_2$.
 
-This sentence suggests that we might want to define a disjunction operator with a linear flow of variables: $\psi_1\to\psi_2\to\psi_3$ instead of $\psi_1\to\psi_3\text{ and }\psi_2\to\psi_3$. However there is a problem: We currently define `false' as the absence of possible assignments. Hence if $\psi_1$ is false, there is no way we can define disjunction to push it's variables into $\psi_2$. If any variables were left undefined, $\psi_1$ wouldn't be false.
+This sentence suggests that we might want to define a disjunction operator with a linear flow of variables: $\psi_1\to\psi_2\to\psi_3$ instead of $\psi_1\to\psi_3\text{ and }\psi_2\to\psi_3$. However there is a problem: We currently define `false' as the absense of possible assignments. Hence if $\psi_1$ is false, there is no way we can define disjunction to push it's variables into $\psi_2$. If any variables were left undefined, $\psi_1$ wouldn't be false.
 
 There is a cure to this problem. When we extend our logic with more power in the monad chapter, we get a second chance. However Let's first have a look at an obvious alternative definition for disjunction considered by Groenendijk\cite{groenendijk1991dynamic}. We'll call it `static disjunction':
 \begin{align}
@@ -427,9 +427,9 @@ There is a cure to this problem. When we extend our logic with more power in the
 
 The idea to this follows natural from De Morgan's laws of classical logic. Clearly the semantics are different from the ones we defined for $\cup$. However not in a good way. This static disjunction doesn't allow any variables to escape from inside it's reach.
 
-So does this fix our problem of binding between clauses? No. In fact this definition doesn't even allow binding from a clause and out. The villain is $\neg\psi$. From the first mention we defined it to be static so it wouldn't allow unsafe, arbitrary assignments as long as they didn't satisfy $\psi$. We wanted our logic to be reasonably monotonic, and we got what we deserved. $\neg$ not only closed down this version of disjunction, but our implication definition as well.
+So does this fix our problem of binding between clauses? No. In fact this definition doesn't even allow binding from a clause and out. The villan is $\neg\psi$. From the first mention we defined it to be static so it wouldn't allow unsafe, arbitrary assignments as long as they didn't satisfy $\psi$. We wanted our logic to be reasonably monotonic, and we got what we deserved. $\neg$ not only closed down this version of disjunction, but our implcation definition as well.
 
-We can imagine defining $\neg$ dynamically: $\neg\psi_1\cdot\psi_2 = \neg(\psi_1\cdot\psi_2)$. However not in our current model, and it won't solve any of our problems with disjunction. It does however allow this sentence: `It is not the case that a farmer doesn't own a donkey. He beats it'. While it made sense not to allow variables to escape from a single $\neg$, we want them to escape from a double.
+We can immagine defining $\neg$ dynamically: $\neg\psi_1\cdot\psi_2 = \neg(\psi_1\cdot\psi_2)$. However not in our current model, and it won't solve any of our problems with disjunction. It does however allow this sentence: `It is not the case that a farmer doesn't own a donkey. He beats it'. While it made sense not to allow variables to escape from a single $\neg$, we want them to escape from a double.
 
 \subsection{Connection with first order logic}
 
@@ -446,9 +446,9 @@ Let $\phi$ be a formula in negation normal form, or something. Hmm, come back he
 &[\neg(\phi_1\vee\phi_2)] \equiv \dots
 \end{align}
 
-Similarly we may create PL formulas with the same meaning as any DPL formula. But perhaps we should be a bit concerned on how to interpret the meaning of a PL formula and a DPL formula being equivalent. After all DPL formulas are relations where PL formulas a propositions. In the above it was all easy, but let's think again about what we are doing.
+Similarly we may create PL formulas with the same meaning as any DPL formula. But perhaps we should be a bit conserned on how to interpret the meaning of a PL formula and a DPL formula being equivalent. After all DPL formulas are relations where PL formulas a propositions. In the above it was all easy, but let's think again about what we are doing.
 
-Remember that we said an assignment could model a DPL relation. If we consider the truth value of a DPL relation to be whether there exists any relation that models it $\exists\alpha(\alpha\models\psi)$, we can use a trick. The trick is to think of the weakest precondition such an assignment must satisfy, and model that in PL. In fact the precondition is not just for our assignment, but for the entire model. For example to model $\exists x\cdot farmer(x)$ the starting assignment might well be empty ($\bot$), but our model must contain an entity for which $farmer$ is true.
+Remember that we said an assignment could model a DPL relation. If we consider the truth value of a DPL relation to be whether there exists any relation that models it $\exists\alpha(\alpha\models\psi)$, we can use a trick. The trick is to think of the weakest precondion such an assignment must satisfy, and model that in PL. In fact the precondition is not just for our assignment, but for the entire model. For example to model $\exists x\cdot farmer(x)$ the starting assignment might well be empty ($\bot$), but our model must contain an entity for which $farmer$ is true.
 
 To smoothen the following derivations, we will introduce a special syntax `$\langle\psi\rangle\phi$' where $\psi$ is a DRA formula, $\phi$ is a PL formula and the whole thing is a PL formula. For some assignment $\alpha$, we define `$\alpha\models\langle\psi\rangle\phi$' to mean $\exists\beta(\alpha[\psi]\beta \wedge \beta\models\phi)$.
 %
@@ -477,7 +477,7 @@ See the appendix for my full derivations of every equation. Also notice that $\a
 & \leftrightarrow (\langle\psi_1\rangle\top \vee \langle\psi_2\rangle\top) \wedge\phi \label{conv_vee}
 \end{align}
 
-In the implementation we will use the above equations to recursively convert our DPL formulas to PL. The $\langle\rangle$ notation easily lends itself to calculation by a stack manipulation function.
+In the implementation we will use the above equations to recursively convert our DPL formulas to PL. The $\langle\rangle$ notation easily lends itself to calculation by a stak manipulation function.
 
 The rules will look like:
 \begin{haskell}
@@ -510,7 +510,7 @@ We would have to write that as
 %
 The problem here is that reorderings like this work against our sought property of linearity: of being able to add new information as we go. We cannot compose `A farmer owns a donkey' and `if he beats it' in a meaningful way.
 
-To rescue us from this problem Albert Visser suggests constructing a special e-monoid over the dynamic relational algebra. The idea is that we are going to simultaneously work on two `streams' of dpl, and switch easily between them with a special element $\Bowtie$.
+To resque us from this problem Albert Visser suggests constructing a special e-monoid over the dynamic relational algebra. The idea is that we are going to simultaniously work on two `streams' of dpl, and switch easily between them with a special element $\Bowtie$.
 
 Our sentence from above will then be expressible as
 %
@@ -543,7 +543,7 @@ If $\phi$ from before is the basic algebra, we specify the construction of our m
 &\langle q_-, q_+, \alpha \rangle \cdot \langle r_-, r_+, \beta \rangle := \langle q_- \cdot r_{-\alpha}, q_+ \cdot r_{+\alpha}, \alpha\beta \rangle&
 \end{flalign}
 %
-Notice how we keep the negative stream in the first position of the tuple, and the positive stream at the second position. The third position indicates to what stream we are currently writing. For example, if we are writing to the negative stream, and we apply an element that itself asks us to continue at its negative stream, we go back to the positive stream.
+Notice how we keep the negative stream in the first position of the tuple, and the positive stream at the second position. The third position idicates to what stream we are currently writing. For example, if we are writing to the negative stream, and we apply an element that itself asks us to continue at its negative stream, we go back to the positive stream.
 
 More examples on the utilities of the above monad can be found in Vissers paper.
 
@@ -605,7 +605,7 @@ In his paper Visser now goes on to define $\triangleleft$ and $\triangleright$ w
 \Bowtie \cdot \triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \triangleleft \cdot beats(x,y)
 \end{equation}
 %
-This is quite interesting for certain sentences containing `surprises', like
+This is quite interesting for certain centences containing `surprises', like
 %
 \begin{quotation}
 He sees... no donkey
@@ -621,16 +621,16 @@ sees(x,y) \cdot \triangleleft \cdot \bot \cdot \triangleright \cdot \triangle \c
 Notice that that means the word `no'/`not' must be $\triangleleft\cdot\bot\cdot\triangleright$. Unfortunately these retrospective triangles tend to mess sentence enough up, that they require lots of `stream unification brackets', and don't generally give very nice formulas. In the semantic parsing in the next section, they wont be used at all.
 
 \subsection{Montague semantic}
-Montague grammars are an approach to combinatorial semantics based on types and lambda calculus. It is interesting because it 
+Montague grammars are an approach to combinatorical semantics based on types and lambda calculus. It is interesting because it 
 Types
 Quantification
 
-Montague can make any logic compositional
+montague can make any logic compositional
 
 Types of:
   One-place predicate constant (farmer, sleeps, walks): Entity -> Bool
   Transitive verb (owns, beats): Entity -> Entity -> Bool
-  Attributive adjective (good, intelligent, former): (Entity -> Bool) -> (Entity -> Bool)
+  Attributive adjective (good, inteligent, former): (Entity -> Bool) -> (Entity -> Bool)
   Noun phrase: (Entity -> Bool) -> Bool
   Proper noun: Entity
   Quantifiers/Determiners: a, the, every, no: (Entity -> Bool) -> (Entity -> Bool) -> Bool
@@ -638,11 +638,11 @@ Types of:
 
 \subsection{Weak and strong readings}
 
-Let's return multiple interpretations
+Let's return multiple intepretations
 
 
 % It is not possible
-It is clear that not all sentences can be unambiguously translated from natural language to logic. A sentence like  
+It is clear that not all sentences can be unambigiously translated from natural language to logic. A sentence like  
 \begin{quotation}
 A farmer beats a donkey
 \end{quotation}
@@ -752,18 +752,18 @@ NP < (NN < dog) \$ (VP <<\# (barks > VBZ))
 An NP both over an NN over `dog' and with
 a sister VP headed by `barks' under VBZ
 
-\subsection{Coreferences}
-Coreferences (or anaphora) is essential in order to create advanced discourse, since it is what allows us maintain a topic beyond the first mention. Without coreferences we couldn't even express simple logical statements such as transitivity: `a man's brother's brother is his brother' etc.
+\subsection{Corefferences}
+Corefferences (or anaphora) is essential in order to create advanced discourse, since it is what allows us maintain a topic beond the first mention. Without corefferences we couldn't even express simple logical statements such as transitivity: `a man's brother's brother is his brother' etc.
 
-Identifying coreferences (or resolving anaphora) is hence an important part of converting natural language into logic. The issue is not touched upon in Visser's paper, which casually sidesteps the problem by assigning variables to all mentioned entities.
+Identifying corefferences (or resolving anaphora) is hence an important part of converting natural language into logic. The issue is not touched upon in Visser's paper, which casually sidesteps the problem by assigning variables to all mentioned entities.
 
-For the subtask of resolving simple pronouns a solution could be to work in terms of subjects, objects, indirect objects and so on. However if not earlier, this certainly fails for pronouns separated from their antecedent by sentence boundaries. Also we want to resolve other kinds of coreferences, such as `John, the farmer, owns a donkey', where `the farmer' and `John' refers to the same entity.
+For the subtask of resolving simple pronouns a solution could be to work in terms of subjects, objects, indirect objects and so on. However if not earlier, this certainly fails for pronouns seperated from their antecedent by sentence bounderies. Also we want to resolve other kinds of corefferences, such as `John, the farmer, owns a donkey', where `the farmer' and `John' reffers to the same entity.
 
-It quickly becomes clear that the problem is not only syntactical. In the sentence `John and his wife had a farm. He took care of the donkeys' we could substitute `He' with `She' and to change the referent of the pronoun. In this case we need semantic knowledge of genders to proceed.
+It quickly becomes clear that the problem is not only syntactical. In the sentence `John and his wife had a farm. He took care of the donkeys' we could substitute `He' with `She' and to change the refferant of the pronoun. In this case we need semantic knowledge of genders to proceed.
 
-In my project I have taken advantage of the coreference tagger built into Stanford CoreNLP\cite{lee2013deterministic}\cite{lee2011stanford}\cite{raghunathan2010multi}. In the following section I will summarize the workings of this machine, made to work across large texts as well as simple sentences.
+In my project I have taken advantage of the corefference tagger built into Stanford CoreNLP\cite{lee2013deterministic}\cite{lee2011stanford}\cite{raghunathan2010multi}. In the following section I will summerize the workings of this machine, made to work across large texts as well as simple sentences.
 
-Coreference tagging is one part of computational linguistics where machine learning algorithms still haven't been able to outperform large iterative applications of linguistic heuristics. Of course the procedure assumes (most likely) machine learned postagging and named entity recognition, but the main algorithm is transparent and deterministic.
+Correference tagging is one part of computational linguistics where machine learning algorithms still haven't been able to outperform large itterative applications of linguistic heuristics. Of course the procedure assumes (most likely) machine learned postagging and named entity recognization, but the main algorithm is transparent and deterministic.
 
 The idea is to iteratively go over the text with different `sieves'. The below example explains each step with an example I have adopted from \cite{lee2013deterministic}:
 
@@ -775,13 +775,13 @@ A girl was looking at the donkey.
 
 \begin{description}
 \item[Mention detection]
-The first step is to identify all noun phrases (NP) and personal (PRP) and possessive (PRP\$) pronouns. This information is easily pulled from the postree. Notice we also identify nested mentions:
+The first step is to identify all noun phrases (NP) and personal (PRP) and possesive (PRP\$) pronouns. This information is easily pulled from the postree. Notice we also identify nested mentions:
 
 [John]$_1^1$ is [a farmer]$_2^2$. [He]$_3^3$ owned [a stubborn donkey]$_4^4$.\newline
 [A girl]$_5^5$ was looking at [the donkey]$_6^6$.\newline
 ``[It]$_7^7$ was [[my]$_9^9$ favorite]$_8^8$,'' [John]$_{10}^{10}$ said to [her]$_{11}^{11}$.
 
-All mentions are initially assigned to separate entities (entity ids). The entities are also attached information we can easily pull from the postree, such as `a girl: {number: singular, gender: female}' which are used for the following rules.
+All mentions are initially assigned to seperate entities (entity ids). The entities are also attached information we can easily pull from the postree, such as `a girl: {number: singular, gender: female}' which are used for the following rules.
 \item[Speaker Sieve]
 The purpose of this first sieve is to link self referring pronouns to speakers. Speakers are identified simply by their connection to verbs such as `say' and proximity to the quotations. In our case the pronoun `my' gets linked to `John':
 
@@ -791,9 +791,9 @@ The purpose of this first sieve is to link self referring pronouns to speakers. 
 
 In conversational text we would store information about the speakers in our entities. Thus we could e.g. match mentions of `you' to the speaker of the previous quote we saw.
 
-We also note restrictions for future use, so we don't risk coreferencing an `I' with a `he' etc.
+We also note restrictions for future use, so we don't risk corefferencing an `I' with a `he' etc.
 \item[String Match]
-The second step is to merge entities referred to by exactly the same string. In our case we have two mentions of `John':
+The second step is to merge entities reffered to by exactly the same string. In our case we have two mentions of `John':
 
 \textbf{[John]$_1^1$} is [a farmer]$_2^2$. [He]$_3^3$ owned [a stubborn donkey]$_4^4$.\newline
 [A girl]$_5^5$ was looking at [the donkey]$_6^6$.\newline
@@ -801,9 +801,9 @@ The second step is to merge entities referred to by exactly the same string. In 
 \item[Relaxed String Match]
 This third sieve doesn't get activated by our example. It will try to remove relative clauses and other text following the head word of a mention, and do an exact match of the result. For example [John] and [John, whose donkey loves him] will correctly be merged.
 
-Like the `String Match' sieve, we are not doing anything fancy here, and we will incorrectly coreference the two mentions of `John' in: `[John, who loves donkeys] and [John, who hates donkeys] were brothers.'
+Like the `String Match' sieve, we are not doing anything fancy here, and we will incorrectly corefference the two mentions of `John' in: `[John, who loves donkeys] and [John, who hates donkeys] were brothers.'
 \item[Precise Constructs]
-The `Precise Constructs' sieve uses a lot of common patterns that link mentions. In our case two `X is Y' patterns are found:
+The `Precise Constructs' sieve uses a lot of common patterns that link metions. In our case two `X is Y' patterns are found:
 
 \textbf{[John]$_1^1$} is \textbf{[a farmer]$_2^1$}. [He]$_3^3$ owned [a stubborn donkey]$_4^4$.\newline
 [A girl]$_5^5$ was looking at [the donkey]$_6^6$.\newline
@@ -817,7 +817,7 @@ Other patterns include acronyms and appositives. For example [Canadian Donkey \&
 ``[It]$_7^7$ was [[my]$_9^1$ favorite]$_8^7$,'' [John]$_{10}^1$ said to [her]$_{11}^{11}$.
 
 Linking mentions based on their head word is dangerous. e.g. `University of Oxford' and `University of Cambridge' both have `University' as their head word, but are (obviously?) different entities. To combat this a lot of strict rules must be observed. These are however gradually weakened in sieve B and C.
-\item[Proper Head Noun Match] could be called `Strict Head Match D'. It is the weakest form of the sieve, as it has only the three constraints: two mentions of the same entity cannot have one included in the other, they cannot contain words referring to conflicting geographical locations, and they cannot have different numbers. e.g. [donkeys] and [at least 5 donkeys].
+\item[Proper Head Noun Match] could be called `Strict Head Match D'. It is the weakest form of the sieve, as it has only the three contraints: two mentions of the same entity cannot have one included in the other, they cannot contain words reffering to conflicting geographical locations, and they cannot have different numbers. e.g. [donkeys] and [at least 5 donkeys].
 \item[Pronoun Match]
 This last sieve is perhaps the most important one. It is done in the end so that we may have as much data in our entities as possible for matching. Using guesses on gender, number and animacy we can make our final merges:
 
@@ -825,27 +825,19 @@ This last sieve is perhaps the most important one. It is done in the end so that
 \textbf{[A girl]$_5^5$} was looking at \textbf{[the donkey]$_6^4$}.\newline
 ``\textbf{[It]$_7^4$} was [[my]$_9^1$ favorite]$_8^4$,'' [John]$_{10}^1$ said to \textbf{[her]$_{11}^{5}$}.
 
-As always there are a few constraints put on what can be merged. One rule is that the distance between pronoun and antecedent must be maximum 3 sentences.
+As always there are a few contraints put on what can be merged. One rule is that the distance between pronun and antecedent must be maximum 3 sentences.
 \end{description}
 
 After the final step different post processing options are usually performed. For example singleton mentions are often discarded. That would mean we got rid of `a musician' and `my favorite'.
 
 The reason the rules are applied in the order above is to give the most certain rules the highest priority.
 
-The Stanford procedure above is currently the strongest competitor in various coreference competitions.
+The Stanford procedure above is currently the strongest competitor in various correference competitions.
 
 \subsection{Semantics via dependencies}
 This subsection's content...
 
 \section{Implementation (8)}
-
-Incremental dynamics\quote{van2001incremental}
-
-DPL Semantics - Functional Version
-DPL Semantics - Relational Version
-A state is an element of $D^V$ (function from variables to domain)
-In functional semantics a state is a function $D^V -> P(D^V)$
-In relational semantics it is a relation $P(D^V x D^V)$
 
 There is not a big first order logic component in my project, but in the following it will often be useful to refer to the following structure
 
@@ -861,9 +853,9 @@ data Prop =
   | Impl Prop Prop
 \end{haskell}
 
-And since we are going to deal with some large computer generated formulas, I've implemented a simple simplification function, which simply applies basic identities for $\top$ and $\bot$, and a combination of De Morgan's laws and the implication identity to eliminate negations.
+And since we are going to deal with some large computer generated formulas, I've implemented a simple simplification function, which simlply applies basic identities for $\top$ and $\bot$, and a comnbination of De Morgan's laws and the implication identity to eliminate negations.
 
-One interesting part is that since the simplifier has no look ahead, it will sometimes not find all applicable simplifications in one pass. For example
+One interesting part is that since the simplifyer has no look ahead, it will sometimes not find all applicable simplifications in one pass. For example
 %
 \begin{haskell}
 simplify (Not (Impl p F)) = Not (simplify (Impl p F))
@@ -878,7 +870,7 @@ fexp :: (a -> a) -> Int -> (a -> a)
 fexp f e = (iterate (f.) id) !! e
 \end{haskell}
 
-\subsection{My implementation of DPL semantics}
+\subsection{My implementaiton of DPL semantics}
 
 Syntactically we will be using the following structure
 
@@ -950,13 +942,13 @@ Using the parse tree and NPs
 
 Something that's very interesting is when to use free variables and when to use bound variables. We can think of free variables as actors known by the context and bound variables as actors introduced in the sentence. So if we had `The farmer had a friend. His name was Anders', we could write the first part as $\exists y \cdot friends(x,y)$ and the second part as $name(y, `Anders')$. This is important to keep compositionality, but it does of course raise the interesting question of how to make sure that the variable for `Anders' in the first and the second sentence is the same.
 
-In addition to being essential for composition, free variables are also very useful for information extraction type sentences. We can imagine writing a curious researcher writing into a search engine `farmers who like donkeys' which translates into $farmer(x) \cdot likes(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y)$.
+In addition to being essential for composition, free variables are also very useful for information extraction type sentences. We can immagine writing a curious researcher writing into a search engine `farmers who like donkeys' which translates into $farmer(x) \cdot likes(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y)$.
 
 So how do we know when to include an $\exists$ and when not to?
 
-The coreference parser does however not find entities that are only mentioned once. Hence to make the later processing simpler, we assign those entity to free variable now as well.
+The coreference parser does however not find entities that are only mentioned once. Hence to make the later processing simpler, we assign those entitie to free variable now as well.
 
-The task is slightly complicated by the fact that NP's can be nested, so `The farmer and the donkey' is a NP consisting of two smaller NP's `The farmer' and `the donkey' separated by `and'.
+The task is slightly complicated by the fact that NP's can be nested, so `The farmer and the donkey' is a NP consisting of two smaller NP's `The farmer' and `the donkey' seperated by `and'.
 
 We resolve this by assigning top down, overwriting `word to ref' assignments with fresh variables as we go deeper down the tree. This way, for our short sentence, we might end up with the assignment $\{`The': `y', `farmer': `y', `and': `x', `the': `z', `donkey': `z'\}$
 
@@ -985,15 +977,13 @@ where $tsize :: PosTree Word -> Int$ gives the number of words in the tree
 What do we do when they fail?
 Also something from the disjunction chapter.
 
-What if my states always contain the entire domain as their domain. Just add a $\bot$ to the entity set, then everything will be mapped to that as default.
-
 \subsection{Using machine learning}
 The $\bowtie$ and $\triangle$ notation makes logic look close enough to natural language that it starts looking tempting to use machine learning methods such as those used in translation to translate.
 
-My main problem here is that such translation requires large amounts of bilingual data. It was out of scope for my project to try create such.
+My main problem here is that such translation requires large ammounts of dualingo data. It was out of scope for my project to try create such.
 
-\subsection{Hand coding}
-This is not as bad as it sounds. It is similar to Montague and what the Stanford Parser does for dependencies.
+\subsection{Handcoding}
+This is not as bad as it sounds. It is similar to montague and what the stanfordparser does for dependencies.
 
 \subsection{Examples}
 Until now we've been very focused on the same one or two simple sentences. To provide a better test bench for our approach, it is interesting to follow some sentences through the different levels of our approach.
@@ -1018,9 +1008,9 @@ This one is hard because it is an example of existential non commitment. I bet w
 
 Extract D Testing 
 We have already seen some screen shots of the working program; however, we provide two stringent tests 
-for our program to ensure it works as intended, along with a test rig to fully analyze the program. In both test 
+for our program to ensure it works as intended, along with a test rig to fully analyse the program. In both test 
 programs, I will run through the whole series of options available to the user, and ensure its correctness. 
-However, I will also demonstrate its ability to visualize code, and hopefully provide valuable insights whilst 
+However, I will also demonstrate its ability to visualise code, and hopefully provide valuable insights whilst 
 debugging. 
 5.1 Simple Program -BFS and DFS using the Visitor Pattern
 This test program begins by creating an underlying tree structure…
@@ -1038,7 +1028,7 @@ What I learned
 
 ‘a summary of your achievements; a critical appraisal, describing what worked well and what could be 
 improved; a discussion of the lessons you have learnt from the project.’
-In the ‘Conclusions’ you summarize your work and then stand back from the project and assess it as 
+In the ‘Conclusions’ you summarise your work and then stand back from the project and assess it as 
 objectively as you can. This shows the examiners that you are capable of evaluating your own work 
 according to the standards of the field. It is acceptable to mention areas that were not very satisfactory
 because this shows that you have learnt from the experience of doing the project.
@@ -1049,7 +1039,7 @@ Introduction, in that it starts with the narrow concerns of the project and wide
 statements about further work.
 
 Move 1: Summary 
-Summarizes the most important aspects of the project work.  
+Summarises the most important aspects of the project work.  
 
 I have successfully developed a novel local type inference algorithm
 
@@ -1075,7 +1065,7 @@ Should I make my latex file literate haskell? %bhttp://www.haskell.org/haskellwi
 
 \lstinputlisting[language=Haskell]{Main.hs}
 
-\section{Acknowledgments}
+\section{Acknowledgements}
 I would like to thank Samson for guiding me through
 
 the PCFG parser\cite{klein2003accurate}
