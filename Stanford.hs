@@ -17,7 +17,7 @@ type Sentence = [Word]
 
 type PosTag = String
 data PosTree = Phrase PosTag [PosTree] | Leaf PosTag Word deriving (Show)
-data IndexTree = P PosTag ([IndexTree],Index) | L PosTag (Word,Index) deriving (Show)
+data IndexTree = P PosTag [IndexTree] | L PosTag (Word,Index) deriving (Show)
 
 data DepTree = Dep Int [(Ref, DepTree)] deriving (Show, Eq)
 
@@ -76,10 +76,10 @@ toIndexTrees trees = map toIndexTree (zip trees [0..])
 toIndexTree :: (PosTree, Int) -> IndexTree
 toIndexTree (tree, sentence) = snd (toIndexTree_ 0 tree)
 	where
-		toIndexTree_ i (Phrase tag (t:ts)) = (k, P tag (it:its,(10,0)))
+		toIndexTree_ i (Phrase tag (t:ts)) = (k, P tag (it:its))
 			where (j, it) = toIndexTree_ i t
-			      (k, P _ (its,_)) = toIndexTree_ j (Phrase tag ts)
-		toIndexTree_ i (Phrase tag []) = (i, P tag ([],(10,0)))
+			      (k, P _ its) = toIndexTree_ j (Phrase tag ts)
+		toIndexTree_ i (Phrase tag []) = (i, P tag [])
 		toIndexTree_ i (Leaf tag word) = (i+1, L tag (word,(sentence,i)))
 
 ------------------

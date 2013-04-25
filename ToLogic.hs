@@ -11,7 +11,7 @@ logify :: (Store, [IndexTree]) -> Prop
 logify (refs, tree) = (simplify . dpl2prop . s2dpl) logic
 	where logic = intRoot tree refs
 
-type SyntaxB = ([IndexTree], Index)
+type SyntaxB = [IndexTree]
 type SyntaxL = (Word, Index)
 type Predicate = Ref -> Type2
 type Predicate2 = Ref -> Ref -> Type2
@@ -21,23 +21,23 @@ intRoot ((P "S" s):ss) r = intS s r `sComp` intRoot ss r
 intRoot [] r = sT
 
 intS :: SyntaxB -> Store -> Type2
-intS ([P "NP" np, P "VP" vp], _) r = intNP np r (intVP vp r)
-intS (((P "SBAR" ([(L "IN" ("If",_)), (P "S" s1)],_)) : (L "," _) : s2), _) r =
-		sSwitch `sComp` intS s1 r `sComp` sSwitch `sComp` intS (s2,(0,0)) r
-intS ([P "S" s1, L "CC" ("and",_), P "S" s2], _) r = intS s1 r `sComp` intS s2 r
+intS [P "NP" np, P "VP" vp] r = intNP np r (intVP vp r)
+intS (P "SBAR" ([(L "IN" ("If",_)), (P "S" s1)]) : (L "," _) : s2) r =
+		sSwitch `sComp` intS s1 r `sComp` sSwitch `sComp` intS s2 r
+intS [P "S" s1, L "CC" ("and",_), P "S" s2] r = intS s1 r `sComp` intS s2 r
 intS other r = error ("Unsuported by intS: " ++ show other)
 
 intNP :: SyntaxB -> Store -> Predicate -> Type2
 -- intNP ([L "NNP" (nnp,_)], i) r vb = sPredi nnp [v] `sComp`
-intNP ([L "PRP" (prp,i)], _) r = \vb -> vb (r i)
-intNP ([L "DT" dt, L "NN" nn], _) r = intDT dt r (intNN nn r)
+intNP [L "PRP" (prp,i)] r = \vb -> vb (r i)
+intNP [L "DT" dt, L "NN" nn] r = intDT dt r (intNN nn r)
 intNP other r = error ("Unsuported by intNP: " ++ show other)
 
 intVP :: SyntaxB -> Store -> Predicate
-intVP ([L ('V':'B':_) ("is",_), P "NP" np], _) r = \v -> sPredi (stringify np) [v]
-intVP ([L ('V':'B':_) vb], _) r = intVB vb r
-intVP ([L ('V':'B':_) vb, P "NP" np], _) r = \v -> intNP np r (intVB2 vb r v)
-intVP ([P "VP" vp1, L "CC" ("and",_), P "VP" vp2], _) r = \v -> intVP vp1 r v `sComp` intVP vp2 r v
+intVP [L ('V':'B':_) ("is",_), P "NP" np] r = \v -> sPredi (stringify np) [v]
+intVP [L ('V':'B':_) vb] r = intVB vb r
+intVP [L ('V':'B':_) vb, P "NP" np] r = \v -> intNP np r (intVB2 vb r v)
+intVP [P "VP" vp1, L "CC" ("and",_), P "VP" vp2] r = \v -> intVP vp1 r v `sComp` intVP vp2 r v
 -- also VP and VP NP for the transitive case
 intVP other r = error ("Unsuported by intVP: " ++ show other)
 --intVP ([L "VB" vb, P "NP" np, L "," _, P "SBAR" [L "IN" "unless", P "S" s]], i) r = ...
@@ -63,6 +63,6 @@ intDT ("no", i) r = \p q -> sSwitch `sComp` sExist m `sComp` p m `sComp` q m `sC
 
 
 stringify :: SyntaxB -> String
-stringify ([],_) = ""
-stringify ((L _ (word,_)):ps,_) = word ++ "-" ++ stringify (ps,(0,0))
-stringify ((P _ (pss,_)):ps,_) = stringify (pss ++ ps,(0,0))
+stringify [] = ""
+stringify ((L _ (word,_)):ps) = word ++ "-" ++ stringify ps
+stringify ((P _ pss):ps) = stringify (pss ++ ps)
