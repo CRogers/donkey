@@ -1,4 +1,4 @@
-module Stanford (Store, Word, Index, run, runDry, runOnFile, IndexTree(..), postrees) where
+module Stanford (Store, Word, Index, run, runDry, runOnFile, PosTree(..), postrees) where
 
 import Prop (Ref)
 
@@ -16,8 +16,7 @@ type Word = String
 type Sentence = [Word]
 
 type PosTag = String
-data PosTree = Phrase PosTag [PosTree] | Leaf PosTag Word deriving (Show)
-data IndexTree = P PosTag [IndexTree] | L PosTag (Word,Index) deriving (Show)
+data PosTree a = P PosTag [PosTree a] | L PosTag a deriving (Show)
 
 data DepTree = Dep Int [(Ref, DepTree)] deriving (Show, Eq)
 
@@ -30,20 +29,23 @@ type Store = Index -> Ref
 -- Use "lemma" instead of "word" to get standardized forms
 -- (did -> do, n't -> not)
 
-lemmas :: Element -> Sentence
-lemmas doc = map strContent (findElements (unqual "lemma") doc)
+lemmas :: Element -> [Sentence]
+lemmas doc = map lemma (findElements (unqual "sentence") sentences)
+	where
+		Just sentences = findElement (unqual "sentences") doc
+		lemma doc' = map strContent (findElements (unqual "lemma") doc')
 
 ------------------
 
-postrees :: Element -> [PosTree]
+postrees :: Element -> [PosTree Word]
 postrees doc = map rootfilter roots
 	where
 		parses = findElements (unqual "parse") doc
 		roots = map (postreeRoot . strContent) parses
-		rootfilter (Phrase "ROOT" [(Phrase "S" s)]) = (Phrase "S" s)
+		rootfilter (P "ROOT" [(P "S" s)]) = (P "S" s)
 		rootfilter root = error ("Cant parse strange sentence " ++ show root)
 
-postreeRoot :: String -> PosTree
+postreeRoot :: String -> PosTree Word
 postreeRoot dat = tree
 	where
 		Right tree = parse posEither "(unknown)" dat
@@ -59,28 +61,32 @@ posTree =
 		tag <- many (noneOf " ")
 		char ' ' -- maybe not needed?
 		subs <- sepBy1 posEither (char ' ')
-		return (Phrase tag subs)
+		return (P tag subs)
 posLeaf =
 	do
 		tag <- many (noneOf " ")
 		char ' '
 		word <- many (noneOf " ()")
-		return (Leaf tag word)
+		return (L tag word)
 
 -- Why use an index tree if we can move the referants stright in there?
 -- Because a lot of things don't have references...
 
--- Adds a word index to every element in the postree
-toIndexTrees :: [PosTree] -> [IndexTree]
-toIndexTrees trees = map toIndexTree (zip trees [0..])
-toIndexTree :: (PosTree, Int) -> IndexTree
-toIndexTree (tree, sentence) = snd (toIndexTree_ 0 tree)
+cleanTrees :: [PosTree Word] -> [Sentence] -> [PosTree (Word,Index)]
+cleanTrees trees ls = [clean t l s | (t, l, s) <- zip3 trees ls [0..]]
+	where clean t l s = substitute t (zip l (zip (repeat s) [0..]))
+
+-- also simplify VB's
+
+-- Replaces every word in f
+substitute :: PosTree a -> [b] -> PosTree b
+substitute tree list = snd (substitute_ tree list)
 	where
-		toIndexTree_ i (Phrase tag (t:ts)) = (k, P tag (it:its))
-			where (j, it) = toIndexTree_ i t
-			      (k, P _ its) = toIndexTree_ j (Phrase tag ts)
-		toIndexTree_ i (Phrase tag []) = (i, P tag [])
-		toIndexTree_ i (Leaf tag word) = (i+1, L tag (word,(sentence,i)))
+		substitute_ (L tag x) (l:ls)  = (ls, L tag l)
+		substitute_ (P tag []) ls     = (ls, P tag [])
+		substitute_ (P tag (t:ts)) ls = (ls'', P tag (s:ss))
+			where (ls', s)       = substitute_ t ls
+			      (ls'', P _ ss) = substitute_ (P "" ts) ls'
 
 ------------------
 
@@ -143,14 +149,14 @@ alphabet = [c:"" | c <- "abcdefghijklmnopqrstuvwxyz"]
 variables :: [Ref]
 variables = alphabet ++ [b++a | b <- variables, a <- alphabet]
 
-runDry :: [String] -> IO [(Store, [IndexTree])]
+runDry :: [String] -> IO [(Store, [PosTree (Word,Index)])]
 runDry sentences =
 	do
 		sequence [runOnFile (name ++ ".xml") | name <- names]
 	where
 		names = ["input" ++ show i | i <- [1..length sentences]]
 
-run :: [String] -> IO [(Store, [IndexTree])]
+run :: [String] -> IO [(Store, [PosTree (Word,Index)])]
 run sentences =
 	do
 		sequence (zipWith writeFileLn names sentences)
@@ -163,7 +169,7 @@ run sentences =
 		names = ["input" ++ show i | i <- [1..length sentences]]
 		writeFileLn path s = writeFile path (s ++ "\n")
 
-runOnFile :: FilePath -> IO (Store, [IndexTree])
+runOnFile :: FilePath -> IO (Store, [PosTree (Word,Index)])
 runOnFile name =
 	do
 		f <- readFile name
@@ -171,7 +177,5 @@ runOnFile name =
 			Nothing -> error ("Unable to parse XML " ++ name)
 			Just xml -> do
 				return (
-					--lemmas xml,
 					allRefs xml variables,
-					toIndexTrees (postrees xml))
-					--(deps xml "collapsed-ccprocessed-dependencies") !! 0
+					cleanTrees (postrees xml) (lemmas xml))
