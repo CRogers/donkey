@@ -13,8 +13,8 @@ import Data.Maybe
 import System.Process
 
 super :: [String] -> IO [V.Visser]
---super sentences = run sentences >>= (return . map montague)
-super sentences = runDry sentences >>= (return . map montague)
+super sentences = run sentences >>= (return . map montague)
+--super sentences = runDry sentences >>= (return . map montague)
 
 sentences = [
 	"Every farmer beats some donkey.",
