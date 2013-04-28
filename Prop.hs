@@ -49,12 +49,33 @@ fexp f e = (iterate (f.) id) !! e
 simplify :: Prop -> Prop
 simplify = fexp simp 10
 
-tostring T = "T"
-tostring F = "F"
-tostring (Not p) = "!(" ++ tostring p ++ ")"
-tostring (And p q) = tostring p ++ "&" ++ tostring q
-tostring (Or p q) = "(" ++ tostring p ++ ")|(" ++ tostring q ++ ")"
-tostring (Impl p q) = "(" ++ tostring p ++ ")->(" ++ tostring q ++ ")"
-tostring (Predi f ks) = f ++ "(" ++ concat (intersperse "," ks) ++ ")"
-tostring (Exist k p) = "E" ++ k ++ "(" ++ tostring p ++ ")"
-tostring (All k p) = "A" ++ k ++ "(" ++ tostring p ++ ")"
+-- Printing
+
+wrap :: Int -> (String, Int) -> String
+wrap n (p, k) | k > n     = "(" ++ p ++ ")"
+              | otherwise = p
+
+pretty :: Prop -> (String, Int)
+pretty T = ("⊤", 0)
+pretty F = ("⊥", 0)
+pretty (Not p) = ("¬" ++ wrap 0 (pretty p), 0)
+pretty (And p q) = (wrap 1 (pretty p) ++ "∧" ++ wrap 1 (pretty q), 1)
+pretty (Or p q) = (wrap 2 (pretty p) ++ "∨" ++ wrap 2 (pretty q), 2)
+pretty (Impl p q) = (wrap 3 (pretty p) ++ "→" ++ wrap 3 (pretty q), 3)
+pretty (Predi f ks) = (f ++ "(" ++ concat (intersperse "," ks) ++ ")", 0)
+pretty (Exist k p) = ("∃" ++ k ++ wrap 0 (pretty p), 0)
+pretty (All k p) = ("∀" ++ k ++ wrap 0 (pretty p), 0)
+
+tex :: Prop -> (String, Int)
+tex T = ("\\top", 0)
+tex F = ("\\bot", 0)
+tex (Not p) = ("\\neg " ++ wrap 0 (tex p), 0)
+tex (And p q) = (wrap 1 (tex p) ++ " \\wedge " ++ wrap 1 (tex q), 1)
+tex (Or p q) = (wrap 2 (tex p) ++ " \\ve " ++ wrap 2 (tex q), 2)
+tex (Impl p q) = (wrap 3 (tex p) ++ " \\rightarrow " ++ wrap 3 (tex q), 3)
+tex (Predi f ks) = (f ++ "(" ++ concat (intersperse "," ks) ++ ")", 0)
+tex (Exist k p) = ("\\exists " ++ k ++ wrap 0 (tex p), 0)
+tex (All k p) = ("\\forall " ++ k ++ wrap 0 (tex p), 0)
+
+tostring :: Prop -> String
+tostring = fst . pretty

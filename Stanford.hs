@@ -3,7 +3,7 @@ module Stanford (Store, Word, Index, run, runDry, runOnFile, PosTree(..), postre
 import Prop (Ref)
 
 import Text.ParserCombinators.Parsec
-import Data.Map hiding (map, (\\))
+import Data.Map hiding (map, (\\), mapMaybe, null)
 
 import Data.List hiding (union, insert, lookup)
 import Text.XML.Light
@@ -24,11 +24,7 @@ type Store = Index -> Ref
 
 ------------------
 
--- Run these functions on each <sentence>
-
--- Use "lemma" instead of "word" to get standardized forms
--- (did -> do, n't -> not)
-
+-- lemmas are standardized forms of words. E.g. did -> do, n't -> not
 lemmas :: Element -> [Sentence]
 lemmas doc = map lemma (findElements (unqual "sentence") sentences)
 	where
@@ -42,7 +38,7 @@ postrees doc = map rootfilter roots
 	where
 		parses = findElements (unqual "parse") doc
 		roots = map (postreeRoot . strContent) parses
-		rootfilter (P "ROOT" [(P "S" s)]) = (P "S" s)
+		rootfilter (P "ROOT" [n]) = n
 		rootfilter root = error ("Cant parse strange sentence " ++ show root)
 
 postreeRoot :: String -> PosTree Word
@@ -69,16 +65,56 @@ posLeaf =
 		word <- many (noneOf " ()")
 		return (L tag word)
 
--- Why use an index tree if we can move the referants stright in there?
--- Because a lot of things don't have references...
 
 cleanTrees :: [PosTree Word] -> [Sentence] -> [PosTree (Word,Index)]
-cleanTrees trees ls = [clean t l s | (t, l, s) <- zip3 trees ls [0..]]
-	where clean t l s = substitute t (zip l (zip (repeat s) [0..]))
+cleanTrees trees ls = map cleanElements $ map cleanTags $ improveTrees trees ls
 
--- also simplify VB's
+improveTrees :: [PosTree Word] -> [Sentence] -> [PosTree (Word,Index)]
+improveTrees trees ls = [improve t l s | (t, l, s) <- zip3 trees ls [0..]]
+	where improve t l s = substitute t (zip l (zip (repeat s) [0..]))
 
--- Replaces every word in f
+-- simplifies certain tags with tedious information
+cleanTags :: PosTree a -> PosTree a
+cleanTags = treemap f id
+	where
+		f "VBD" = "VB"
+		f "VBG" = "VB"
+		f "VBN" = "VB"
+		f "VBP" = "VB"
+		f "VBZ" = "VB"
+		f "NNS" = "NN"
+		f other = other
+
+-- deletes certain nodes with tedious information
+cleanElements :: PosTree a -> PosTree a
+cleanElements tree = fromJust (deleteTag "." tree)
+
+-- Maybe this is not useful afterall
+rearrangeCCs :: PosTree a -> PosTree a
+rearrangeCCs (L t w)              = L t w
+rearrangeCCs (P t xs) | null bs   = P t ccxs
+					  | otherwise = P t [P "CC" [P t as, P t (tail bs)]]
+                      -- | otherwise = P ("CC"++t) [P t as, P t (tail bs)]
+	where
+		ccxs = map rearrangeCCs xs
+		(as, bs) = break f ccxs
+		f (L t _) = t == "CC"
+		f (P _ _) = False
+
+
+-- deletes all nodes with a given tag
+deleteTag :: PosTag -> PosTree a -> Maybe (PosTree a)
+deleteTag t1 (P t2 xs) | t1 == t2  = Nothing
+                       | otherwise = Just (P t2 (mapMaybe (deleteTag t1) xs))
+deleteTag t1 (L t2 w)  | t1 == t2  = Nothing
+                       | otherwise = Just (L t2 w)
+
+-- map over tags and leaf values
+treemap :: (PosTag -> PosTag) -> (b -> c) -> PosTree b -> PosTree c
+treemap f g (L tag word) = L (f tag) (g word)
+treemap f g (P tag subs) = P (f tag) (map (treemap f g) subs)
+
+-- Replaces every leaf value with a value from a list, in order
 substitute :: PosTree a -> [b] -> PosTree b
 substitute tree list = snd (substitute_ tree list)
 	where

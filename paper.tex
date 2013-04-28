@@ -621,9 +621,25 @@ sees(x,y) \cdot \triangleleft \cdot \bot \cdot \triangleright \cdot \triangle \c
 Notice that that means the word `no'/`not' must be $\triangleleft\cdot\bot\cdot\triangleright$. Unfortunately these retrospective triangles tend to mess sentence enough up, that they require lots of `stream unification brackets', and don't generally give very nice formulas. In the semantic parsing in the next section, they wont be used at all.
 
 \subsection{Montague semantic}
+
+$\exists a(farmer(a) \wedge \exists g(donkey(g) \wedge \forall o(o=a\vee o=g \rightarrow \exists v(friend(v) \wedge visit(o,v)))))$
+
+Montague (1970b): `I reject the contention that an important
+theoretical difference exists between formal and natural
+languages.'
+
+To us, the revolutionary idea in Montague's PTQ paper (and
+earlier papers) is the claim that natural language is not impossibly
+incoherent, as his teacher Tarski had led us to believe, but that
+large portions of its semantics can be treated by combining known
+tools from logic, tools like functions of finite type, the lambda-calculus,
+generalized quantifiers, tense and modal logic, and all the rest.
+
 Montague grammars are an approach to combinatorial semantics based on types and lambda calculus. It is interesting because it 
 Types
 Quantification
+
+`... we are convinced that the capacities of [Montague Grammar] have not been exploited to the limit, that sometimes an analysis is carried out in a rival framework simply because it is more fashionable' - Groendijk \& Stokhof in `Dynamic Montague Grammar'
 
 Montague can make any logic compositional
 
@@ -1033,6 +1049,8 @@ that the code can cope with the different types of back links and cross links th
 graph.
 
 \section{Perspectives/Conclusions (2)}
+
+In the papers it is always assumed that the postree and things are `trivial' or `already sorted', but how do the pieces really stack up when put together?
 
 What I learned
 
