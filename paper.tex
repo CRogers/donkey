@@ -51,6 +51,8 @@
                {`elem`}{{$\in$}}1
     }
 
+% Samson suggests using the word 'Computational'
+
 %Musings in Dynamic Semantics for Donkeys
 %From Donkeys to Predicates: Musings Into Dynamic Semantics and Logification
 %Donkification and Logification
@@ -621,6 +623,24 @@ sees(x,y) \cdot \triangleleft \cdot \bot \cdot \triangleright \cdot \triangle \c
 Notice that that means the word `no'/`not' must be $\triangleleft\cdot\bot\cdot\triangleright$. Unfortunately these retrospective triangles tend to mess sentence enough up, that they require lots of `stream unification brackets', and don't generally give very nice formulas. In the semantic parsing in the next section, they wont be used at all.
 
 \subsection{Montague semantic}
+
+\begin{align}
+&\exists a \cdot farmer(a) \rightarrow \exists g \cdot donkey(g) \cdot beat(a,g) \\
+&\exists a \cdot farmer(a) \cdot (\exists b \cdot donkey(b) \cdot own(a,b)) \rightarrow beat(a,b) \\
+&\exists a \cdot farmer(a) \cdot own(a,b) \cdot beat(a,b) \rightarrow a\_donkey(b) \\
+&\exists c \cdot farmer(c) \cdot (own(c,a) \cdot beat(c,a)) \rightarrow a\_donkey(a) \\
+&\exists a \cdot man(a) \cdot come\_in(a) \cdot (\exists i \cdot dog(i) \cdot see(a,i) \cdot smile(a)) \\
+&\exists a \cdot farmer(a) \cdot (\exists b \cdot donkey(b) \cdot (own(a,b) \cdot beat(a,b))) \\
+&\exists a \cdot donkey(a) \rightarrow \exists g \cdot horse(g) \cdot (\exists o \cdot eq\_on\_of(o,a,g) \rightarrow \exists v \cdot song(v) \cdot sing(o,v)) \\
+&\exists a \cdot farmer(a) \cdot (\exists p \cdot donkey(p) \cdot (starve(a,p) \cdot beat(a,p))) \\
+&\exists a \cdot farmer(a) \cdot (\exists g \cdot horse(g) \cdot starve(a,g) \cdot (\exists ac \cdot donkey(ac) \cdot beat(a,ac))) \\
+&\exists a \cdot man(a) \cdot walk(a) \rightarrow talk(a) \\
+&a\_mother\_of\_five(a) \\
+&\neg (\exists a \cdot man(a) \cdot walk\_in\_the\_park(a)) \cdot yodel(a) \\
+&\exists a \cdot farmer(a) \cdot (\exists g \cdot donkey(g) \cdot (\exists o \cdot eq\_on\_of(o,a,g) \rightarrow \exists v \cdot friend(v) \cdot visit(o,v))) \\
+&\neg (\exists a \cdot man(a) \cdot walk\_in\_the\_park(a)) \cdot (\exists r \cdot donkey(r) \cdot (yodel(a,r) \cdot beat(a,r))) \\
+&\exists a \cdot farmer(a) \cdot (\exists b \cdot donkey(b) \cdot own(a,b)) \cdot (brown(b) \cdot beat\_every\_day(a,b)) \\
+&\exists a \cdot (farmer(a) \cdot entrepreneur(a)) \cdot (\exists p \cdot donkey(p) \cdot beat(a,p))\end{align}
 
 $\exists a(farmer(a) \wedge \exists g(donkey(g) \wedge \forall o(o=a\vee o=g \rightarrow \exists v(friend(v) \wedge visit(o,v)))))$
 

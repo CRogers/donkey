@@ -1,6 +1,6 @@
-module Stanford (Store, Word, Index, run, runDry, runOnFile, PosTree(..), postrees) where
+module Stanford (Store, IWord, run, runDry, runOnFile, PosTree(..), postrees) where
 
-import Prop (Ref)
+import Fol (Ref)
 
 import Text.ParserCombinators.Parsec
 import Data.Map hiding (map, (\\), mapMaybe, null)
@@ -13,6 +13,7 @@ import System.Process
 
 type Index = (Int, Int)
 type Word = String
+type IWord = (Word, Index)
 type Sentence = [Word]
 
 type PosTag = String
@@ -66,10 +67,10 @@ posLeaf =
 		return (L tag word)
 
 
-cleanTrees :: [PosTree Word] -> [Sentence] -> [PosTree (Word,Index)]
+cleanTrees :: [PosTree Word] -> [Sentence] -> [PosTree IWord]
 cleanTrees trees ls = map cleanElements $ map cleanTags $ improveTrees trees ls
 
-improveTrees :: [PosTree Word] -> [Sentence] -> [PosTree (Word,Index)]
+improveTrees :: [PosTree Word] -> [Sentence] -> [PosTree IWord]
 improveTrees trees ls = [improve t l s | (t, l, s) <- zip3 trees ls [0..]]
 	where improve t l s = substitute t (zip l (zip (repeat s) [0..]))
 
@@ -185,14 +186,14 @@ alphabet = [c:"" | c <- "abcdefghijklmnopqrstuvwxyz"]
 variables :: [Ref]
 variables = alphabet ++ [b++a | b <- variables, a <- alphabet]
 
-runDry :: [String] -> IO [(Store, [PosTree (Word,Index)])]
+runDry :: [String] -> IO [(Store, [PosTree IWord])]
 runDry sentences =
 	do
 		sequence [runOnFile (name ++ ".xml") | name <- names]
 	where
 		names = ["input" ++ show i | i <- [1..length sentences]]
 
-run :: [String] -> IO [(Store, [PosTree (Word,Index)])]
+run :: [String] -> IO [(Store, [PosTree IWord])]
 run sentences =
 	do
 		sequence (zipWith writeFileLn names sentences)
@@ -205,7 +206,7 @@ run sentences =
 		names = ["input" ++ show i | i <- [1..length sentences]]
 		writeFileLn path s = writeFile path (s ++ "\n")
 
-runOnFile :: FilePath -> IO (Store, [PosTree (Word,Index)])
+runOnFile :: FilePath -> IO (Store, [PosTree IWord])
 runOnFile name =
 	do
 		f <- readFile name
