@@ -56,7 +56,9 @@ simp (DC DF p) = DF
 -- simp (DD p DF) = simp p
 -- simp (DD DF p) = simp p
 simp (DI p DF) = DN p
--- simp (DI DT p) = simp p -- this is incorrect, as they lhs creates scope
+-- scope related
+simp (DI DT (DI DT p)) = DT `DI` simp p
+simp (DN (DN p)) = DT `DI` simp p
 -- Fall throughs
 simp (DC p q) = simp p `DC` simp q
 simp (DD p q) = simp p `DD` simp q
