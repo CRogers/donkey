@@ -56,7 +56,7 @@ posEither =
 posTree =
 	do
 		tag <- many (noneOf " ")
-		char ' ' -- maybe not needed?
+		char ' '
 		subs <- sepBy1 posEither (char ' ')
 		return (P tag subs)
 posLeaf =
@@ -176,34 +176,35 @@ allRefs doc vs = searcher
 	      searcher i = findWithDefault (vs' !! diagonal i) i comap
 	      diagonal (j,k) = (j+k)*(j+k+1)`div`2 + j
 
-
--- TODO: To help us avoid running out of variables, we might want to
---       flatten the map once in a while
-
 --------------------
 
 alphabet = [c:"" | c <- "abcdefghijklmnopqrstuvwxyz"]
+
 variables :: [Ref]
 variables = alphabet ++ [b++a | b <- variables, a <- alphabet]
+
+filenames = ["/tmp/donkey_input" ++ show i | i <- [0..]]
 
 runDry :: [String] -> IO [(Store, [PosTree IWord])]
 runDry sentences =
 	do
 		sequence [runOnFile (name ++ ".xml") | name <- names]
 	where
-		names = ["input" ++ show i | i <- [1..length sentences]]
+		names = take (length sentences) filenames
 
 run :: [String] -> IO [(Store, [PosTree IWord])]
 run sentences =
 	do
 		sequence (zipWith writeFileLn names sentences)
-		writeFileLn "inputlist" (intercalate "\n" names)
-		(_, _, _, h) <- createProcess (shell "stanford-corenlp-full-2012-11-12/corenlp.sh -filelist inputlist")
+		writeFileLn listname (intercalate "\n" names)
+		(_, _, _, h) <- createProcess (shell (stanfordpath++" -outputDirectory /tmp -filelist "++listname))
 		exitCode <- waitForProcess h
 		putStrLn ("Exit code: " ++ show exitCode)
 		sequence [runOnFile (name ++ ".xml") | name <- names]
 	where
-		names = ["input" ++ show i | i <- [1..length sentences]]
+		stanfordpath = "../stanford-corenlp-full-2012-11-12/corenlp.sh"
+		listname = "/tmp/donkey_inputlist"
+		names = take (length sentences) filenames
 		writeFileLn path s = writeFile path (s ++ "\n")
 
 runOnFile :: FilePath -> IO (Store, [PosTree IWord])
