@@ -1,9 +1,10 @@
-module Visser (Visser(..), simplify, tex, pretty, intVisser1, intVisser2, intVisser3) where
+module Visser (Visser(..), simplify, tex, pretty, cleanVariables, intVisser1, intVisser2, intVisser3) where
 
 import Fol (Ref, Fol(..))
 import Dpl (Dpl(..))
+import Stanford (variables)
 
-import Data.List (intersperse)
+import Data.List (intersperse, nub)
 import Utils (replace)
 
 -- Syntax
@@ -59,6 +60,26 @@ simp p = p
 
 simplify :: Visser -> Visser
 simplify p = iterate simp p !! 2
+
+cleanVariables :: Visser -> Visser
+cleanVariables p = foldl rename p (zip used im ++ zip im variables)
+  where
+    used = nub (listem p)
+    im = map (++"0") used
+    listem (VE k) = [k]
+    listem (VP f ks) = ks
+    listem (VC p q) = listem p ++ listem q
+    listem (VD p q) = listem p ++ listem q
+    listem (VQ0 p) = listem p
+    listem (VQ1 p) = listem p
+    listem p = []
+    rename (VE k) (x,y) = if k == x then VE y else VE k
+    rename (VP f ks) (x,y) = VP f [if k == x then y else k | k <- ks]
+    rename (VC p q) (x,y) = VC (rename p (x,y)) (rename q (x,y))
+    rename (VD p q) (x,y) = VD (rename p (x,y)) (rename q (x,y))
+    rename (VQ0 p) (x,y) = VQ0 (rename p (x,y))
+    rename (VQ1 p) (x,y) = VQ1 (rename p (x,y))
+    rename p (x,y) = p
 
 -- Interpretation
 

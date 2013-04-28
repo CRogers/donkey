@@ -1,4 +1,4 @@
-module Stanford (Store, IWord, run, runDry, runOnFile, PosTree(..), postrees) where
+module Stanford (Store, IWord, run, runDry, runOnFile, PosTree(..), postrees, variables) where
 
 import Fol (Ref)
 

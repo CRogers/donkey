@@ -1,7 +1,7 @@
 module ToLogic (montague) where
 
 import Fol (Ref)
-import Visser (Visser(..))
+import Visser (Visser(..), cleanVariables)
 import Stanford (IWord, Store, PosTree(..))
 
 import Data.List
@@ -12,7 +12,7 @@ type Predicate = Ref -> Visser
 type Predicate2 = Ref -> Ref -> Visser
 
 montague :: (Store, [PosTree IWord]) -> Visser
-montague (refs, tree) = intRoot tree refs
+montague (refs, tree) = cleanVariables $ intRoot tree refs
 
 intRoot :: [PosTree IWord] -> Store -> Visser
 intRoot ((P "S" s):ss) r = VQ0 (intS s r) `VC` intRoot ss r
