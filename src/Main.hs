@@ -19,12 +19,12 @@ super sentences = runDry sentences >>= (return . map montague)
 sentences = [
 	"Every farmer beats some donkey.",
 	"If a farmer owns a donkey, he beats it",
-	"If a farmer owns it and he beats it, it is a donkey",
 	"If a farmer owns a donkey, he beat it. If he rewards it, he doesn't own it.",
+	"A dog barks. If it is beaten, it whines.", -- a donkey brays, but Stanford doesn't like it
 
 	-- these two become a bit weird due to the scoping hack for 'a'
 	"If a farmer owns a donkey, he owns a horse. If he doesn't own it, he owns a cow.",
-	"Every dog sees a cat. It chases it.",
+	"If a woman is American, she loves a soldier. If she is Dutch, she loves a bike-rider.",
 
 	-- sequentials
 	"A man comes in. He sees a donkey. He smiles.", -- very sequential
@@ -34,16 +34,16 @@ sentences = [
 	"A farmer starves a horse and beats a donkey.", -- double vp
 	"All donkeys and a horse sing a song.", -- double np
 	"Some farmer and entrepreneur beats a donkey.", -- double description
+	"A man and a woman owned a horse and a donkey. If the donkey did not walk and the man was a farmer, he beat it.", -- cross product
 
 	-- free variables
+	"If a farmer owns it and he beats it, it is a donkey",
 	"She is a mother of five", -- mother becomes the root, because is is not a 'real' verb
 	"If he owns it, he beats it.", -- double free variable
 	"No man walks in the park. He yodels.", -- coref checker screws this up, but dpl fixes it
 
-	"A farmer owns a donkey. It is brown and he beats it every day.", -- temporal
-	"If a woman is American, she loves a soldier. If she is Dutch, she loves a bike-rider.",
-	"A man and a woman owned a horse and a donkey. If the donkey did not walk and the man was a farmer, he beat it.", -- cross product
-	"A dog barks. If it is beaten, it whines.",
+	-- stringifying
+	"A farmer owns a donkey. It is brown and he beats it every day.",
 
 ------------- I Can do until this line
 
@@ -57,7 +57,7 @@ sentences = [
 	"If Mary is swimming or dancing, then Sue is.",
 	"If John beat a horse or a donkey, his wife helped it",
 	"He was quite angry. John. He was MAD.",
-	"The King of France is bald", -- commitment
+	"The King of France is bald",
 
 	-- sentences with disjunction.
 	-- stanford doesn't let us coref over a disjunction
@@ -97,7 +97,10 @@ sentences = [
 	-- Existential non-commitment
 	"Jim wants to marry a Norweigan girl",
 	"Fred was looking for a unicorn",
-	"The golden mountain does not exist"
+	"The golden mountain does not exist",
+
+	-- Missing features in coref tagger
+	"Every dog sees a cat. It chases it."
 	]
 
 main :: IO ()
