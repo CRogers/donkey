@@ -1,4 +1,5 @@
 \documentclass[12pt]{article}
+\usepackage{booktabs}
 
 \usepackage[utf8]{inputenc}
 \usepackage{amsthm,amssymb,amsmath,dsfont,mathrsfs,nicefrac,wasysym,listings}
@@ -623,62 +624,55 @@ sees(x,y) \cdot \triangleleft \cdot \bot \cdot \triangleright \cdot \triangle \c
 Notice that that means the word `no'/`not' must be $\triangleleft\cdot\bot\cdot\triangleright$. Unfortunately these retrospective triangles tend to mess sentence enough up, that they require lots of `stream unification brackets', and don't generally give very nice formulas. In the semantic parsing in the next section, they wont be used at all.
 
 \subsection{Montague semantic}
+Montague semantics is a theory of natural language that believes its semantics can be described thoroughly in terms of standard mathematical models. Logician Richard Montague (1930-1971) famously wrote
+\begin{quotation}
+There is in my opinion no important theoretical difference between natural languages and the artificial languages of logicians; indeed I consider it possible to comprehend the syntax and semantics of both kinds of languages with a single natural and mathematically precise theory. \cite{montague1970universal}
+\end{quotation}
 
-\begin{align}
-&\exists a \cdot farmer(a) \rightarrow \exists g \cdot donkey(g) \cdot beat(a,g) \\
-&\exists a \cdot farmer(a) \cdot (\exists b \cdot donkey(b) \cdot own(a,b)) \rightarrow beat(a,b) \\
-&\exists a \cdot farmer(a) \cdot own(a,b) \cdot beat(a,b) \rightarrow a\_donkey(b) \\
-&\exists c \cdot farmer(c) \cdot (own(c,a) \cdot beat(c,a)) \rightarrow a\_donkey(a) \\
-&\exists a \cdot man(a) \cdot come\_in(a) \cdot (\exists i \cdot dog(i) \cdot see(a,i) \cdot smile(a)) \\
-&\exists a \cdot farmer(a) \cdot (\exists b \cdot donkey(b) \cdot (own(a,b) \cdot beat(a,b))) \\
-&\exists a \cdot donkey(a) \rightarrow \exists g \cdot horse(g) \cdot (\exists o \cdot eq\_on\_of(o,a,g) \rightarrow \exists v \cdot song(v) \cdot sing(o,v)) \\
-&\exists a \cdot farmer(a) \cdot (\exists p \cdot donkey(p) \cdot (starve(a,p) \cdot beat(a,p))) \\
-&\exists a \cdot farmer(a) \cdot (\exists g \cdot horse(g) \cdot starve(a,g) \cdot (\exists ac \cdot donkey(ac) \cdot beat(a,ac))) \\
-&\exists a \cdot man(a) \cdot walk(a) \rightarrow talk(a) \\
-&a\_mother\_of\_five(a) \\
-&\neg (\exists a \cdot man(a) \cdot walk\_in\_the\_park(a)) \cdot yodel(a) \\
-&\exists a \cdot farmer(a) \cdot (\exists g \cdot donkey(g) \cdot (\exists o \cdot eq\_on\_of(o,a,g) \rightarrow \exists v \cdot friend(v) \cdot visit(o,v))) \\
-&\neg (\exists a \cdot man(a) \cdot walk\_in\_the\_park(a)) \cdot (\exists r \cdot donkey(r) \cdot (yodel(a,r) \cdot beat(a,r))) \\
-&\exists a \cdot farmer(a) \cdot (\exists b \cdot donkey(b) \cdot own(a,b)) \cdot (brown(b) \cdot beat\_every\_day(a,b)) \\
-&\exists a \cdot (farmer(a) \cdot entrepreneur(a)) \cdot (\exists p \cdot donkey(p) \cdot beat(a,p))\end{align}
+He believed that just as Chomsky had formulated the syntax of language in a mathematical framework, so too should it be possible to define the meaning of every sentence, based on the meaning of its parts and a set of compositional rules.
 
-$\exists a(farmer(a) \wedge \exists g(donkey(g) \wedge \forall o(o=a\vee o=g \rightarrow \exists v(friend(v) \wedge visit(o,v)))))$
+While the above remains a hot topic in the philosophy of language, we are going to take a more practical stand. In our quest to automate the translation of language into Visser's monadic DPL, it is interesting that Montague was able to define such a large fragment of English using familiar tools of compositionality and lambda calculus.
 
-Montague (1970b): `I reject the contention that an important
-theoretical difference exists between formal and natural
-languages.'
+The basic idea is very simple. For each postag we define a type. E.g. $S$ has the type $Bool$ and $VP$ has the type $Entity \rightarrow Bool$, the intuition being that the VP returns true if the entity `does what the VP described' and false otherwise. An NP is given type type $VP \rightarrow Bool$ which allows it to create a scope for a variable and pass it to the VP, or whatever it sees fitting for that NP.
 
-To us, the revolutionary idea in Montague's PTQ paper (and
-earlier papers) is the claim that natural language is not impossibly
-incoherent, as his teacher Tarski had led us to believe, but that
-large portions of its semantics can be treated by combining known
-tools from logic, tools like functions of finite type, the lambda-calculus,
-generalized quantifiers, tense and modal logic, and all the rest.
+The point is that we always give a specific phrase type the same logical type. This allows our composition rules to know exactly what type each component has. Here are some more examples:
+\begin{itemize}
+\item Proper noun (John, Oxford): Entity
+\item One-place predicate constant (farmer, sleeps, walks): $Entity \rightarrow Bool$
+\item Transitive verb (owns, beats): $Entity \rightarrow Entity \rightarrow Bool$
+\item Attributive adjective (good, intelligent, former): $(Entity \rightarrow Bool) \rightarrow (Entity \rightarrow Bool)$
+\item Quantifiers/Determiners (a, the, every, no): $(Entity \rightarrow Bool) \rightarrow (Entity \rightarrow Bool) \rightarrow Bool$
+\end{itemize}
 
-Montague grammars are an approach to combinatorial semantics based on types and lambda calculus. It is interesting because it 
-Types
-Quantification
+To translate a sentence like `Every farmer beats a donkey' we first create a parse tree [$_\text{S}$ [$_\text{NP}$ [$_\text{DT}$ Every] [$_\text{NN}$ farmer]] [$_\text{VP}$ [$_\text{VBZ}$ beats] [$_\text{NP}$ [$_\text{DT}$ a] [$_\text{NN}$ donkey]]]].
 
-`... we are convinced that the capacities of [Montague Grammar] have not been exploited to the limit, that sometimes an analysis is carried out in a rival framework simply because it is more fashionable' - Groendijk \& Stokhof in `Dynamic Montague Grammar'
+Next we create objects for the basic elements (a computer would do this recursively, but it is easier for us to do it level by level):
+\begin{equation*}\begin{aligned}
+&\text{Every, $r_1$}&=& \lambda xy(\Bowtie\cdot\triangle\cdot\exists r_1\cdot (xr_1)\cdot\triangle\cdot\Bowtie\cdot (yr_1)) & :: (E\rightarrow B)\rightarrow(E\rightarrow B)\rightarrow B\\
+&\text{farmer}&=& \lambda x(farmer(x)) & :: E\rightarrow B\\
+&\text{beats}&=& \lambda xy(beats(xy)) & :: E\rightarrow E\rightarrow B\\
+&\text{a, $r_2$}&=& \lambda xy(\triangle\cdot\exists r_2\cdot (xr_2)\cdot\triangle\cdot (yr_2)) & :: (E\rightarrow B)\rightarrow(E\rightarrow B)\rightarrow B\\
+&\text{donkey}&=& \lambda x(donkey(x)) & :: E\rightarrow B\\
+\midrule
+&\text{Every farmer}&=& \lambda y(\Bowtie\cdot\triangle\cdot\exists r_1\cdot farmer(r_1)\cdot\triangle\cdot\Bowtie\cdot (yr_1)) & :: (E\rightarrow B)\rightarrow B\\
+&\text{a donkey}&=& \lambda y(\triangle\cdot\exists r_2\cdot donkey(r_2)\cdot\triangle\cdot (yr_2)) & :: (E\rightarrow B)\rightarrow B\\
+\midrule
+&\text{beats a donkey}&=& \lambda z(\triangle\cdot\exists r_2\cdot donkey(r)\cdot\triangle\cdot beats(z,r_2)) & :: E\rightarrow B\\
+\end{aligned}\end{equation*}
 
-Montague can make any logic compositional
+Until we can then finally compose the top NP and VP to get the sentence:
+\begin{equation*}\begin{aligned}
+&\Bowtie\cdot\triangle\cdot\exists r_1\cdot farmer(r_1)\cdot\triangle\cdot\Bowtie\cdot \triangle\cdot\exists r_2\cdot donkey(r_2)\cdot\triangle\cdot beats(r_1,r_2)\\
+=\text{ }&\Bowtie\cdot\triangle\cdot\exists r_1\cdot farmer(r_1)\cdot\triangle\cdot\Bowtie\cdot beats(r_1,r_2)\cdot \triangle\cdot\exists r_2\cdot donkey(r_2)\cdot\triangle
+\end{aligned}\end{equation*}
 
-Types of:
-  One-place predicate constant (farmer, sleeps, walks): Entity -> Bool
-  Transitive verb (owns, beats): Entity -> Entity -> Bool
-  Attributive adjective (good, intelligent, former): (Entity -> Bool) -> (Entity -> Bool)
-  Noun phrase: (Entity -> Bool) -> Bool
-  Proper noun: Entity
-  Quantifiers/Determiners: a, the, every, no: (Entity -> Bool) -> (Entity -> Bool) -> Bool
-  Sentence: Bool
+You might have noticed we didn't discuss how the variables $r_1$ and $r_2$ were assigned. This is of course of utter importance in relation to anaphora resolution. However in the section \ref{sec:coreferences} we will discuss a way out of this problem.
+
+Later in the implementation section we will look at more issues regarding to using Montague Grammars in practise. First we need to look at a very important source of ambiguity in sentences.
 
 \subsection{Weak and strong readings}
 
-Let's return multiple interpretations
-
-
-% It is not possible
-It is clear that not all sentences can be unambiguously translated from natural language to logic. A sentence like  
+In the process of defining semantics for language, ambiguity in sentenses is of course a serious problem. A sentence like  
 \begin{quotation}
 A farmer beats a donkey
 \end{quotation}
@@ -716,79 +710,7 @@ quantified noun phrases or negations - are often ambiguous.
 
 Every farmer owns a donkey. It is pink. Second sentence decides the reading.
 
-\subsection{Dependencies}
-
-Extracted from parse trees using tregex\cite{de2006generating}
-
-\tikzstyle{level 1}=[level distance=2.5cm, sibling distance=3.5cm]
-\begin{figure}
-\centering
-\begin{tikzpicture}[grow=down, sloped]
-\node {root}
-    child {
-        node {owns}
-        child {
-            node {If}
-            edge from parent
-            node[above] {mark}
-        }
-        child {
-            node {farmer}
-            child {
-                node {a}
-                edge from parent
-                node[above] {det}
-            }
-            edge from parent
-            node[above] {nsubj}
-        }
-        child {
-            node {beats}
-            child {
-                node {he}
-                edge from parent
-                node[above] {nsubj}
-            }
-            child {
-                node {it}
-                edge from parent
-                node[above] {dobj}
-            }
-            edge from parent
-            node[above] {advcl}
-        }
-        child {
-            node {donkey}
-            child {
-                node {a}
-                edge from parent
-                node[above] {det}
-            }
-            edge from parent
-            node[above] {dobj}
-        }
-        edge from parent
-        node[above] {root}
-    };
-\end{tikzpicture}
-\caption{M1} \label{fig:M1}
-\end{figure}
-
-
-\begin{equation}
-NP < NN \$ VP
-\end{equation}
-
-An NP over an NN and w/ sister VP
-
-\begin{equation}
-NP < (NN < dog) \$ (VP <<\# (barks > VBZ))
-\end{equation}
-
-An NP both over an NN over `dog' and with
-a sister VP headed by `barks' under VBZ
-
-\subsection{Coreferences}
+\subsection{Coreferences}\label{sec:coreferences}
 Coreferences (or anaphora) is essential in order to create advanced discourse, since it is what allows us maintain a topic beyond the first mention. Without coreferences we couldn't even express simple logical statements such as transitivity: `a man's brother's brother is his brother' etc.
 
 Identifying coreferences (or resolving anaphora) is hence an important part of converting natural language into logic. The issue is not touched upon in Visser's paper, which casually sidesteps the problem by assigning variables to all mentioned entities.
@@ -870,10 +792,99 @@ The reason the rules are applied in the order above is to give the most certain 
 
 The Stanford procedure above is currently the strongest competitor in various coreference competitions.
 
-\subsection{Semantics via dependencies}
-This subsection's content...
+\subsection{Dependencies}
+
+Extracted from parse trees using tregex\cite{de2006generating}
+
+\tikzstyle{level 1}=[level distance=2.5cm, sibling distance=3.5cm]
+\begin{figure}
+\centering
+\begin{tikzpicture}[grow=down, sloped]
+\node {root}
+    child {
+        node {owns}
+        child {
+            node {If}
+            edge from parent
+            node[above] {mark}
+        }
+        child {
+            node {farmer}
+            child {
+                node {a}
+                edge from parent
+                node[above] {det}
+            }
+            edge from parent
+            node[above] {nsubj}
+        }
+        child {
+            node {beats}
+            child {
+                node {he}
+                edge from parent
+                node[above] {nsubj}
+            }
+            child {
+                node {it}
+                edge from parent
+                node[above] {dobj}
+            }
+            edge from parent
+            node[above] {advcl}
+        }
+        child {
+            node {donkey}
+            child {
+                node {a}
+                edge from parent
+                node[above] {det}
+            }
+            edge from parent
+            node[above] {dobj}
+        }
+        edge from parent
+        node[above] {root}
+    };
+\end{tikzpicture}
+\caption{M1} \label{fig:M1}
+\end{figure}
+
+
+\begin{equation}
+NP < NN \$ VP
+\end{equation}
+
+An NP over an NN and w/ sister VP
+
+\begin{equation}
+NP < (NN < dog) \$ (VP <<\# (barks > VBZ))
+\end{equation}
+
+An NP both over an NN over `dog' and with
+a sister VP headed by `barks' under VBZ
+
+\subsubsection{Semantics via dependencies}
+It is an interesting idea to consider that we might be able to define our semantics over a dependency graph, in a similar way to the Montague approach described earlier. The dependency graph adds a lot of flexibility where the phrase structure tree used in the Montague approach is limited to the direct syntax of the tree. A good example is our favourite sentence `if a farmer owns a donkey, he beats it', where there isn't a very strong syntactical relationship between `farmer' and `he'. It's also been suggested that it is mostly due to luck that a lot of English fits relatively well to the Montague approach, where as in some languages the structure of the phrase tree might not say much about the actual semantics.
+
+I've worked hard on trying to define a Montague like set of equations for Enlish, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP -> Bool' and VPs are `Entity -> Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: PhraseTree -> (VP -> Bool)'.With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
+
+Another problem worth considering is the fact that all information in the graph is drawn syntactically from the phrase tree. That is, the graph doesn't contain any information not in the tree, but the other direction is entirely possible. While it is hard to say exactly what's missing, it is worth noting.
 
 \section{Implementation (8)}
+
+
+Montague grammars have been used for many years in the quest of machine translation. The idea was that to use logic as a `universal language' to which we could translate any sentence, and ascend back into whatever language we'd like. Hence you would think that the web was flooded with code and long machine readable lists of rules, but this is however not the case.
+
+Perhaps the lack of usable material is due to the fact that most computer scientists abandoned the formal approach two decades ago for instead to try their luck with machine learning and vector space models. These models are however starting to show their weaknesses, specially in very logical sentences, and people are starting to wonder if there are still things to be learned from Montague's approach.
+\begin{quotation}
+`... we are convinced that the capacities of [Montague Grammar] have not been exploited to the limit, that sometimes an analysis is carried out in a rival framework simply because it is more fashionable' - Groendijk \& Stokhof in `Dynamic Montague Grammar'\cite{groenendijk1990dynamic}
+\end{quotation}
+
+Nonetheless the lack of machine tested composition rules means that nearly all of the rules I shall present are of my own creation. Because these rules are tested in practice on a large set of English sentences, they hopefully avoid some mistakes and oversights that I have found in purely theoretical papers. It seams like the correct approach to start with a small working fragment, and slowly add more phrase rules and sentences. The opposite of this approach is what is often observed when logicians and philosophers go astray in very abstract corners of English, without having covered the basic ground.
+
+
+
 
 Incremental dynamics\quote{van2001incremental}
 
@@ -984,6 +995,8 @@ Stanford: \cite{lee2013deterministic}
 Coreferences
 Using the parse tree and NPs
 
+The free variable thing is a problem in the sense that we have decided the meaning of a sentence is a truth value. Maybe we should change it to assignment -> Truth...
+
 Something that's very interesting is when to use free variables and when to use bound variables. We can think of free variables as actors known by the context and bound variables as actors introduced in the sentence. So if we had `The farmer had a friend. His name was Anders', we could write the first part as $\exists y \cdot friends(x,y)$ and the second part as $name(y, `Anders')$. This is important to keep compositionality, but it does of course raise the interesting question of how to make sure that the variable for `Anders' in the first and the second sentence is the same.
 
 In addition to being essential for composition, free variables are also very useful for information extraction type sentences. We can imagine writing a curious researcher writing into a search engine `farmers who like donkeys' which translates into $farmer(x) \cdot likes(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y)$.
@@ -1034,22 +1047,116 @@ This is not as bad as it sounds. It is similar to Montague and what the Stanford
 \subsection{Examples}
 Until now we've been very focused on the same one or two simple sentences. To provide a better test bench for our approach, it is interesting to follow some sentences through the different levels of our approach.
 
+The sentences are all simplified through a number of syntactical identities defined for each language. The purpose of this is only to improve readability.
+
+
 \begin{enumerate}
 \item
-Some description?
-\begin{description}[style=multiline, leftmargin=10.25em]
-  \item[Natural language] If a farmer who owns a donkey, he beats it 
-  \item[Dependency Graph] ... eh
-  \item[Monadic DPL] $\Bowtie \cdot \triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \Bowtie \cdot beats(x,y)$
-  \item[DPL] $\exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot owns(x,y) \rightarrow beats(x,y)$
-  \item[FOL] $\forall x ( farmer(x) \rightarrow \forall y ( donkey(y) \wedge owns(x,y) \rightarrow beats(x,y)))$
-\end{description}
-
-\item The second item
+Let's start up with a very sequential example to showcase the strength of DPL. Notice how the sentences are easily concattenated with no need for scope handling.
+\begin{align*}
+&\text{\textbf{English}}&&\text{A man comes in. He sees a donkey. He smiles.} \\
+&\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot man(a) \cdot \triangle \cdot come\_in(a) \cdot \triangle \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot see(a,b) \cdot smile(a) \\
+&\text{\textbf{DPL}}&&\exists a \cdot man(a) \cdot \exists b \cdot donkey(b) \cdot come\_in(a) \cdot see(a,b) \cdot smile(a) \\
+&\text{\textbf{FOL}}&&\exists a(man(a) \wedge \exists b(donkey(b) \wedge come\_in(a) \wedge see(a,b) \wedge smile(a))) \\
+\end{align*}
 \item
-`John wants to marry a Spanish girl'
+Now let's try a real donkey sentence. Notice how in this case the program chooses the weak reading of `some donkey'.
+\begin{align*}
+&\text{\textbf{English}}&&\text{Every farmer beats some donkey.} \\
+&\text{\textbf{Visser}}&&\Bowtie \cdot \triangle \cdot \exists a \cdot farmer(a) \cdot \triangle \cdot \Bowtie \cdot \triangle \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot beat(a,b) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \rightarrow \exists b \cdot donkey(b) \cdot beat(a,b) \\
+&\text{\textbf{FOL}}&&\forall a(farmer(a) \rightarrow \exists b(donkey(b) \wedge beat(a,b))) \\
+\end{align*}
+\item
+We can also handle cases where `a farmer' is introduced inside the anticedent of an `if'.
+\begin{align*}
+&\text{\textbf{English}}&&\text{If a farmer owns a donkey, he beats it} \\
+&\text{\textbf{Visser}}&&\Bowtie \cdot \triangle \cdot \exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot own(a,b) \cdot \Bowtie \cdot beat(a,b) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot own(a,b) \rightarrow beat(a,b) \\
+&\text{\textbf{FOL}}&&\forall a(farmer(a) \rightarrow \forall b(donkey(b) \wedge own(a,b) \rightarrow beat(a,b))) \\
+\end{align*}
+\item
+This is an example from Visser \cite{visser1999donkey} containing sentences with no verbs. Notice how the Visser logic has to introduce $?_0$ to prevent the antecedent from becoming part of the consequent.
+\begin{align*}
+&\text{\textbf{English}}&&\text{A farmer. A Donkey. If he owns it, it is beaten.} \\
+&\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot ?_0(\Bowtie \cdot own(a,b) \cdot \Bowtie \cdot beat(b)) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot (own(a,b) \rightarrow beat(b)) \\
+&\text{\textbf{FOL}}&&\exists a(farmer(a) \wedge \exists b(donkey(b) \wedge (own(a,b) \rightarrow beat(b)))) \\
+\end{align*}
+$?_0$ however only scopes off the consequent `channel' of the monoid. Hence this more complicated example also works as expected.
+\begin{align*}
+&\text{\textbf{English}}&&\text{If a farmer owns a donkey, he beats it.}\\
+&&&\text{If he rewards it, he doesn't own it.} \\
+&\text{\textbf{Visser}}&&?_0(\Bowtie \cdot \triangle \cdot \exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot own(a,b) \cdot \Bowtie \cdot beat(a,b))\\&&& \cdot ?_0(\Bowtie \cdot reward(a,b) \cdot \Bowtie \cdot ?_0(\Bowtie \cdot own(a,b) \cdot \Bowtie \cdot \bot)) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \rightarrow\\&&& (own(a,b) \rightarrow beat(a,b))\cdot (reward(a,b) \rightarrow \neg own(a,b)) \\
+&\text{\textbf{FOL}}&&\forall a(farmer(a) \rightarrow \forall b(donkey(b) \rightarrow\\&&& (own(a,b) \rightarrow beat(a,b))\wedge (reward(a,b) \rightarrow \neg own(a,b)))) \\
+\end{align*}
+\item
+A big consequence of/decision in the grammar created, is that no new entities can be introduced in the `then part' of an `if'. The reason for this is that such objects are not guarenteed to exist on the ground of the sentence. We enforce this rule using the $?_1$ function.
+\begin{align*}
+&\text{\textbf{English}}&&\text{If a farmer owns a donkey, he owns a horse.}\\&&&\text{If he doesn't own it, he owns a cow.} \\
+&\text{\textbf{Visser}}&&?_0(\Bowtie \cdot \triangle \cdot \exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot own(a,b) \cdot \Bowtie\\&&&\cdot ?_1(\triangle \cdot \exists c \cdot horse(c) \cdot \triangle \cdot own(a,c))) \cdot\\&&& ?_0(\Bowtie\cdot ?_0(\Bowtie \cdot own(a,b) \cdot \Bowtie \cdot \bot) \cdot \Bowtie \cdot ?_1(\triangle \cdot \exists d \cdot cow(d) \cdot \triangle \cdot own(a,d))) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \rightarrow (own(a,b) \rightarrow \exists c \cdot horse(c) \cdot own(a,c))\\&&& \cdot (\neg own(a,b) \rightarrow \exists d \cdot cow(d) \cdot own(a,d)) \\
+&\text{\textbf{FOL}}&&\forall a(farmer(a) \rightarrow \forall b(donkey(b) \rightarrow (own(a,b) \rightarrow \exists c(horse(c) \wedge own(a,c)))\\&&&\wedge (\neg own(a,b) \rightarrow \exists d(cow(d) \wedge own(a,d))))) \\
+\end{align*}
+\item
+Because of the doubtful semantic meaning of disjunctive sentences discussed, I have instead chosen to focus on conjunctive problems. And there are a lot of those too. The first one is a case of a conjunctive VP.
+Notice that we treat `starves' as a transitive verb, even though the sentence is clearly ambigious. In this case the phrase parser makes the decision for us.
+\begin{align*}
+&\text{\textbf{English}}&&\text{A farmer starves a horse and beats a donkey.} \\
+&\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot farmer(a) \cdot  \exists b \cdot horse(b) \cdot \triangle \cdot starve(a,b)\\&&&\cdot \triangle \cdot \exists c \cdot donkey(c) \cdot \triangle \cdot beat(a,c) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \cdot \exists b \cdot horse(b) \cdot \exists c \cdot donkey(c) \cdot starve(a,b) \cdot beat(a,c) \\
+&\text{\textbf{FOL}}&&\exists a(farmer(a) \wedge \exists b(horse(b) \wedge \exists c(donkey(c) \wedge starve(a,b) \wedge beat(a,c)))) \\
+\end{align*}
+\item
+In Montague's PTQ\cite{montague1973proper} he doesn't give rules for conjunction of NPs, but only sentences and VP's. In \cite{rooth1982conjunction} and \cite{partee1983generalized} Mats Rooth and Barbara Partee discuss different issues arrising, but never reach any usable construction. Personally I've found the below to be very useful for conjunctive NPs that act as a union.
+\begin{align*}
+&\text{\textbf{English}}&&\text{All donkeys and a horse sing a song.} \\
+&\text{\textbf{Visser}}&&\Bowtie \cdot \triangle \cdot \exists a \cdot donkey(a) \cdot \triangle \cdot \Bowtie \cdot \triangle \cdot \exists b \cdot horse(b) \cdot \triangle\\&&& \cdot ?_0(\Bowtie \cdot \exists c \cdot eq\_on\_of(c,a,b) \cdot \Bowtie \cdot \triangle \cdot \exists d \cdot song(d) \cdot \triangle \cdot sing(c,d)) \\
+&\text{\textbf{DPL}}&&\exists a \cdot donkey(a) \rightarrow \exists b \cdot horse(b) \cdot \exists d \cdot song(d)\\&&& \cdot (\exists c \cdot eq\_on\_of(c,a,b) \rightarrow sing(c,d)) \\
+&\text{\textbf{FOL}}&&\forall a(donkey(a) \rightarrow \exists b(horse(b) \wedge \exists d(song(d)\\&&& \wedge \forall c(eq\_on\_of(c,a,b) \rightarrow sing(c,d))))) \\
+\end{align*}
+\item
+This is a more simple example of a conjunctive NN.
+\begin{align*}
+&\text{\textbf{English}}&&\text{Some farmer and entrepreneur owns a donkey.} \\
+&\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot farmer(a) \cdot entrepreneur(a) \cdot  \exists b \cdot donkey(b) \cdot \triangle \cdot own(a,b) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \cdot entrepreneur(a) \cdot \exists b \cdot donkey(b) \cdot own(a,b) \\
+&\text{\textbf{FOL}}&&\exists a(farmer(a) \wedge entrepreneur(a) \wedge \exists b(donkey(b) \wedge own(a,b))) \\
+\end{align*}
+\item
+The great thing about the construct introduced for conjunctive NPs is that it also works well when we need a cross product of subjects and objects, as this example shows.
+\begin{align*}
+&\text{\textbf{English}}&&\text{A man and a woman owned a horse and a donkey.}\\&&&\text{If the donkey did not walk, and the man was a farmer, he beat it.} \\
+&\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot man(a) \cdot  \exists b \cdot woman(b) \cdot \triangle \cdot ?_0(\Bowtie \cdot \exists c \cdot eq\_on\_of(c,a,b) \cdot \Bowtie\\&&&\cdot \triangle \cdot \exists d \cdot horse(d) \cdot  \exists e \cdot donkey(e) \cdot \triangle \cdot ?_0(\Bowtie \cdot \exists f \cdot eq\_on\_of(f,d,e) \cdot \Bowtie\\&&&\cdot own(c,f))) \cdot ?_0(\Bowtie \cdot ?_0(\Bowtie \cdot walk(e) \cdot \Bowtie \cdot \bot) \cdot a\_farmer(a) \cdot \Bowtie \cdot ?_1(beat(a,e))) \\
+&\text{\textbf{DPL}}&&\exists a \cdot man(a) \cdot \exists b \cdot woman(b) \cdot \exists d \cdot horse(d) \cdot \exists e \cdot donkey(e)\\&&&\cdot (\exists c \cdot eq\_on\_of(c,a,b) \cdot \exists f \cdot eq\_on\_of(f,d,e) \rightarrow own(c,f))\\&&&\cdot (\neg walk(e) \cdot a\_farmer(a) \rightarrow beat(a,e)) \\
+&\text{\textbf{FOL}}&&\exists a(man(a) \wedge \exists b(woman(b) \wedge \exists d(horse(d) \wedge \exists e(donkey(e)\\&&&\wedge \forall c(eq\_on\_of(c,a,b) \rightarrow \forall f(eq\_on\_of(f,d,e) \rightarrow own(c,f)))\\&&&\wedge (\neg walk(e) \wedge a\_farmer(a) \rightarrow beat(a,e)))))) \\
+\end{align*}
+\item
+Finally it is interesting to see how the program handles pronouns. I've chosen to make `free pronouns' not be an error, but a feature. Free pronouns are treated as free variables, which allow you to create sentences that might be use e.g. to filter a database.
+\begin{align*}
+&\text{\textbf{English}}&&\text{She is a mother of five}\hspace{15em} \\
+&\text{\textbf{Visser}}&&a\_mother\_of\_five(a) \\
+&\text{\textbf{DPL}}&&a\_mother\_of\_five(a) \\
+&\text{\textbf{FOL}}&&a\_mother\_of\_five(a) \\
+\end{align*}
+\item
+The following sentence is very similar to the original donkey sentences, but it features a free variable.
+\begin{align*}
+&\text{\textbf{English}}&&\text{If a farmer owns it and he beats it, it is a donkey} \\
+&\text{\textbf{Visser}}&&\Bowtie \cdot \triangle \cdot \exists a \cdot farmer(a) \cdot \triangle \cdot own(a,b) \cdot beat(a,b) \cdot \Bowtie \cdot a\_donkey(b) \\
+&\text{\textbf{DPL}}&&\exists a \cdot farmer(a) \rightarrow (own(a,b) \cdot beat(a,b) \rightarrow a\_donkey(b)) \\
+&\text{\textbf{FOL}}&&\forall a(farmer(a) \wedge own(a,b) \wedge beat(a,b) \rightarrow a\_donkey(b)) \\
+\end{align*}
+\item
+A final example that really shows how DPL scope and free variables all play along together is this the case of a `non existent' antecedent. The stanford coref tagger mistakingly tags the two men in this sentence as the same, but because negation creates a closed scope, the final sentence still comes out right.
+\begin{align*}
+&\text{\textbf{English}}&&\text{No man walks in the park. He yodels.} \\
+&\text{\textbf{Visser}}&&?_0(\Bowtie \cdot \exists a \cdot man(a) \cdot walk\_in\_the\_park(a) \cdot \Bowtie \cdot \bot) \cdot yodel(a) \\
+&\text{\textbf{DPL}}&&\neg (\exists a \cdot man(a) \cdot walk\_in\_the\_park(a)) \cdot yodel(a) \\
+&\text{\textbf{FOL}}&&\forall a(man(a) \rightarrow \neg walk\_in\_the\_park(a)) \wedge yodel(a) \\
+\end{align*}
 
-This one is hard because it is an example of existential non commitment. I bet we'll fail it.
 \end{enumerate}
 
 Extract D Testing 
@@ -1111,7 +1218,7 @@ Things learned from courses
 
 Should I make my latex file literate haskell? %bhttp://www.haskell.org/haskellwiki/Literate_programming
 
-\lstinputlisting[language=Haskell]{Main.hs}
+%$\lstinputlisting[language=Haskell]{src/Main.hs}
 
 \section{Acknowledgments}
 I would like to thank Samson for guiding me through

@@ -24,6 +24,7 @@ intS [P "NP" np, P "VP" vp] r = intNP np r (intVP vp r)
 intS (P "SBAR" ([(L "IN" ("if",_)), (P "S" s1)]) : (L "," _) : s2) r =
 		VQ0 (VSw `VC` intS s1 r `VC` VSw `VC` VQ1 (intS s2 r))
 intS [P "S" s1, L "CC" ("and",_), P "S" s2] r = intS s1 r `VC` intS s2 r
+intS [P "S" s1, L "," _, L "CC" ("and",_), P "S" s2] r = intS s1 r `VC` intS s2 r
 intS other r = error ("Unsuported by intS: " ++ show other)
 
 intNP :: [PosTree IWord] -> Store -> Predicate -> Visser

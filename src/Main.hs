@@ -19,31 +19,30 @@ super sentences = runDry sentences >>= (return . map montague)
 sentences = [
 	"Every farmer beats some donkey.",
 	"If a farmer owns a donkey, he beats it",
-	"If a farmer owns a donkey, he beat it. If he rewards it, he doesn't own it.",
-	"A dog barks. If it is beaten, it whines.", -- a donkey brays, but Stanford doesn't like it
-
-	-- these two become a bit weird due to the scoping hack for 'a'
-	"If a farmer owns a donkey, he owns a horse. If he doesn't own it, he owns a cow.",
-	"If a woman is American, she loves a soldier. If she is Dutch, she loves a bike-rider.",
 
 	-- sequentials
 	"A man comes in. He sees a donkey. He smiles.", -- very sequential
 	"A farmer. A Donkey. If he owns it, he beats it.", -- sequential
 
+	-- ifs
+	"A dog barks. If it is beaten, it whines.", -- a donkey brays, but Stanford doesn't like it
+	"If a farmer owns a donkey, he beats it. If he rewards it, he doesn't own it.",
+	"If a farmer owns a donkey, he owns a horse. If he doesn't own it, he owns a cow.",
+	"If a woman is American, she loves a soldier. If she is Dutch, she loves a bike-rider.",
+
+	-- stringifying
+	"A farmer owns a donkey. It is brown and he beats it every day.",
+
 	-- doubles
 	"A farmer starves a horse and beats a donkey.", -- double vp
 	"All donkeys and a horse sing a song.", -- double np
 	"Some farmer and entrepreneur beats a donkey.", -- double description
-	"A man and a woman owned a horse and a donkey. If the donkey did not walk and the man was a farmer, he beat it.", -- cross product
+	"A man and a woman owned a horse and a donkey. If the donkey did not walk, and the man was a farmer, he beat it.", -- cross product
 
 	-- free variables
-	"If a farmer owns it and he beats it, it is a donkey",
 	"She is a mother of five", -- mother becomes the root, because is is not a 'real' verb
-	"If he owns it, he beats it.", -- double free variable
+	"If a farmer owns it and he beats it, it is a donkey",
 	"No man walks in the park. He yodels.", -- coref checker screws this up, but dpl fixes it
-
-	-- stringifying
-	"A farmer owns a donkey. It is brown and he beats it every day.",
 
 ------------- I Can do until this line
 

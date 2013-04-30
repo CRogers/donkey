@@ -81,6 +81,8 @@ cleanVariables p = foldl rename p (zip used im ++ zip im variables)
     rename (VQ1 p) (x,y) = VQ1 (rename p (x,y))
     rename p (x,y) = p
 
+
+
 -- Interpretation
 
 type IVisser1 = (Dpl, Dpl, Integer)
