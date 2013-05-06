@@ -17,6 +17,10 @@ super :: [String] -> IO [V.Visser]
 super sentences = runDry sentences >>= (return . map montague)
 
 sentences = [
+	"If a man eats a sausage, he is happy.",
+	"Every person has a pet.",
+	"Every man supports every woman.",
+	"Every man supports no woman.",
 	"Every farmer beats some donkey.",
 	"If a farmer owns a donkey, he beats it",
 
@@ -91,6 +95,7 @@ sentences = [
 
 	-- adverbs
 	"A farmer and a donkey live together.",
+	"Colorless green ideas sleep furiously",
 	"Do you still beat your wife?",
 
 	-- Existential non-commitment
@@ -99,7 +104,8 @@ sentences = [
 	"The golden mountain does not exist",
 
 	-- Missing features in coref tagger
-	"Every dog sees a cat. It chases it."
+	"Every dog sees a cat. It chases it.",
+	"Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo"
 	]
 
 main :: IO ()

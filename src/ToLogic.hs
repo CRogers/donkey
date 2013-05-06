@@ -21,7 +21,7 @@ intRoot [] r = VT
 
 intS :: [PosTree IWord] -> Store -> Visser
 intS [P "NP" np, P "VP" vp] r = intNP np r (intVP vp r)
-intS (P "SBAR" ([(L "IN" ("if",_)), (P "S" s1)]) : (L "," _) : s2) r =
+intS ((P "SBAR" [(L "IN" ("if",_)), (P "S" s1)]) : (L "," _) : s2) r =
 		VQ0 (VSw `VC` intS s1 r `VC` VSw `VC` VQ1 (intS s2 r))
 intS [P "S" s1, L "CC" ("and",_), P "S" s2] r = intS s1 r `VC` intS s2 r
 intS [P "S" s1, L "," _, L "CC" ("and",_), P "S" s2] r = intS s1 r `VC` intS s2 r
@@ -60,7 +60,7 @@ intDT :: IWord -> Store -> Predicate -> Predicate -> Visser
 intDT ("some", i) r = \p q -> VSc `VC` VE m `VC` p m `VC` VSc `VC` q m where m = r i
 intDT ("a", i) r = intDT ("some", i) r
 intDT ("the", i) r = \p q -> q m where m = r i
-intDT ("every", i) r = \p q -> VSw `VC` VSc `VC` VE m `VC` p m `VC` VSc `VC` VSw `VC` q m where m = r i
+intDT ("every", i) r = \p q -> VQ0 (VSw `VC` VSc `VC` VE m `VC` p m `VC` VSc `VC` VSw `VC` q m) where m = r i
 intDT ("all", i) r = intDT ("every", i) r
 intDT ("no", i) r = \p q -> VQ0 (VSw `VC` VE m `VC` p m `VC` q m `VC` VSw `VC` VF) where m = r i
 intDT other r = error ("Unsuported by intDT: " ++ show other)

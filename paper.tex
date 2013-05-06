@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 \usepackage{booktabs}
 
+\usepackage{stmaryrd}
 \usepackage[utf8]{inputenc}
 \usepackage{amsthm,amssymb,amsmath,dsfont,mathrsfs,nicefrac,wasysym,listings}
 \usepackage{tikz}
@@ -52,6 +53,8 @@
                {`elem`}{{$\in$}}1
     }
 
+
+
 % Samson suggests using the word 'Computational'
 
 %Musings in Dynamic Semantics for Donkeys
@@ -65,10 +68,20 @@
 %Discourse and Donkeys: Monoid Based Language Semantics
 %Discourse and Donkeys: Using Monoids for Language Semantics
 %Dynamic Discourse and Donkeys: Using Monoids for Language Semantics in Practice
+%Dynamic Semantics Computationally with the Donkey Monoid
+%Computational Donkey Monoids: Dynamic Semantics in Practice
+%Computation with Donkey Monoids: Dynamic Semantics in Practice
+%Computational Semantics with Donkey Monoids
+%Montague Grammar for Donkey Monoids
+%From Donkeys to Monoids: A Computational Dynamic Grammar
+%From Donkeys to Monoids: A Dynamic Semantics Framework
+%From Donkeys to Monoids: A Computational Approach to Dynamic Semantics
+%From Donkeys to Monoids: A Computational Experiment with Dynamic Semantics
+%From Donkeys to Monoids: A Computational Framework for Dynamic Semantics
 
-\title{Dynamic Discourse and Donkeys: Using Monoids for Language Semantics in Practice}
+\title{From Donkeys to Monoids: A Computational Framework for Dynamic Semantics}
 \author{Thomas Dybdahl Ahle}
-\date{March 9, 2013}
+\date{May 30, 2013}
 
 \begin{document}
 \maketitle
@@ -85,13 +98,18 @@
 %Move 6: Conclusions or implications
 %Move 7: Achievements of the project
 
-A donkey sentence is a sentence with a pronoun that is bound in semantics, but not in syntax. This make them difficult to capture in the scope of ordinary logic. In this paper we explore some of the ways that have been proposed to tackle this problem, in particular Albert Visser's e-monoid extension of Dynamic Predicate Logic, which allows us to write formulas deceivingly similarly looking to natural language.
+Donkey Monoids are a set of variations of Dynamic Predicate Logic (DPL) introduced by Albert Visser. The rationale behind them is a stride towards a logic that can more easily approximate natural language in aspects such as polarity and scope.
 
-We explain those concepts in depth, deriving or proving every result stated. We then start looking into implementing the logic on a computer, experimenting with different ways of defining the semantics. We further explore state of the art tools for dependency parsing and coreference resolution, the workings of which we also explain in depth.
+Visser didn't test his ideas computationally and neither did most people involved with DPL and logification of natural language in general. In this paper I supply such an experiment, combining technologies introduced over the last four decades, creating a fully functioning `English to logic' framework.
 
-Finally we put it all together in the Haskell programming language. We test out our machinery on a range of different sentences, showing all the converting steps from natural language to propositional logic. The problem is hard and the result is far from perfect, but it shows some interesting and less explored possibilities in computational linguistics.
+The transformation rules of the supported English fragment are defined as a Montague Grammar, the semantics of which is discussed and defined in the first part of the paper. I apply the framework to a large collection of sentences, showing the conversion process step by step.
+
+Finally I discuss ways to support a larger fragment of English, how we can combat and interprete the inherent ambiguity, and how the flexibility of Donkey Monoids compare with the classical Montague lambda structures.
 
 \end{abstract}
+
+\smallskip\smallskip
+\noindent \small{\textbf{Keywords:} Montague Grammar, Dynamic Predicate Logic, Natural Language, Meaning, Donkey, Monoid, Computational, Haskell}
 
 \tableofcontents
 
@@ -110,19 +128,29 @@ Finally we put it all together in the Haskell programming language. We test out 
 % 3. Justification or importance of the project
 % 4. Outline of the structure of the report
 
-There are many reasons why it is interesting to represent information in a logical language. For a computer scientist, the biggest advantage is the computational aspect. There is a horde of algorithms for doing querying, question answering, reasoning, unification and resolution. All are they at your disposal if only you can obtain a first order logic form.
+There are many reasons why it is interesting to represent information in a logical language. For a computer scientist, the biggest advantage is that we can compute with logic. There is a horde of algorithms for doing querying, question answering, reasoning, unification and resolution. They key to this powerhouse is obtaining a first order logic form of your information.
 
-Getting computers to understand and work with natural language is arguably on of the biggest challenges in information technologies this day. Hence if we could move the problem into the space of formal logic, it would be a fantastic accomplishment. Unfortunately many people have pointed out, that classical logic doesn't have the power to express most of the sentences people casually express on a daily basis.
+\begin{description}
+\item[Knowledge bases] In the field of Knowledge Representation and Reasoning, they long ago discovered that formal logic provides a good language for buliding ontologies. Typical users are crime fighters or life scientists that need to draw conclusions based on complex systems\cite{malone2010modeling} where most of the known facts are only described in natural language. Today those people use mainly have to manually build large models in gui tools, but an automated approach is much wanted.
 
-To draw up this point, let's first look at a sentence that easily lets itself convert and then a couple that don't:
-\begin{itemize}
-\item `Socrates is a donkey': $donkey(Socrates)$. This is a classical logical example, treating Socrates as a constant. If we want to do without constants we can write: $\forall x(Socrates(x)\rightarrow donkey(x))$, though this does allow more than one Socrates to exist.
+\item[Semantic search] From the early days of database systems logic was identified\cite{fagin1995reasoning} as a good language for querying. Today technologies like Facebook Graph Search allows users to execute searches like `Restaurants in London my friends have been to'. The missing piece is a reliable translation system.
+
+\item[Robots] Since the beginning of Artificial Intelligence, logic based approaches have done well.\cite{russell2010artificial} Robots need to store relationships they learn about the world and react to it. For modern `robots' like apples Siri to be able to communicate with people, a translation layer between natural language and logic is a plausible path.
+\end{description}
+
+HVAD MED AT SKRIVE LIDT MERE OM HVAD VI VIL HER??
+
+It would seem getting computers to understand and work with natural language is on of the biggest challenges in information technologies this day. Moving the problems into the space of formal logic is a classical and tempting path. Unfortunately, as many people have pointed out, classical logic simply doesn't have the power to express most of the sentences people casually express every day.
+
+We won't let us self get too down over this, but it is worth it to outline where the typical problems arrise, and to get a feeling of what a formal logic translation of natural language actually looks like. We'll start out with a sentence that easily lets itself translate and then a couple that don't:
+\begin{enumerate}
+\item `Socrates is a donkey': $donkey(Socrates)$. This is a classical logical example, treating Socrates as a constant. If we want to do without constants we can write: $\forall x(Socrates(x)\rightarrow donkey(x))$. Notice this allows for more than one Socrates to exist.
 \item `All his donkeys are treated well': This sentence somewhat willingly let's itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ referring to some person from earlier in the discourse.
 \item `Every farmer beats his donkey': This sentence clearly has two possible meanings: $\exists y(his(x,y)\wedge donkey(y)\wedge \forall z(farmer(z) \rightarrow beats(z,y))$ if there is only one donkey, and $\forall x(farmer(x)\rightarrow \exists y (beats(x,y)\wedge his(x,y)\wedge donkey(y))$ if there is a donkey for each farmer.
 \item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesn't\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'.
 \item `They donkeys are cold': This is an often used example of an `implied action sentence' and thought to have the same meaning as `Please close the stable door'. The best we can do here seems to be $please\_close\_the\_stable\_door()$ or perhaps $\exists x(stable\_door(x)\wedge please\_close(x))$.
 \item `Jane likes a painting': This is easy to translate to logic, but are we comfortable that it has the same meaning as the sentence `It is not the case that Jane doesn't like a painting' and even `Jane likes a painting and either it is raining or it isn't'? It is hard to imagine a language with strong logical foundations, where those three sentences wouldn't be equal.
-\end{itemize}
+\end{enumerate}
 
 In this paper we will work with a subset of English that translate reasonably well into logic. This unfortunately means that arguably the majority of sentences will be inaccessible to our methods. We will take a shot at ambiguous sentences like the third one though.
 
@@ -133,7 +161,7 @@ Even more unfortunate than the problems above is it that we won't be able to do 
 \exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y)) \rightarrow beats(x,y))
 \end{align}
 %
-This is arguably the formula that first comes to mind for a moderately trained logician, or simply what you expect by looking at the structure of the syntax tree. Translating an indeterminate `a farmer' into $\exists x(farmer(x))$ seems correct, but clearly the formula has problems with scope.
+This is arguably the formula that first comes to mind for a moderately trained logician, or simply what you expect by looking at the structure of the constituent tree. Translating an indeterminate `a farmer' into $\exists x(farmer(x))$ seems correct, but clearly the formula has problems with scope.
 %
 \begin{align}
 \exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y) \rightarrow beats(x,y))) \label{wrong_donkey_2}
@@ -192,6 +220,8 @@ It is interesting to consider whether such logics can give us something on the w
 \end{tikzpicture}
 
 Going from step 2 to step 3 we are going to try and eliminate some of the ambiguity we saw earlier by outputting multiple possible sentences. In particular we will try and make a strong and a weak reading of every implication. However before we get into the details of how everything is implemented in code, we should look more into the nifty details of the theory applied.
+
+TODO: Requirements?
 
 \section{Formal Stuff (10)}
 
@@ -381,6 +411,10 @@ Talking about binding, also notice that our union or `or' construct is a bit spe
 
 \subsection{The problem with disjunction}
 
+We won't actually use `or' in the implementation.
+Example of the problems we still have in the logic.
+Can't tell what variables are available where.
+
 A major problem with our use of `relation union' as disjunction is the way it allows seemingly sound sentences to combine into syntactically invalid ones. Consider the sentence `Either a farmer owns a donkey or he doesn't'. We would write that as
 \begin{align}
 \exists x\cdot farmer(x)\cdot(\exists y\cdot owns(x,y)\cdot donkey(y)\vee \bot) \label{owns_donkey_or_not}
@@ -490,7 +524,11 @@ addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
 
 
 \subsection{Monadic variants}
-This might be what I call DRA underneath
+
+Let's call them `Visser variants' or `VDPL'. Hm, I like that.
+
+What should we call those? Visser calls them DPL variants, e.g. DPL$_{\Bowtie\triangle}$
+
 In the previous subsection we saw that DPL allowed us to rewrite the donkey sentence as 
 
 \begin{equation}
@@ -644,20 +682,20 @@ The point is that we always give a specific phrase type the same logical type. T
 \item Quantifiers/Determiners (a, the, every, no): $(Entity \rightarrow Bool) \rightarrow (Entity \rightarrow Bool) \rightarrow Bool$
 \end{itemize}
 
-To translate a sentence like `Every farmer beats a donkey' we first create a parse tree [$_\text{S}$ [$_\text{NP}$ [$_\text{DT}$ Every] [$_\text{NN}$ farmer]] [$_\text{VP}$ [$_\text{VBZ}$ beats] [$_\text{NP}$ [$_\text{DT}$ a] [$_\text{NN}$ donkey]]]].
+To translate a sentence like `Every farmer beats a donkey' we first create a constituent tree [$_\text{S}$ [$_\text{NP}$ [$_\text{DT}$ Every] [$_\text{NN}$ farmer]] [$_\text{VP}$ [$_\text{VBZ}$ beats] [$_\text{NP}$ [$_\text{DT}$ a] [$_\text{NN}$ donkey]]]].
 
 Next we create objects for the basic elements (a computer would do this recursively, but it is easier for us to do it level by level):
 \begin{equation*}\begin{aligned}
-&\text{Every, $r_1$}&=& \lambda xy(\Bowtie\cdot\triangle\cdot\exists r_1\cdot (xr_1)\cdot\triangle\cdot\Bowtie\cdot (yr_1)) & :: (E\rightarrow B)\rightarrow(E\rightarrow B)\rightarrow B\\
-&\text{farmer}&=& \lambda x(farmer(x)) & :: E\rightarrow B\\
-&\text{beats}&=& \lambda xy(beats(xy)) & :: E\rightarrow E\rightarrow B\\
-&\text{a, $r_2$}&=& \lambda xy(\triangle\cdot\exists r_2\cdot (xr_2)\cdot\triangle\cdot (yr_2)) & :: (E\rightarrow B)\rightarrow(E\rightarrow B)\rightarrow B\\
-&\text{donkey}&=& \lambda x(donkey(x)) & :: E\rightarrow B\\
+&\text{Every, $r_1$}=&& \lambda xy(\Bowtie\cdot\triangle\cdot\exists r_1\cdot (xr_1)\cdot\triangle\cdot\Bowtie\cdot (yr_1)) &&:: (E\rightarrow B)\rightarrow(E\rightarrow B)\rightarrow B\\
+&\text{farmer}=&& \lambda x(farmer(x)) &&:: E\rightarrow B\\
+&\text{beats}=&& \lambda xy(beats(xy)) &&:: E\rightarrow E\rightarrow B\\
+&\text{a, $r_2$}=&& \lambda xy(\triangle\cdot\exists r_2\cdot (xr_2)\cdot\triangle\cdot (yr_2)) &&:: (E\rightarrow B)\rightarrow(E\rightarrow B)\rightarrow B\\
+&\text{donkey}=&& \lambda x(donkey(x)) &&:: E\rightarrow B\\
 \midrule
-&\text{Every farmer}&=& \lambda y(\Bowtie\cdot\triangle\cdot\exists r_1\cdot farmer(r_1)\cdot\triangle\cdot\Bowtie\cdot (yr_1)) & :: (E\rightarrow B)\rightarrow B\\
-&\text{a donkey}&=& \lambda y(\triangle\cdot\exists r_2\cdot donkey(r_2)\cdot\triangle\cdot (yr_2)) & :: (E\rightarrow B)\rightarrow B\\
+&\text{Every farmer}=&& \lambda y(\Bowtie\cdot\triangle\cdot\exists r_1\cdot farmer(r_1)\cdot\triangle\cdot\Bowtie\cdot (yr_1)) &&:: (E\rightarrow B)\rightarrow B\\
+&\text{a donkey}=&& \lambda y(\triangle\cdot\exists r_2\cdot donkey(r_2)\cdot\triangle\cdot (yr_2)) &&:: (E\rightarrow B)\rightarrow B\\
 \midrule
-&\text{beats a donkey}&=& \lambda z(\triangle\cdot\exists r_2\cdot donkey(r)\cdot\triangle\cdot beats(z,r_2)) & :: E\rightarrow B\\
+&\text{beats a donkey}=&& \lambda z(\triangle\cdot\exists r_2\cdot donkey(r)\cdot\triangle\cdot beats(z,r_2)) &&:: E\rightarrow B\\
 \end{aligned}\end{equation*}
 
 Until we can then finally compose the top NP and VP to get the sentence:
@@ -733,13 +771,13 @@ A girl was looking at the donkey.
 
 \begin{description}
 \item[Mention detection]
-The first step is to identify all noun phrases (NP) and personal (PRP) and possessive (PRP\$) pronouns. This information is easily pulled from the postree. Notice we also identify nested mentions:
+The first step is to identify all noun phrases (NP) and personal (PRP) and possessive (PRP\$) pronouns. This information is easily pulled from the constituent tree. Notice we also identify nested mentions:
 
 [John]$_1^1$ is [a farmer]$_2^2$. [He]$_3^3$ owned [a stubborn donkey]$_4^4$.\newline
 [A girl]$_5^5$ was looking at [the donkey]$_6^6$.\newline
 ``[It]$_7^7$ was [[my]$_9^9$ favorite]$_8^8$,'' [John]$_{10}^{10}$ said to [her]$_{11}^{11}$.
 
-All mentions are initially assigned to separate entities (entity ids). The entities are also attached information we can easily pull from the postree, such as `a girl: {number: singular, gender: female}' which are used for the following rules.
+All mentions are initially assigned to separate entities (entity ids). The entities are also attached information we can easily pull from the constituent tree, such as `a girl: {number: singular, gender: female}' which are used for the following rules.
 \item[Speaker Sieve]
 The purpose of this first sieve is to link self referring pronouns to speakers. Speakers are identified simply by their connection to verbs such as `say' and proximity to the quotations. In our case the pronoun `my' gets linked to `John':
 
@@ -792,9 +830,11 @@ The reason the rules are applied in the order above is to give the most certain 
 
 The Stanford procedure above is currently the strongest competitor in various coreference competitions.
 
-\subsection{Dependencies}
+\subsection{Dependency grammars}
 
-Extracted from parse trees using tregex\cite{de2006generating}
+This is an important thing to mention.
+
+Extracted from constituent trees using tregex\cite{de2006generating}
 
 \tikzstyle{level 1}=[level distance=2.5cm, sibling distance=3.5cm]
 \begin{figure}
@@ -864,15 +904,19 @@ NP < (NN < dog) \$ (VP <<\# (barks > VBZ))
 An NP both over an NN over `dog' and with
 a sister VP headed by `barks' under VBZ
 
-\subsubsection{Semantics via dependencies}
-It is an interesting idea to consider that we might be able to define our semantics over a dependency graph, in a similar way to the Montague approach described earlier. The dependency graph adds a lot of flexibility where the phrase structure tree used in the Montague approach is limited to the direct syntax of the tree. A good example is our favourite sentence `if a farmer owns a donkey, he beats it', where there isn't a very strong syntactical relationship between `farmer' and `he'. It's also been suggested that it is mostly due to luck that a lot of English fits relatively well to the Montague approach, where as in some languages the structure of the phrase tree might not say much about the actual semantics.
+%\subsubsection{Semantics via dependencies}
 
-I've worked hard on trying to define a Montague like set of equations for Enlish, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP -> Bool' and VPs are `Entity -> Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: PhraseTree -> (VP -> Bool)'.With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
+%This might need updating based on: http://en.wikipedia.org/wiki/Dependency_grammar and http://en.wikipedia.org/wiki/Phrase_structure_grammar
 
-Another problem worth considering is the fact that all information in the graph is drawn syntactically from the phrase tree. That is, the graph doesn't contain any information not in the tree, but the other direction is entirely possible. While it is hard to say exactly what's missing, it is worth noting.
+It is an interesting idea to consider that we might be able to define our semantics over a dependency graph, in a similar way to the Montague approach described earlier. The dependency graph adds a lot of flexibility where the constituent tree used in the Montague approach is limited to the direct syntax of the tree. A good example is our favourite sentence `if a farmer owns a donkey, he beats it', where there isn't a very strong syntactical relationship between `farmer' and `he'. It's also been suggested that it is mostly due to luck that a lot of English fits relatively well to the Montague approach, where as in some languages the structure of the constituent tree might not say much about the actual semantics.
+
+I've worked hard on trying to define a Montague like set of equations for Enlish, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP -> Bool' and VPs are `Entity -> Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: ConstituentTree -> (VP -> Bool)'.With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
+
+Another problem worth considering is the fact that all information in the graph is drawn syntactically from the constituent tree. That is, the graph doesn't contain any information not in the tree, but the other direction is entirely possible. While it is hard to say exactly what's missing, it is worth noting.
 
 \section{Implementation (8)}
 
+alpha/beta renaming: We don't need it because we use globally unique variable names
 
 Montague grammars have been used for many years in the quest of machine translation. The idea was that to use logic as a `universal language' to which we could translate any sentence, and ascend back into whatever language we'd like. Hence you would think that the web was flooded with code and long machine readable lists of rules, but this is however not the case.
 
@@ -1009,10 +1053,10 @@ The task is slightly complicated by the fact that NP's can be nested, so `The fa
 
 We resolve this by assigning top down, overwriting `word to ref' assignments with fresh variables as we go deeper down the tree. This way, for our short sentence, we might end up with the assignment $\{`The': `y', `farmer': `y', `and': `x', `the': `z', `donkey': `z'\}$
 
-I parse the parse tree using parsec\cite{leijen2001parsec}
+I parse the constituent tree using parsec\cite{leijen2001parsec}
 
 \begin{lstlisting}
-toMapping :: [Ref] -> PosTree Word -> ([Ref], Map Int Ref)
+toMapping :: [Ref] -> ConstituentTree Word -> ([Ref], Map Int Ref)
 toMapping vs (Leaf _ _) = (vs, empty)
 
 toMapping vs tr@(Phrase "NP" subs) = (vs', submaps `union` np)
@@ -1026,7 +1070,7 @@ toMapping vs (Phrase _ (sub:subs)) = (vs'', p `union` shifted)
         (vs'', p) = toMapping vs' sub
 \end{lstlisting}
 
-where $tsize :: PosTree Word -> Int$ gives the number of words in the tree
+where $tsize :: ConstituentTree Word -> Int$ gives the number of words in the tree
 
 
 \subsubsection{Errors}
@@ -1036,19 +1080,74 @@ Also something from the disjunction chapter.
 
 What if my states always contain the entire domain as their domain. Just add a $\bot$ to the entity set, then everything will be mapped to that as default.
 
-\subsection{Using machine learning}
+
+\subsection{The grammar}
+This is not as bad as it sounds. It is similar to Montague and what the Stanford Parser does for dependencies.
+
+Let $\phi$, $\psi$, $\omega$ be lists of phrase nodes, let $\alpha$, $\beta$, $\gamma$ leaf nodes.
+Then we can define a set of interpretation functions $\llbracket\cdot\rrbracket_\text{type}$ from phrase nodes to logic:
+
+\begin{equation*}\begin{aligned}
+\ \llbracket (_\text{S}\phi)\psi\rrbracket_\text{ROOT} &:= \llbracket \phi\rrbracket_\text{S}\cdot\llbracket \psi\rrbracket_\text{ROOT}\\
+\llbracket (_\text{NP}\phi)\psi\rrbracket_\text{ROOT} &:= \llbracket \phi\rrbracket_\text{NP}(\lambda x.\top)\cdot\llbracket \psi\rrbracket_\text{ROOT}\\
+\midrule\ 
+%
+\llbracket (_\text{NP}\phi) (_\text{VP}\psi)\rrbracket_\text{S} &:= \llbracket \phi\rrbracket_\text{NP} \llbracket \psi\rrbracket_\text{VP}\\
+\llbracket (_\text{S}\phi) (_\text{CC}\text{and}) (_\text{S}\psi)\rrbracket_\text{S} &:= \llbracket \phi\rrbracket_\text{S} \cdot \llbracket \psi\rrbracket_\text{S}\\
+\llbracket (_\text{SBAR}(_\text{IN}\text{if})(_\text{S}\phi))(_\text{,},)\psi\rrbracket_\text{S} &:=\ ?_0(\Bowtie\cdot \llbracket \phi\rrbracket_\text{S}\cdot\Bowtie\ \cdot\ ?_1(\llbracket \psi\rrbracket_\text{S}))\\
+\midrule\ 
+%
+\llbracket (_\text{PRP}e)\rrbracket_\text{NP} &:= \lambda v . ve\\
+&\text{where $e$ is a predetermined variable name}\\
+\llbracket (_\text{DT}\alpha) (_\text{NN}\beta)\rrbracket_\text{NP} &:= \lambda v . \llbracket \alpha\rrbracket_\text{DT} \llbracket \beta\rrbracket_\text{NN} v\\
+\llbracket (_\text{DT}\alpha) (_\text{NN}\beta) (_\text{CC}\text{and}) (_\text{NN}\gamma)\rrbracket_\text{NP} &:= \lambda v . \llbracket \alpha\rrbracket_\text{DT} (\lambda y. \llbracket \beta\rrbracket_\text{NN}y \cdot \llbracket \gamma\rrbracket_\text{NN}y) v\\
+\llbracket (_\text{NP}\phi) (_\text{CC}\text{and}) (_\text{NP}\psi)\rrbracket_\text{NP} &:= \lambda v.\llbracket \phi\rrbracket_\text{NP}(\lambda x.\llbracket \psi\rrbracket_\text{NP}(\lambda y.\forall z.z=x \vee z=y \rightarrow vz))\\
+& \text{where $z$ is a globally free variable}\\
+\midrule\ 
+%
+\llbracket \text{a}, e\rrbracket_\text{DT} := \llbracket \text{some}, e\rrbracket_\text{DT} &:= \lambda vw.\triangle\cdot\exists e\cdot ve\cdot\triangle\cdot we\\
+\llbracket \text{all}, e\rrbracket_\text{DT} := \llbracket \text{every}, e\rrbracket_\text{DT} &:= \lambda vw.?_0(\Bowtie\cdot\triangle\cdot\exists e\cdot ve\cdot\triangle\cdot\Bowtie\cdot we)\\
+\llbracket \text{no}, e\rrbracket_\text{DT} &:= \lambda vw.?_0(\Bowtie\cdot\exists e\cdot ve\cdot we\cdot\Bowtie\cdot\bot)\\
+\llbracket \text{the}, e\rrbracket_\text{DT} &:= \lambda vw.we\\
+\midrule\ 
+%
+\llbracket (_\text{VB}\alpha)\rrbracket_\text{VP} &:= \llbracket \alpha\rrbracket_\text{VB}\\
+\llbracket (_\text{VB}\alpha)(_\text{NP}\phi)\rrbracket_\text{VP} &:= \lambda x.\llbracket \phi\rrbracket_\text{NP} (\llbracket \alpha\rrbracket_\text{TVB} x)\\
+\llbracket (_\text{VP}\phi)(_\text{CC}\text{and})(_\text{VP}\psi)\rrbracket_\text{VP} &:= \lambda x.\llbracket \phi\rrbracket_\text{VP}x\cdot \llbracket \psi\rrbracket_\text{VP}x\\
+\llbracket (_\text{VB}\alpha)(_\text{CC}\text{and})(_\text{VB}\beta)(_\text{NP}\phi)\rrbracket_\text{VP} &:= \lambda x.\llbracket \phi\rrbracket_\text{NP}(\lambda y.\llbracket \alpha\rrbracket_\text{TVB}xy\cdot \llbracket \beta\rrbracket_\text{TVB}xy)\\
+\llbracket (_\text{VB}\text{do})(_\text{RB}\text{not})(_\text{VP}\phi)\rrbracket_\text{VP} &:= \lambda x.?_0(\Bowtie\cdot\llbracket \phi\rrbracket_\text{VP}x\cdot\Bowtie\cdot\bot)
+\end{aligned}\end{equation*}
+
+
+\subsubsection{Using machine learning}
 The $\bowtie$ and $\triangle$ notation makes logic look close enough to natural language that it starts looking tempting to use machine learning methods such as those used in translation to translate.
 
 My main problem here is that such translation requires large amounts of bilingual data. It was out of scope for my project to try create such.
 
-\subsection{Hand coding}
-This is not as bad as it sounds. It is similar to Montague and what the Stanford Parser does for dependencies.
+\subsection{Testing}
+In the previous sections we have tried to be as formal and careful as possible in our derivations and proofs, but as Knuth famously said:
 
-\subsection{Examples}
-Until now we've been very focused on the same one or two simple sentences. To provide a better test bench for our approach, it is interesting to follow some sentences through the different levels of our approach.
+\begin{quotation}
+Beware of bugs in the above code; I have only proved it correct, not tried it.
+\end{quotation}
+
+In the actual implementation of my program I have used the \emph{QuickCheck} and \emph{HUnit} test environments to write unit tests for algebraic properties and actual inputs to my program. To enable QuickTest of the different properties on constituent trees, a random generator of sentences was implemented.
+
+What remains to test is the validity of the Montague grammar introduced in the previous section. As reasonable as it seems we want to reduce the likelihood of it containing conflicting definitions. In a transformation grammar over natural language we are always running the risk of have been too narrow sighted in its definition. The classic example being `($_\text{DT}$a)' interpreted as $\exists$, but then actually being an $\forall$ if used in an `if' phrase.
+
+In DPL we don't have that particular problem, but instead we can run into problems with the way the scopes of composed elements affect each other. In Visser logic it is even worse, as $\Bowtie$s and $\triangle$s introduced much later in the discourse, can get transposed far around the final statement.
+
+Hence, as reasonable as the introduced grammar seems, we want to reduce the likelihood of conflicts as much as possible. Until now we have been very focused on the same one or two simple sentences, or whatever sentences were relevant to the features we were discussing, but now we are going to introduce a much larger set of complicated test cases. Ideally we want test cases for testing every combination of grammar rules immaginable.
+
+In the test of this program, we used a branch of 100 sentences. Some copied from the papers referenced, others invented based on features considered or the daily life of farmers and donkeys as immagined by the author. The sentences were converted to Visser, DPL and FOL, and the meanings were checked manually to make sense.
+
+In the following section we will run through the most interesting sentences used, and hopefully make it a bit clearer how the different steps of translation work.
+
+\subsubsection{Examples}
+
+In this section we translate 12 sentences from English to the Visser logic to DPL and finally to FOL as described in the earlier sections.
 
 The sentences are all simplified through a number of syntactical identities defined for each language. The purpose of this is only to improve readability.
-
 
 \begin{enumerate}
 \item
@@ -1128,7 +1227,7 @@ This is a more simple example of a conjunctive NN.
 The great thing about the construct introduced for conjunctive NPs is that it also works well when we need a cross product of subjects and objects, as this example shows.
 \begin{align*}
 &\text{\textbf{English}}&&\text{A man and a woman owned a horse and a donkey.}\\&&&\text{If the donkey did not walk, and the man was a farmer, he beat it.} \\
-&\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot man(a) \cdot  \exists b \cdot woman(b) \cdot \triangle \cdot ?_0(\Bowtie \cdot \exists c \cdot eq\_on\_of(c,a,b) \cdot \Bowtie\\&&&\cdot \triangle \cdot \exists d \cdot horse(d) \cdot  \exists e \cdot donkey(e) \cdot \triangle \cdot ?_0(\Bowtie \cdot \exists f \cdot eq\_on\_of(f,d,e) \cdot \Bowtie\\&&&\cdot own(c,f))) \cdot ?_0(\Bowtie \cdot ?_0(\Bowtie \cdot walk(e) \cdot \Bowtie \cdot \bot) \cdot a\_farmer(a) \cdot \Bowtie \cdot ?_1(beat(a,e))) \\
+&\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot man(a) \cdot  \exists b \cdot woman(b) \cdot \triangle \cdot ?_0(\Bowtie \cdot \exists c \cdot eq\_on\_of(c,a,b) \cdot \Bowtie\\&&&\cdot \triangle \cdot \exists d \cdot horse(d) \cdot  \exists e \cdot donkey(e) \cdot \triangle \cdot ?_0(\Bowtie \cdot \exists f \cdot eq\_on\_of(f,d,e) \cdot \Bowtie\\&&&\cdot own(c,f))) \cdot ?_0(\Bowtie \cdot ?_0(\Bowtie \cdot walk(e) \cdot \Bowtie \cdot \bot) \cdot a\_farmer(a) \cdot \Bowtie \cdot beat(a,e)) \\
 &\text{\textbf{DPL}}&&\exists a \cdot man(a) \cdot \exists b \cdot woman(b) \cdot \exists d \cdot horse(d) \cdot \exists e \cdot donkey(e)\\&&&\cdot (\exists c \cdot eq\_on\_of(c,a,b) \cdot \exists f \cdot eq\_on\_of(f,d,e) \rightarrow own(c,f))\\&&&\cdot (\neg walk(e) \cdot a\_farmer(a) \rightarrow beat(a,e)) \\
 &\text{\textbf{FOL}}&&\exists a(man(a) \wedge \exists b(woman(b) \wedge \exists d(horse(d) \wedge \exists e(donkey(e)\\&&&\wedge \forall c(eq\_on\_of(c,a,b) \rightarrow \forall f(eq\_on\_of(f,d,e) \rightarrow own(c,f)))\\&&&\wedge (\neg walk(e) \wedge a\_farmer(a) \rightarrow beat(a,e)))))) \\
 \end{align*}
@@ -1159,74 +1258,93 @@ A final example that really shows how DPL scope and free variables all play alon
 
 \end{enumerate}
 
-Extract D Testing 
-We have already seen some screen shots of the working program; however, we provide two stringent tests 
-for our program to ensure it works as intended, along with a test rig to fully analyze the program. In both test 
-programs, I will run through the whole series of options available to the user, and ensure its correctness. 
-However, I will also demonstrate its ability to visualize code, and hopefully provide valuable insights whilst 
-debugging. 
-5.1 Simple Program -BFS and DFS using the Visitor Pattern
-This test program begins by creating an underlying tree structure…
-This kind of debugging is intuitive, and simple to do within this framework. If you have an intuitive 
-understanding of what the underlying model in your program should look like, it is fairly straight forward to 
-spot bugs like this in  small code samples. Assuming a larger program is in use, the user must delve a little 
-deeper into the part of the graph which they suspect the bug to exist in. This is obviously heavily aided by the 
-JDT debugger itself. However, this test still shows the usability of the code in a small program, and shows 
-that the code can cope with the different types of back links and cross links that can occur in a memory 
-graph.
-
 \section{Perspectives/Conclusions (2)}
-
-In the papers it is always assumed that the postree and things are `trivial' or `already sorted', but how do the pieces really stack up when put together?
-
-What I learned
-
-‘a summary of your achievements; a critical appraisal, describing what worked well and what could be 
-improved; a discussion of the lessons you have learnt from the project.’
-In the ‘Conclusions’ you summarize your work and then stand back from the project and assess it as 
-objectively as you can. This shows the examiners that you are capable of evaluating your own work 
-according to the standards of the field. It is acceptable to mention areas that were not very satisfactory
-because this shows that you have learnt from the experience of doing the project.
-There are often three moves starting with a summary of your work, then giving an evaluation, highlighting
-both its achievements and limitations and finally the possible future extensions of the work. The Evaluation 
-move may also be carried out as part of the Summary. The Conclusion is the mirror image of the 
-Introduction, in that it starts with the narrow concerns of the project and widens out to more general 
-statements about further work.
 
 Move 1: Summary 
 Summarizes the most important aspects of the project work.  
 
 I have successfully developed a novel local type inference algorithm
 
+‘a summary of your achievements; a critical appraisal, describing what worked well and what could be 
+improved; a discussion of the lessons you have learnt from the project.’
+
+In the papers it is always assumed that the constituent tree and things are `trivial' or `already sorted', but how do the pieces really stack up when put together?
+
+
+\begin{itemize}
+\item Studied computational linguistics and learned about state of the art technologies
+\item Found out what was going on with dynamic logics and 
+similar discourse algebras
+\item Ran into many issues some of which have been discussed in great deal before (like strong vs. weak readings) and some that haven't had as much attention (like semantics of `and' and `or').
+\item Combined the technologies and theory in a way not tried before, which yielded very good results
+\end{itemize}
+
+DPL made it possible to specify a lot of rules that would otherwise have been terrible complicated. Most notably `if'.
+
+Monoids were an interesting alternative to lambda composition. It could have been interesting to see how far they could go.
+
+It would be interesting to return more than one result in the case of ambiguity. Weak/strong readings and things like transitive verbs. `A farmer starves and beats a donkey'.
+
+A lot more rules could relatively easily be added to the grammar. For some things like adverbs we would need a richer language, like $furiously(beats(x,y))$, but there's certainly still a lot of low hanging fruits.
+
+Level 1, easy:
+* More uses of `no' and `nobody'
+* possessives pronouns, 
+* `existential there'
+* more kinds of SBARs like started by `then', `whom' etc.
+
+Level 2, more work:
+* adverbs
+* modals verbs are a big task
+
+Level 3, requires new understanding of language:
+* Existential non-commitment (The golden mountain does not exist)
+* The ancient greeks thought the morning star was the evening star
+* Understanding words never used before
+
+Level X, not working due to the framework:
+* Every dog sees a cat. It chases it.
+* Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo
+
+
+
 Move 2: Evaluation
 Indicates what the writer considers to be the most valuable aspects of the project and its limitations. Provides 
 an assessment of how far the aims of the project have been achieved.
+
+In the ‘Conclusions’ you summarize your work and then stand back from the project and assess it as  objectively as you can. This shows the examiners that you are capable of evaluating your own work according to the standards of the field. It is acceptable to mention areas that were not very satisfactory because this shows that you have learnt from the experience of doing the project.
+
+Everything was perfect!
+It feel
 
 my algorithm is exponential: whereas Gagnon's algorithm is 
 polynomial. But experiments of execution time against method length show a typically linear trend whereas 
 Gagnon's show a cubic trend
 
+
+
 Move 3: Future Work
 Gives possible extensions of the project. These suggestions may follow from the limitations mentioned in the 
-Evaluation move. 
-
-The greatest scope for future work is extending the application of my algorithm from local type inference to 
-global type inference.
-
-Things learned from courses
+Evaluation move.
+move may also be carried out as part of the Summary. The Conclusion is the mirror image of the 
+Introduction, in that it starts with the narrow concerns of the project and widens out to more general 
+statements about further work.
 
 
-Should I make my latex file literate haskell? %bhttp://www.haskell.org/haskellwiki/Literate_programming
+The greatest scope for future work is extending the application of my algorithm from local type inference to global type inference.
 
-%$\lstinputlisting[language=Haskell]{src/Main.hs}
+
+
+
 
 \section{Acknowledgments}
-I would like to thank Samson for guiding me through
+I would like to thank Samson Abrahamski for introducing me to the world of Natural Language parsing and semantics, for helpful and stimulating discussins and for keeping my on the right path
 
-the PCFG parser\cite{klein2003accurate}
+Thanks to Phil Blunsom and Edward Grefenstette for exciting and enlightening lectures into the classical and modern approaches.
 
-Érica for linguistic discussions
+Thanks to the Natural Language Processing Group at Stanford University for making their software and results easily available for use in my project\cite{klein2003accurate}.
 
+Thanks to Érica Baena Kato for keeping me awake with interesting linguistic perspectives.
 \newpage
 \section{Appendix}
 \subsection{Derivation of DPL preconditions}
