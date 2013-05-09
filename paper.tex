@@ -1242,27 +1242,37 @@ A final example that really shows how DPL scope and free variables all play alon
 
 This concludes the implementation part of the paper.
 
-\section{Perspectives/Conclusions (2)}
+\section{Conclusions and Perspectives (2)}
 
+I have successfully developed a testing framework that lets researchers define logics and interpretation functions and test them on large inputs of interesting text. I have discussed many possible directions I could have taken, I have proved every result involved, and I have done extensive testing.
 
-Issue: Stanford is very slow. Loads huge libraries of English statistics
-Output: unicode or \TeX
-Input: I chose to just put everything in the haskell file, so I could add comments
+My program can correctly logify entire paragraphs of text containing advanced anaphora, conjunctive nouns, verbs and adjectives, implications and scoping. It handles sentences with free variables as well as entirely factual sentences.
 
+A few examples of sentences that my framework already supports, but which fail due to short commings in the Stanford toolkit are `Every dog sees a cat. It chases it.' where the anaphora doesn't get resolved, and `Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo' that manages to slightly confuse the parser.
 
-Move 1: Summary 
-Summarizes the most important aspects of the project work.  
+My tests of Visser's Donkey Monoids show that they can be used for automatic logification, but that they lose some of their charm. Mainly it seems that the $\Bowtie$ and $\triangle$ switches are a bit too strong, and hence require extensive use of the scoping function $?(\cdot)$. At least the rules I came up with essentially uses Donkey Monoids as if they were DPL.
 
-I have successfully developed a novel local type inference algorithm
+My tests also show that the Montague grammar can be made very simple when implemented using dynamic logics. I couldn't however entire eliminate the need for lambda calculus, but perhaps a more refined Donkey Monoid will be up for the challenge.
 
-‘a summary of your achievements; a critical appraisal, describing what worked well and what could be 
-improved; a discussion of the lessons you have learnt from the project.’
+\subsection{Future work}
 
-In the papers it is always assumed that the constituent tree and things are `trivial' or `already sorted', but how do the pieces really stack up when put together?
+I had a lot of issues with the Stanford Parser not being able to parse sentences correctly. In every paper I have read, this part always `just works', but I didn't have any options, but to discard the sentence. It would be interesting to make a fault tolerant logification system. Perhaps some knowledge from the semantics could be passed back to the syntax parser for better results.
 
+It would also be interesting to return more than one result in the case of ambiguity. We have seen how weak and strong readings of the actors in the sentences can give very different results. Also conjunction of transitive verbs like `A farmer starves and beats a donkey' are inherently ambigious. Perhaps if we returned many possible logifications for each sentence, we could take the interferance to get the real meaning.
 
-Visser: The constructions studied in this paper can be viewed as adding control elements to the language. A control element is a symbol representing an instruction concerning storage of bits of meaning. Thus, control elements serve to steer semantic processing.
+In terms of expanding the scope of our translations, the fruits I have identified are hanging at different heights:
 
+At the lowest level there are a lot of trivial additions. Support in more cases for more negatives like `no' and `nobody' hasn't been explored well. Possessive pronouns is something I've struggeled with, but if we accept that `He took his jacket' translates to $\exists y\cdot owns(x,y)\cdot jacket(y)\cdot took(x,y)$ it shouldn't be hard. Also there are things like `existential there' and more kinds of SBARs like started by `then', `whom' etc. that we can add, but for the expense of additional complicated rules.
+
+Higher up are things like adverbs. This will require a more complicated treatment of predicates to hopefully allow something like $furiously(beat(x,y))$. How exactly these things can be logified is still an open question in linguistics. Another fruit at this level is model verbs. Sentences like `It rains. It might rain' and `It might rain. It rains' should be treated differently. For this we could look into the field of modal logics.
+
+Even higher up are lots of classical linguistic problems. Sentences such as `The golden mountain does not exist', `The ancient greeks thought the morning star was the evening star' have had entire papers written on them, without any definive answers. Probably we'll have to consider the use case to know how a well defined computational logic should work. Another thing at the top level is novel words and sentence structures. These will clearly require some sort of machine learning.
+
+Finally I have mentioned that we might be able to expand the Donkey Monoids with more functionality as we sees fit during Montague rule making. The possibility for pushing control elements into the semantic of the logic is really the beauty of Visser's approach and unfortunately a road I haven't studied much in this paper. It is not hard to immagine $(Dpl,Dpl,Dpl,Dpl,Integer,Integer)$ exchanged for something like $(Dpl,...,PosTag)$ and coresponding composition rules.
+
+\subsection{Personal Report*}
+
+What the...
 
 \begin{itemize}
 \item Studied computational linguistics and learned about state of the art technologies
@@ -1271,64 +1281,6 @@ similar discourse algebras
 \item Ran into many issues some of which have been discussed in great deal before (like strong vs. weak readings) and some that haven't had as much attention (like semantics of `and' and `or').
 \item Combined the technologies and theory in a way not tried before, which yielded very good results
 \end{itemize}
-
-DPL made it possible to specify a lot of rules that would otherwise have been terrible complicated. Most notably `if'.
-
-Monoids were an interesting alternative to lambda composition. It could have been interesting to see how far they could go.
-
-It would be interesting to return more than one result in the case of ambiguity. Weak/strong readings and things like transitive verbs. `A farmer starves and beats a donkey'.
-
-A lot more rules could relatively easily be added to the grammar. For some things like adverbs we would need a richer language, like $furiously(beats(x,y))$, but there's certainly still a lot of low hanging fruits.
-
-Level 1, easy:
-* More uses of `no' and `nobody'
-* possessives pronouns, 
-* `existential there'
-* more kinds of SBARs like started by `then', `whom' etc.
-
-Level 2, more work:
-* adverbs
-* modals verbs are a big task
-
-Level 3, requires new understanding of language:
-* Existential non-commitment (The golden mountain does not exist)
-* The ancient greeks thought the morning star was the evening star
-* Understanding words never used before
-
-Level X, not working due to the framework:
-* Every dog sees a cat. It chases it.
-* Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo
-
-
-
-Move 2: Evaluation
-Indicates what the writer considers to be the most valuable aspects of the project and its limitations. Provides 
-an assessment of how far the aims of the project have been achieved.
-
-In the ‘Conclusions’ you summarize your work and then stand back from the project and assess it as  objectively as you can. This shows the examiners that you are capable of evaluating your own work according to the standards of the field. It is acceptable to mention areas that were not very satisfactory because this shows that you have learnt from the experience of doing the project.
-
-Everything was perfect!
-It feel
-
-my algorithm is exponential: whereas Gagnon's algorithm is 
-polynomial. But experiments of execution time against method length show a typically linear trend whereas 
-Gagnon's show a cubic trend
-
-
-
-Move 3: Future Work
-Gives possible extensions of the project. These suggestions may follow from the limitations mentioned in the 
-Evaluation move.
-move may also be carried out as part of the Summary. The Conclusion is the mirror image of the 
-Introduction, in that it starts with the narrow concerns of the project and widens out to more general 
-statements about further work.
-
-
-The greatest scope for future work is extending the application of my algorithm from local type inference to global type inference.
-
-
-
-
 
 \section{Acknowledgments}
 I would like to thank Samson Abrahamski for introducing me to the world of Natural Language parsing and semantics, for helpful and stimulating discussins and for keeping my on the right path
