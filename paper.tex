@@ -78,8 +78,9 @@
 %From Donkeys to Monoids: A Computational Approach to Dynamic Semantics
 %From Donkeys to Monoids: A Computational Experiment with Dynamic Semantics
 %From Donkeys to Monoids: A Computational Framework for Dynamic Semantics
+%Donkeys to Monoids: A Computational Framework for Dynamic Semantics
 
-\title{From Donkeys to Monoids: A Computational Framework for Dynamic Semantics}
+\title{Donkeys to Monoids: A Computational Framework for Dynamic Semantics}
 \author{Thomas Dybdahl Ahle}
 \date{May 30, 2013}
 
@@ -98,13 +99,11 @@
 %Move 6: Conclusions or implications
 %Move 7: Achievements of the project
 
-Donkey Monoids are a set of variations of Dynamic Predicate Logic (DPL) introduced by Albert Visser. The rationale behind them is a stride towards a logic that can more easily approximate natural language in aspects such as polarity and scope.
+Donkey Monoids are a set of variations of Dynamic Predicate Logic (DPL) introduced by Albert Visser. The rationale behind them is a stride towards a logic that can more easily approximate natural language in aspects such as polarity and scope. Indeed their name derives from the famous `Donkey Sentence' by Geach\cite{geach1962reference} which exhibit these issues so well.
 
-Visser didn't test his ideas computationally and neither did most people involved with DPL and logification of natural language in general. In this paper I supply such an experiment, combining technologies introduced over the last four decades, creating a fully functioning `English to logic' framework.
+Visser didn't test his ideas computationally and neither did most people involved with DPL. In fact most of the classical literature on logification of natural language has this `problem'. In this paper I supply such an experiment, combining technologies introduced over the last four decades, creating a fully functioning `English to logic' framework.
 
-The transformation rules of the supported English fragment are defined as a Montague Grammar, the semantics of which is discussed and defined in the first part of the paper. I apply the framework to a large collection of sentences, showing the conversion process step by step.
-
-Finally I discuss ways to support a larger fragment of English, how we can combat and interprete the inherent ambiguity, and how the flexibility of Donkey Monoids compare with the classical Montague lambda structures.
+The transformation rules of the supported English fragment are defined as a Montague Grammar, the semantics of which is discussed and defined in the first part of the paper. I apply the framework to a large collection of sentences, showing the conversion process step by step. Finally I discuss ways to enlarge the supported fragment of English, how we can combat and interprete the inherent ambiguity we meet, and how the flexibility of Donkey Monoids relate to the classical Montague lambda structures.
 
 \end{abstract}
 
@@ -128,6 +127,8 @@ Finally I discuss ways to support a larger fragment of English, how we can comba
 % 3. Justification or importance of the project
 % 4. Outline of the structure of the report
 
+% No donkeys were hurt in the making of this paper
+
 There are many reasons why it is interesting to represent information in a logical language. For a computer scientist, the biggest advantage is that we can compute with logic. There is a horde of algorithms for doing querying, question answering, reasoning, unification and resolution. They key to this powerhouse is obtaining a first order logic form of your information.
 
 \begin{description}
@@ -138,90 +139,164 @@ There are many reasons why it is interesting to represent information in a logic
 \item[Robots] Since the beginning of Artificial Intelligence, logic based approaches have done well.\cite{russell2010artificial} Robots need to store relationships they learn about the world and react to it. For modern `robots' like apples Siri to be able to communicate with people, a translation layer between natural language and logic is a plausible path.
 \end{description}
 
-HVAD MED AT SKRIVE LIDT MERE OM HVAD VI VIL HER??
+It would seem that getting computers to understand and work with natural language is on of the biggest challenges in information technologies this day. Moving the problems into the space of formal logic is a classical and tempting path. It does however remain open whether our formal logics actually have the power to express most of the sentences people casually voice on a daily basis. In this paper we will assume it does for enough practical cases to be useful.
 
-It would seem getting computers to understand and work with natural language is on of the biggest challenges in information technologies this day. Moving the problems into the space of formal logic is a classical and tempting path. Unfortunately, as many people have pointed out, classical logic simply doesn't have the power to express most of the sentences people casually express every day.
+The reason logics like DPL and Visser Monoids exist is a famous sentence noted by Peter Thomas Geach in 1962\cite{geach1962reference}: `Every farmer who owns a donkey beats it'. As we will see, this sentence illustrates that even if we restrict ourselves to factual sentences, formal first order logic still runs into a lot of problems when representing many natural sentences. In fact this sentence broke early automatic approaches to logification, and led to the construction of Discourse Representation Theory (DRT)\cite{kamp1993discourse}.
 
-We won't let us self get too down over this, but it is worth it to outline where the typical problems arrise, and to get a feeling of what a formal logic translation of natural language actually looks like. We'll start out with a sentence that easily lets itself translate and then a couple that don't:
+Before I go into more details on my automatic logification scheme, let's have a look at some of the issues we run into if we try approach the task manually. This should help us get a feeling of what a formal logic translation of natural language actually looks like:
 \begin{enumerate}
-\item `Socrates is a donkey': $donkey(Socrates)$. This is a classical logical example, treating Socrates as a constant. If we want to do without constants we can write: $\forall x(Socrates(x)\rightarrow donkey(x))$. Notice this allows for more than one Socrates to exist.
-\item `All his donkeys are treated well': This sentence somewhat willingly let's itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ referring to some person from earlier in the discourse.
-\item `Every farmer beats his donkey': This sentence clearly has two possible meanings: $\exists y(his(x,y)\wedge donkey(y)\wedge \forall z(farmer(z) \rightarrow beats(z,y))$ if there is only one donkey, and $\forall x(farmer(x)\rightarrow \exists y (beats(x,y)\wedge his(x,y)\wedge donkey(y))$ if there is a donkey for each farmer.
-\item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesn't\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'.
-\item `They donkeys are cold': This is an often used example of an `implied action sentence' and thought to have the same meaning as `Please close the stable door'. The best we can do here seems to be $please\_close\_the\_stable\_door()$ or perhaps $\exists x(stable\_door(x)\wedge please\_close(x))$.
-\item `Jane likes a painting': This is easy to translate to logic, but are we comfortable that it has the same meaning as the sentence `It is not the case that Jane doesn't like a painting' and even `Jane likes a painting and either it is raining or it isn't'? It is hard to imagine a language with strong logical foundations, where those three sentences wouldn't be equal.
+
+\item `Socrates is a donkey': $donkey(Socrates)$. This is a classical logical example, treating Socrates as a constant. If we want to do without constants we can write: $\forall x(Socrates(x)\rightarrow donkey(x))$. See how this allows for more than one Socrates to exist.
+
+\item `All his donkeys are treated well': This sentence somewhat willingly let's itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ referring to some (male?) entity in the context of the discourse.
+
+\item `Every farmer beats his donkey': This sentence clearly has two possible meanings: $\forall x(farmer(x)\rightarrow \exists y (beats(x,y)\wedge his(x,y)\wedge donkey(y))$ if `his' refers to the farmers or $\exists y(his(x,y)\wedge donkey(y)\wedge \forall z(farmer(z) \rightarrow beats(z,y))$ if it refers to somebody else. There is no way we can know without more context information.
+
+\item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesn't\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'. In any case it makes it hard to say what the logical meaning of `the' really is.
+
+\item `The donkeys are being stubborn!': This is an often used example of an `implied action' sentence and thought to have the same meaning as `Please go out and beat them!'. The best we can do here seems to be $please\_beat\_the\_doneys()$ or perhaps $\forall x(donkey(x)\rightarrow please\_beat(x))$ or even $please(\forall x(donkey(x)\rightarrow beat(x)))$.
+
+\item `Jane beats a donkey': This is easy to translate to $\exists x(donkey(x)\wedge beat(Jane,x))$, but are we comfortable that this is also our interpretation of the sentence `It is not the case that Jane doesn't beat a donkey' and even `Jane beats a donkey and either it is raining or it isn't'? It is hard to imagine a language with strong logical foundations, where those three sentences wouldn't be equal.
 \end{enumerate}
 
-In this paper we will work with a subset of English that translate reasonably well into logic. This unfortunately means that arguably the majority of sentences will be inaccessible to our methods. We will take a shot at ambiguous sentences like the third one though.
+These examples should hopefully have shown that some uses of English, especially example 4 and 5, are well beyond what we can hope to automatically logify. However you might think the sentences of `factual nature' like 1 and 2 shouldn't be too hard? Unfortunately, as sentences get longer and more complex we will see that they are, and this is where Donkey Monads, Dynamic Predicate Logic (DPL) and Discourse Representation Theory (DRT) have a role to play. Let's take a close look at that `Donkey Sentence': `If a farmer owns a donkey, he beats it'.
 
-%TODO: Perhaps this should be moved to the aknowledgements or something. It sets a very demoralizing tone during the rest of the paper.
-Even more unfortunate than the problems above is it that we won't be able to do anything about the concerning welfare for donkeys around the world\cite{donkey2013sanctuary}, but must restrict ourselves to simply pointing it out. We will follow Geach\cite{geach1962reference} on this, and make `If a farmer owns a donkey, he beats it' our primary object of study.
+From the examples before, and perhaps from common intuition, we might find it natural to think of the sentence as two subsentences combined by `if': `if (a farmer owns a donkey) (he beats it)'. Translating the parentheses first: `A farmer owns a donkey' logifies to $\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y))$, and `he beats it' translates to $beats(x,y)$. Hence the whole formula should probably be:
 %
 \begin{align}
-\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y)) \rightarrow beats(x,y))
+\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y))) \rightarrow beats(x,y)
 \end{align}
 %
-This is arguably the formula that first comes to mind for a moderately trained logician, or simply what you expect by looking at the structure of the constituent tree. Translating an indeterminate `a farmer' into $\exists x(farmer(x))$ seems correct, but clearly the formula has problems with scope.
+Which is totally wrong. The $beats(x,y)$ clause ends up refering to the variables outside of their scope, and even if we try to push it inside the parentheses:
 %
 \begin{align}
 \exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y) \rightarrow beats(x,y))) \label{wrong_donkey_2}
 \end{align}
 %
-Moving the implication into the scope of $x$ also doesn't work. Sentence \eqref{wrong_donkey_2} evaluates to true as long as a single farmer beats his donkey. In fact as long as a farmer exists it evaluates to true, since plugging the farmer into the $donkey$ predicate makes the antecedent false.
+It doesn't work either. Sentence \eqref{wrong_donkey_2}, while syntactically correct, evaluates to true as long as a single farmer beats his donkey. In fact \textbf{as long as any farmer exists} \eqref{wrong_donkey_2} evaluates to true. This is because $\exists y$ also spans over the farmer entity (and he's not a donkey) which makes the antecedent false. Clearly this is not the formula we are after.
+
+What turns out to be the correct logification is this:
 %
 \begin{align}
-\forall x (farmer(x) \rightarrow \forall y ( owns(x,y) \wedge donkey(y) \rightarrow beats(x,y))) \label{correct_donkey}
+\forall x (farmer(x) \rightarrow \forall y (owns(x,y) \wedge donkey(y) \rightarrow beats(x,y))) \label{correct_donkey}
 \end{align}
 %
-This turns out to be the correct formula. At least as long as you consider the use of `all' in natural language equal to the `all' in logic, which can be vacuously true.
+A far cry from our original `guess'. Moreover the above version even have the oddity that the interpretation of `all' is `the logical one': The formula \eqref{correct_donkey} is, in addition to the intended situations, also considered true if no farmers exist in the domain, or none of them own donkeys.
 
-So what is going on? Most people think of determinates `the donkey' and indeterminates `a donkey' as being a reference to an existing donkey and an `introduction' of some new donkey into the conversation. However in a lot of sentences this turns out to not be the case. There doesn't seam to any simple way to translate them into logic. Even less does it seem intuitive how to use them as antecedents to pronouns.
-
-The common way to deal with this problem is to make a big jump in power. Using a Montague Grammar we can define any noun phrase (NP) as a function from a verb phrase (VP) to a sentence. This way `if a farmer' might be a function $VP \to S \to S$, but even with this power, a working function is not easy to construct\cite{montague1973proper}.
-
-Another problem with sentence \eqref{correct_donkey} is a lack of compositionality. This property which is vital if we want to build up a meaning of a conversation piece by piece. Say for example that our primary sentence was followed by the sentence `He also feeds it': $feed(x,y)$. How do we combine the first and the second sentence to give the meaning $\forall x(farmer(x)\rightarrow \forall y(owns(x,y)\wedge donkey(y)\rightarrow beat(x,y)\wedge feed(x,y)))$?
-
-The point is that there is simply not a way to do this in PL. All variables in a formula are always closed off in their scope, and there are no logical operators that can `push' a new predicate into a closed scope. Our previous case might be a bit unfair, since we were trying to push something into a complicated implication, but even in case of the simple sentences `There is a farmer. He owns a donkey.' we wouldn't be able to build a meaning from the pieces.
-
-One could argue that we can simply obtain compositionality using Montague functions like we discussed earlier (and will discuss more deeply in a later chapter), but what would be really nice is to have a simple logic that simply has these things built in. In this paper we are going to look into not only one, but a couple of such logics. In these logics we will be able to write things such as:
+Now the above example may seem a bit contrived. Why did I have to try to combine the meaning from the obviously wrong pieces? Wasn't some other strategy more obvious? Before we go into details of such logification strategies, let's first see how easy it could have been, if we instead of first order logic had used Visser's Donkey Monoids:
 %
 \begin{align}
-(\exists x \cdot farmer(x)) \cdot (\exists y \cdot donkey \cdot owns(x,y))
+\Bowtie \cdot \exists x \cdot farmer(x) \cdot owns(x,y) \cdot\triangle\cdot\exists y \cdot donkey(y) \cdot\triangle\cdot\Bowtie\cdot beats(x,y)
 \end{align}
 %
-Here the variables survive throughout the formula, which allows us to concatenate it with other formulas. The parenthesis are associative, so we don't even need them.
-Later in the paper we will also look at a logic allowing us to write:
-%
-\begin{align}
-(\bowtie \cdot \exists x \cdot Farmer(x) \cdot \exists y \cdot donkey(y) \cdot owns(x,y) \cdot \bowtie beats(x,y)) \cdot feeds(x,y)
-\end{align}
-%
-Which allows us to be compositional even in the case of implications.
+If we read $\exists$ as `a' this is basically identical to the English sentence. The donkey monoid even supports placing the transitive verb between the two referants. Clearly some magic is going on, that we will have to investigate further.
 
-It is interesting to consider whether such logics can give us something on the way of translating speech to logic. In this paper we are going to look into exactly that, and we will combine it with the best available tools for dependency analysis and coreference resolution. This is the game plan:
-\vspace{1em}
-\tikzstyle{decision} = [diamond, draw, fill=blue!20,
-    text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
-\tikzstyle{block} = [rectangle, draw, fill=blue!20,
-    text width=5em, text centered, rounded corners, minimum height=4em]
-\tikzstyle{line} = [draw, -latex']
-\begin{tikzpicture}[node distance = 3cm, auto]
-    % Place nodes
-    \node [block] (nl) {Natural Language};
-    \node [block, right of=nl] (dr) {Dependency Representation};
-    \node [block, right of=dr] (monad) {Enhanced DPL Representation};
-    \node [block, right of=monad] (dpl) {Dynamic Predicate Logic};
-    \node [block, right of=dpl] (prop) {First Order Logic};
-    % Draw edges
-    \path [line] (nl) -- (dr);
-    \path [line] (dr) -- (monad);
-    \path [line] (monad) -- (dpl);
-    \path [line] [dotted] (dpl) -- (prop);
+Neat as the Donkey Monoids are, interested as we are in automation, we should be very concerned about those magical $\Bowtie$s and $\triangle$s that have popped up in our formula. What do they mean? How do they work? And how do we know when to use them? Visser himself, while answering question 1 and 2 in detail, doesn't give many hints on question 3. Only that they are probably controlled by adverbs and similar `helping words'.
+
+So if we don't know how to use them, how can we know if the Donkey Monoids are good logics for natural language? In the later chapters I will discuss their formal meaning in more detail and also what semantic meaning I intend to give them. In the final chapters we will see just how much flexibility this approach allows us.
+
+We need a framework to encode our rules into, and luckily the field of computational semantics offer several solutions. Basically there are two well described ways to go: statistical vector space methods, which is very much the most popular alternative right now, and logical methods. As you might have guessed I will lean in the dirrection of the later. The most well described methods are Montague Grammars and Discourse Representation Theory (invented after the donkey sentence).
+
+In the early sixties the American logician, Richard Montague, was a teaching a class in which the students had to do logification of simple sentences. He noticed that there were many patterns in the way they did it, and conjectured that it would be possible to formalize the entire process. So he set out to write a series of papers that became very influential in the philosophy of language, linguistics and computer science.
+
+The Montague Grammar, as Montague's approach came to be know, works amazingly well, it's simplicity taken into account. It is not hard to see how one might convince oneself that it could be used to describe all of language. The basic idea is to define logical formulas recursively over the so called constituent tree of a sentence. The tree is based on the idea of context free grammars for natural language developed mainly by Noam Chomsky\cite{chomsky2002syntactic}. Figure \ref{fig:const_tree} is an example of what it might look like.
+
+\tikzstyle{level 1}=[level distance=1cm,sibling distance=3.5cm]
+\tikzstyle{level 2}=[level distance=1cm,sibling distance=2.25cm]
+\tikzstyle{level 3}=[level distance=1cm,sibling distance=1.1cm]
+\begin{figure}
+\centering
+\begin{tikzpicture}[grow=down, sloped]
+\node {S}
+    child {
+        node {NP}
+        child {
+            node {Det}
+            edge from parent
+            child {
+                node {the}
+                edge from parent
+            }
+        }
+        child {
+            node {N}
+            child {
+                node {farmer}
+                edge from parent
+            }
+            edge from parent
+        }
+        edge from parent
+    }
+    child {
+        node {VP}
+        child {
+            node {V}
+            edge from parent
+            child {
+                node {beats}
+                edge from parent
+            }
+        }
+        child {
+            node {NP}
+            edge from parent
+            child {
+                node {Det}
+                edge from parent
+                child {
+                    node {a}
+                    edge from parent
+                }
+            }
+            child {
+                node {JJ}
+                edge from parent
+                child {
+                    node {lazy}
+                    edge from parent
+                }
+            }
+            child {
+                node {N}
+                edge from parent
+                child {
+                    node {donkey}
+                    edge from parent
+                }
+            }
+        }
+        edge from parent
+    };
 \end{tikzpicture}
+\caption{A Constituent Tree} \label{fig:const_tree}
+\end{figure}
 
-Going from step 2 to step 3 we are going to try and eliminate some of the ambiguity we saw earlier by outputting multiple possible sentences. In particular we will try and make a strong and a weak reading of every implication. However before we get into the details of how everything is implemented in code, we should look more into the nifty details of the theory applied.
+We will see later how exactly the Montague Grammar obtains a full sentence formula from its reqursive process, but in any case for a computer scientist the introduction of trees is always a promising step.
 
-TODO: Requirements?
+The main thing to notice now is that for Montague's approach to work, it is crucial that we can always get the meaning of a composed phrase from a composition of the meaning of its subphrases. This compositional property is exactly what we saw earlier that first order logic doesn't posses, and Montague goes through many hoops to simmulate it.
+
+I do however avoid many of those problems, since my goal here is not to test the validity of Montague's proposed rules, but to experiment with how Donkey Monoids and to an extent DPL behaves when put in the framework described. To draw a full circle I am however then going to translate the Donkey Monoids into first order logic so we can easily check if our formulas have the meanings we expect.
+
+This is the chain I am going to build:
+
+\begin{description}
+\item[1 Natural Language] We start with a file of simple English natural language sentences. Each line is processed on its own, but may contain more than one sentence.
+
+\item[2 POS tagger] This is the first of three Stanford NLP programs my Haskell script is going to pass the text to. The POS tagger tokenizes the sentences and statstically tries to figures out part of speach for each word. This is our first source of error.
+
+\item[3 Constituent Grammar] It might be that the reason Montague and other early pioneers didn't test their programs mechanically was their lack of access to a good parser. The Stanford Parser is the best on the market, but it still an error rate of around 5\% which is one in every two sentences.
+
+\item[4 Correference Resolution] A lot have been said about how anaphora might be resolved using formal Montague Grammar like approaches. DRT is especially focused on this topic. None the less the current champeon of anaphora competitions\cite{lee2011stanford}\cite{raghunathan2010multi} is the heuristical Stanford Deterministic Coreference Resolution System, the workings of which I will explain in detail.
+
+\item[5 Donkey Monoid] For us the step from 4 to 5 is the most interesting, as it is where we go from syntax to semantics. If we manage to push our original text through to here, not much can go wrong. Only issue is if the logical meaning we create is not the one intended by the speaker.
+
+\item[6 Dynamic Predicate Logic] Since the Donkey Monoids are variants of DPL, they are easy to convert into it. It is much more surprising that DPL lets itself convert into first order logic.
+
+\item[7 First Order Logic] We end up translating our dynamic logics into this old friend. This is mainly done to test the conversion algorithm, and because the first order logic is what we are used to read. The results can be surprising.
+\end{description}
+
+However before we can go into the many technical details, we need to develop a very good understanding of the logics and ideas we are working with.
 
 \section{Formal Stuff (10)}
 
@@ -1271,6 +1346,9 @@ improved; a discussion of the lessons you have learnt from the project.’
 In the papers it is always assumed that the constituent tree and things are `trivial' or `already sorted', but how do the pieces really stack up when put together?
 
 
+Visser: The constructions studied in this paper can be viewed as adding control elements to the language. A control element is a symbol representing an instruction concerning storage of bits of meaning. Thus, control elements serve to steer semantic processing.
+
+
 \begin{itemize}
 \item Studied computational linguistics and learned about state of the art technologies
 \item Found out what was going on with dynamic logics and 
@@ -1345,6 +1423,9 @@ Thanks to Phil Blunsom and Edward Grefenstette for exciting and enlightening lec
 Thanks to the Natural Language Processing Group at Stanford University for making their software and results easily available for use in my project\cite{klein2003accurate}.
 
 Thanks to Érica Baena Kato for keeping me awake with interesting linguistic perspectives.
+
+Thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for actually taking donkeys welfare seriously and rescuing neglected donkeys in the UK and all over the world.
+
 \newpage
 \section{Appendix}
 \subsection{Derivation of DPL preconditions}
