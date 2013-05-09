@@ -306,11 +306,11 @@ However before we can go into the many technical details, we need to develop a v
 %Requirements gives the program requirements. These chapters prepare the ground for the Design chapter.
 %That is: What do we need to handle to be able to solve this problem
 
-Since we are going to experiment with converting language into logic, a natural place to start is with classical logic. Classical logic, also called Predicate logic (PL), is the logic of conjunction, disjunction and negation extended with universal and existential quantifiers.
+In these chapters I'm going to describe the logical theories by Visser and earlier dynamic semantists. I will introduce some addtions of my own and prove interesting properties about them. Finally, but most importantly, I will go into depth with the tools and ideas we need to write a strong logification framework.
 
-In the introduction chapter we saw that PL was rather lacking in terms of compositionality and we predicted that what we really wanted was an `update logic' (a logic with update semantics) of some sort. Update semantics are well known and studied in computer language theory, and have in the past couple of decades found their way into a wider range of philosophies.
+In the previous chapter I showed how First Order Logic lack certain compositional properties. A possible solution to this problem is to use a so called `update logic' (a logic with update semantics). Update semantics are logics inspired on the semantics of programming languages where a variable, once introduced, will stick around for a period not know at the time of it's introduction.
 
-The idea of all of those is a `growth of information in time'. Starting from little, and with each statement adding more. Information is here seen in the information theoretic way, where no information is when everything is possible ($\top$) and total information is when nothing is possible ($\bot$).
+The idea of those logics is a `growth of information in time'. Starting from no information, and with each statement adding more. Information is here seen in the information theoretic way, where no information is when everything is possible ($\top$) and total information is when nothing is possible ($\bot$).
 
 Logicians and linguists have come up with many different update logics since the 80s. I will quickly describe the four most cited ones, to give an idea of the landscape we're working in:
 %
@@ -484,7 +484,7 @@ The DPL $\psi_1\rightarrow\psi_2$ in particular can be seen as the filter, that 
 
 Talking about binding, also notice that our union or `or' construct is a bit special. $\psi_1$ and $\psi_2$ cannot bind variables in each other, but in $(\psi_1\cup\psi_2)\cdot\psi_3$ they can both bind variables in $\psi_3$. This is going to introduce a lot of weird situations later. In the next section we will look closer at these problems, and also consider the alternative definition of `or': $\neg(\neg\psi_1\cdot\neg\psi_2)$.
 
-\subsection{The problem with disjunction}
+\subsubsection{The problem with disjunction}
 
 We won't actually use `or' in the implementation.
 Example of the problems we still have in the logic.
@@ -543,7 +543,7 @@ So does this fix our problem of binding between clauses? No. In fact this defini
 
 We can imagine defining $\neg$ dynamically: $\neg\psi_1\cdot\psi_2 = \neg(\psi_1\cdot\psi_2)$. However not in our current model, and it won't solve any of our problems with disjunction. It does however allow this sentence: `It is not the case that a farmer doesn't own a donkey. He beats it'. While it made sense not to allow variables to escape from a single $\neg$, we want them to escape from a double.
 
-\subsection{Connection with first order logic}
+\subsubsection{Connection with first order logic}
 
 An interesting property of DPL is that it is isomorphic with classical logic. Any PL formula corresponds to one in DPL and vice versa. This gives an alternative way to define and understand the semantics of DPL, and it relaxes us that nothing `weird' is going on. We might also be a bit disappointed that after all this, we don't possess any extra power, but let's forget about that for now, and see how the conversion works.
 
@@ -598,11 +598,7 @@ addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
 \end{haskell}
 
 
-\subsection{Monadic variants}
-
-Let's call them `Visser variants' or `VDPL'. Hm, I like that.
-
-What should we call those? Visser calls them DPL variants, e.g. DPL$_{\Bowtie\triangle}$
+\subsection{Donkey Monads*}
 
 In the previous subsection we saw that DPL allowed us to rewrite the donkey sentence as 
 
@@ -736,7 +732,7 @@ sees(x,y) \cdot \triangleleft \cdot \bot \cdot \triangleright \cdot \triangle \c
 %
 Notice that that means the word `no'/`not' must be $\triangleleft\cdot\bot\cdot\triangleright$. Unfortunately these retrospective triangles tend to mess sentence enough up, that they require lots of `stream unification brackets', and don't generally give very nice formulas. In the semantic parsing in the next section, they wont be used at all.
 
-\subsection{Montague semantic}
+\subsection{Montague Semantics}
 Montague semantics is a theory of natural language that believes its semantics can be described thoroughly in terms of standard mathematical models. Logician Richard Montague (1930-1971) famously wrote
 \begin{quotation}
 There is in my opinion no important theoretical difference between natural languages and the artificial languages of logicians; indeed I consider it possible to comprehend the syntax and semantics of both kinds of languages with a single natural and mathematically precise theory. \cite{montague1970universal}
@@ -783,7 +779,7 @@ You might have noticed we didn't discuss how the variables $r_1$ and $r_2$ were 
 
 Later in the implementation section we will look at more issues regarding to using Montague Grammars in practise. First we need to look at a very important source of ambiguity in sentences.
 
-\subsection{Weak and strong readings}
+\subsubsection{Weak and strong readings*}
 
 In the process of defining semantics for language, ambiguity in sentenses is of course a serious problem. A sentence like  
 \begin{quotation}
@@ -905,13 +901,15 @@ The reason the rules are applied in the order above is to give the most certain 
 
 The Stanford procedure above is currently the strongest competitor in various coreference competitions.
 
-\subsection{Dependency grammars}
+\subsection{Dependency grammars*}
 
 This is an important thing to mention.
 
 Extracted from constituent trees using tregex\cite{de2006generating}
 
-\tikzstyle{level 1}=[level distance=2.5cm, sibling distance=3.5cm]
+\tikzstyle{level 1}=[level distance=2cm, sibling distance=3.5cm]
+\tikzstyle{level 2}=[level distance=2.5cm, sibling distance=3.5cm]
+\tikzstyle{level 3}=[level distance=2cm, sibling distance=3.5cm]
 \begin{figure}
 \centering
 \begin{tikzpicture}[grow=down, sloped]
@@ -1429,9 +1427,15 @@ Thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for actually taking don
 \newpage
 \section{Appendix}
 \subsection{Derivation of DPL preconditions}
+Remember that we have defined, for assignments $\alpha$ and $\beta$, DPL formula $\psi$ and FOL formula $\phi$: $\alpha\models\langle\psi\rangle\phi$ to mean $\exists\beta(\alpha\llbracket\psi\rrbracket\beta\wedge\beta\models\phi)$. $\alpha\models\phi$ is just the usual $\models$ from FOL.
+
+Since the proof is over the syntax of DPL, we use $\llbracket\cdot\rrbracket$ as the interpretation function so that $\alpha\llbracket\psi\rrbracket\beta$ is the FOL statement `$(\alpha,\beta)\in\Psi$', where $\Psi$ is the relation defined by $\psi$.
 \begin{align}
+%
+\intertext{Let's start out with the most tricky derivation. How does the resetting, unbounded $\exists$ of DPL translate into the defining, bounded $\eixsts$ of FOL?}
+%
 \alpha\models\langle\exists x\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\exists x]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha\llbracket\exists x\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow \exists\beta (\forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow \exists\beta (\exists\nu (\forall\omega (\alpha[x:=\nu]_{\omega} = \beta_{\omega})) \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow \exists\beta (\exists\nu (\alpha[x:=\nu] = \beta) \wedge \beta\models\phi) \nonumber\\
@@ -1439,43 +1443,44 @@ Thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for actually taking don
  & \leftrightarrow \exists\nu (\alpha[x:=\nu]\models\phi) \nonumber\\
  & \leftrightarrow \alpha\models\exists x (\phi) \\
 %
-\intertext{Here we take $\alpha[x:=\nu]$ to mean the $\alpha$ with $\alpha_x$ assigned to the value of $\nu$.}
+\intertext{Where we have taken $\alpha[x:=\nu]$ to mean the $\alpha$ with $\alpha_x$ assigned to the value of $\nu$.
+The derivation for $\cdot$ goes more smoothly:}
 %
 \alpha\models\langle\psi_1\cdot\psi_2\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\psi_1\cdot\psi_2]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta(\exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma[\psi_2]\beta) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\gamma (\alpha[\psi_1]\gamma \wedge \exists\beta(\gamma[\psi_2]\beta \wedge \beta\models\phi)) \nonumber\\
- & \leftrightarrow \exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma\models\langle\psi_2\rangle\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1\cdot\psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta(\exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \gamma\llbracket\psi_2\rrbracket\beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \exists\beta(\gamma\llbracket\psi_2\rrbracket\beta \wedge \beta\models\phi)) \nonumber\\
+ & \leftrightarrow \exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \gamma\models\langle\psi_2\rangle\phi) \nonumber\\
  & \leftrightarrow \alpha\models\langle\psi_1\rangle\langle\psi_2\rangle\phi
 %
-\intertext{c}
+\intertext{$\cup$ interestingly doesn't translate to $\langle\psi_1\vee\psi_2\rangle\phi$ as we might have expected:}
 %
 \alpha\models\langle\psi_1 \cup \psi_2\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\psi_1 \cup \psi_2]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta ((\alpha[\psi_1]\beta \vee \alpha[\psi_2]\beta) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha[\psi_1]\beta \wedge \beta\models\phi) \vee \exists\beta (\alpha[\psi_2]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1 \cup \psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta ((\alpha\llbracket\psi_1\rrbracket\beta \vee \alpha\llbracket\psi_2\rrbracket\beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1\rrbracket\beta \wedge \beta\models\phi) \vee \exists\beta (\alpha\llbracket\psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow (\alpha\models\langle\psi_1\rangle\phi) \vee (\alpha\models\langle\psi_2\rangle\phi) \nonumber\\
  & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi
 %
-\intertext{d}
+\intertext{For predicates it's mostly a matter of juggling variables, values and assigments:}
 %
 \alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[P(x_1,\dots,x_n)]\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha\llbracket P(x_1,\dots,x_n)\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow \exists\beta (\alpha = \beta \wedge P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \alpha\models\phi \nonumber\\
  & \leftrightarrow \alpha\models P(x_1,\dots,x_n) \wedge \phi
 %
-\intertext{f}
+\intertext{$\neg$ is interesting because it has to create a scope:}
 %
 \alpha\models\langle\neg\psi\rangle\phi
- & \leftrightarrow \exists\beta (\alpha[\neg\psi]\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha=\beta \wedge \neg\exists\gamma(\alpha[\psi]\gamma) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \neg\exists\gamma(\alpha[\psi]\gamma) \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \neg\exists\gamma(\alpha[\psi]\gamma \wedge \gamma\models\top) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha\llbracket\neg\psi\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha=\beta \wedge \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma \wedge \gamma\models\top) \wedge \alpha\models\phi \nonumber\\
  & \leftrightarrow \alpha\not\models\langle\psi\rangle\top \wedge \alpha\models\phi \nonumber\\
  & \leftrightarrow \alpha\models \neg\langle\psi\rangle\top \wedge \phi
 %
-\intertext{e}\nonumber
+\intertext{Because $\psi$ is this way `evaluated on $\top$ only', we know that no variables introduced in $\psi$ can affect $\phi$.}\nonumber
 \end{align}
 
 \bibliographystyle{plain}
