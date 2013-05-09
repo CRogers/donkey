@@ -341,15 +341,6 @@ On the other hand $y$ is not known in the scope of $beats$, so there is no way w
 
 To deal with our example of `If a farmer owns...', DRT introduces more symbols for weak and strong conditionals.
 
-%In Discourse Representation Theory (DRT) our donkey sentence `If a farmer owns a donkey, he beats it' is represented as
-%\begin{align}
-%&[_1 x\mid Pedro(x), [_2 y, z\mid owns(y,z), donkey(z)] \Rightarrow [_3 v, w\mid beats(v,w)]] \nonumber
-%\intertext{This form is created from the syntax tree, and DRT then provides rules for eliminating variables and thus providing anaphora:}
-%&[_1 x, v: v = x, Pedro(x), [_2 y, z, w: y = x, w = y, owns(y,z), donkey(z)] \Rightarrow [_3 : beats(v,w)] ] \nonumber\\
-%&[_1 x: Pedro(x), [_2 z: donkey(z), owns(x,z)] \Rightarrow [_3 : beats(x,z)] ] \nonumber
-%\end{align}
-%The DRT merge
-
 \item File Change Semantics, 1982 by Irene Heim\cite{heim1983file}, are based around the puzzle of discourse `referents' which may, as we have seen, sometimes act like quantifiers, sometimes referents and sometimes antecedents. Heim suggests using so called `file cards' which though developed independently, has a lot in common with DRT.
 
 However, where DRT defines complex rules for merging different `discourse referents', in File Change Semantics (FCS) the part `added onto' a file gets to decide how the merge is made. Some how similar to how lambda functions in Montague grammars give you a lot of flexibility. For example in case of `adding' $p$, an n-ary atomic predicate, to a file $F$:
@@ -598,23 +589,15 @@ addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
 \end{haskell}
 
 
-\subsection{Donkey Monads*}
+\subsection{Donkey Monoids}
 
-In the previous subsection we saw that DPL allowed us to rewrite the donkey sentence as 
-
-\begin{equation}
-\exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot owns(x,y) \rightarrow beats(x,y)
-\end{equation}
-
-($\cdot$ binds stronger than $\rightarrow$)
-
-But think about the slight modification to the sentence:
+Imagine translating this sentence to DPL:
 %
 \begin{quotation}
 A farmer owns a donkey, if he beats it
 \end{quotation}
 %
-We would have to write that as
+We would have to write something along the lines of:
 %
 \begin{equation}
 \exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot beats(x,y) \rightarrow owns(x,y)
@@ -642,7 +625,15 @@ which can be written in `stream form' as
 %
 The meaning of the above is $(-) \rightarrow (+)$
 
-Should we have one more example here?
+Another example from Visser is:
+\begin{quotation}
+A man keeps his word. He is honest
+\end{quotation}
+which roughly translates to:
+\begin{equation}
+\Bowtie\cdot\exists x\cdot man(x)\cdot\Bowtie\cdot keepword(x)\cdot honest(x)
+\end{equation}
+If you are interested in a lot more examples, see Visser's paper\cite{visser1999donkey}.
 
 So how do we define this nifty $\Bowtie$? The trick is to move the entire dynamic relation algebra from before into an e-monoid that will help us keep track of some details.
 
@@ -657,8 +648,6 @@ If $\phi$ from before is the basic algebra, we specify the construction of our m
 %
 Notice how we keep the negative stream in the first position of the tuple, and the positive stream at the second position. The third position indicates to what stream we are currently writing. For example, if we are writing to the negative stream, and we apply an element that itself asks us to continue at its negative stream, we go back to the positive stream.
 
-More examples on the utilities of the above monad can be found in Vissers paper.
-
 An even more interesting element than $\Bowtie$ is $\triangle$. $\triangle$ is a scope modifier, and it allows us to write:
 %
 \begin{quote}
@@ -671,7 +660,7 @@ A farmer owns a donkey. He beats it.
 \triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot beats(x,y)
 \end{equation}
 %
-That is pretty close to the order of the natural language!
+That is very close to the order of the natural language!
 
 And combining the two monads we can do our original sentence as
 %
@@ -779,45 +768,109 @@ You might have noticed we didn't discuss how the variables $r_1$ and $r_2$ were 
 
 Later in the implementation section we will look at more issues regarding to using Montague Grammars in practise. First we need to look at a very important source of ambiguity in sentences.
 
-\subsubsection{Weak and strong readings*}
+\subsubsection{Weak and strong readings}
 
-In the process of defining semantics for language, ambiguity in sentenses is of course a serious problem. A sentence like  
+`Weak' and `strong' are quite accepted terms in linguistics for describing different ways to interprete quantifiers. In line with information theory, we can say that weak readings are about weak information and strong readings about strong information.
+
+Makoto Kanazawa has written an entire paper on issues with weak and strong readings of donkey sentences\cite{kanazawa1994weak}. For the donkey sentence, we may have at least the following readings of the second `a':
+\begin{enumerate}
+\item Weak reading: A farmer who owns a donkey beats a donkey he owns. 
+\item Strong reading: A farmer who owns a donkey beats every donkey he owns 
+\item Unique reading: A farmer who owns a donkey beats the donkey he owns. 
+\end{enumerate}
+
+We have equally many reaings for the first `A', creating nine possible interpretations. This is because `a' is a very ambigious quantifier. Other quantifiers such as `every' and `all' are more clearly defined. `Some' is another example of an ambigious quantifier.
+
+Often we can use the context of a sentence to determine which meaning is the correct one. For example:
 \begin{quotation}
-A farmer beats a donkey
+Every farmer owns a donkey. It is pink.
 \end{quotation}
-Might be translated as 
+Here it is clear that all the farmers share one donkey. Hence perhaps the best solution to the problem is to generate all possible sentences and let the context decide which ones survive.
+
+\subsection{Dependency Graphs}
+
+\tikzstyle{level 1}=[level distance=2cm, sibling distance=3.5cm]
+\tikzstyle{level 2}=[level distance=2.5cm, sibling distance=3.5cm]
+\tikzstyle{level 3}=[level distance=2cm, sibling distance=3.5cm]
+\begin{figure}
+\centering
+\begin{tikzpicture}[grow=down, sloped]
+\node {root}
+    child {
+        node {owns}
+        child {
+            node {If}
+            edge from parent
+            node[above] {mark}
+        }
+        child {
+            node {farmer}
+            child {
+                node {a}
+                edge from parent
+                node[above] {det}
+            }
+            edge from parent
+            node[above] {nsubj}
+        }
+        child {
+            node {beats}
+            child {
+                node {he}
+                edge from parent
+                node[above] {nsubj}
+            }
+            child {
+                node {it}
+                edge from parent
+                node[above] {dobj}
+            }
+            edge from parent
+            node[above] {advcl}
+        }
+        child {
+            node {donkey}
+            child {
+                node {a}
+                edge from parent
+                node[above] {det}
+            }
+            edge from parent
+            node[above] {dobj}
+        }
+        edge from parent
+        node[above] {root}
+    };
+\end{tikzpicture}
+\caption{Dependency graph for `If a farmer owns a donkey, he beats it'} \label{fig:dependency_graph}
+\end{figure}
+
+Dependency graphs are an alternative way of parsing sentences. Where constituent trees keep the original word order, dependency graphs are allowed to move thing around in any way they like\footnote{Until now we've been lucky that things next to each other often were related, but in some languages other than English, words can jump anywhere they like, and our approach might fail.}. Also dependency graphs don't have to be trees.
+
+The flexibility of dependency graphs allow them to do a lot of interesting things. In our favourite example of the donkey and the farmer we had the problem that there wasn't a very strong syntactical relationship between `farmer' and `he'. In figure \ref{fig:dependency_graph} we see how the same sentence would look if parsed with a dependency parser.
+
+The first thing we notice is that dependency graphs focus on verbs. The verbs become the heads of the sentences, and everything else becomes the ` subject', `the object' or `the something else' of the verb. In our example `he beats it' becomes an `adverbial clause modifier' of the main verb. This means it modifies the verb, here in the sence of making the main verb a condition.
+
+Dependency graphs naturally seems to offer more semantic information than constituent trees, and hence that they would be a good intermediate step towards our goal of logification. However the first disappointment arrise as we start to look at how they are created.
+
+The Stanford Parser makes dependency graphs using a special kind of regular expressions for trees called `tregex'\cite{de2006generating}. It defines tregex rules such as:
+%
 \begin{equation}
-\exists x ( farmer(x) \wedge \exists y ( donkey(y) \wedge beats(x,y)))
+NP < NN\ \$\ VP
 \end{equation}
-Indicating that ``a farmer'' refers to some specific individual. Or we can might see it as a general rule, and translate it as
+Which means an NP that is the parent of an NN and sister of a VP.
+
+Another more complicated example is:
 \begin{equation}
-\forall x ( farmer(x) \rightarrow \exists y ( donkey(y) \wedge beats(x,y)))
+NP < (NN < dog)\ \$\ (VP <\!\!<\# (barks > VBZ))
 \end{equation}
-Indicating that every farmer has some donkey he beats. Or we could even read it as
-\begin{equation}
-\exists y ( donkey(y) \wedge \forall x ( farmer(x) \rightarrow beats(x,y)))
-\end{equation}
-Indicating that the poor donkey is common between all farmers.
-% This seams wrong to me
+Which means an NP over an NN over `dog' and with a sister VP headed by `barks' which is a verb in present singular.
 
-Additionally, the indefinite article `a' is normally understood as an existential quantifier
+Obviously this means we can't get any information from the graph that we couldn't also get from the tree. In fact it probably contains less. On the flip side however, the regular expressions are clearly more powerful than simple recursions as we define them in the Montague grammars.
 
-Week and strong readings, check this out \cite{kanazawa1994weak}
+I've worked hard on trying to define a Montague like set of equations for Enlish, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP $\rightarrow$ Bool' and VPs are `Entity $\rightarrow$ Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: ConstituentTree $\rightarrow$ (VP $\rightarrow$ Bool)'. With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
 
-
-drt
-
-The upshot of the foregoing observations is that, apparently, indefinites are neither quantifiers nor referential terms, and this problem entrains another one, for as long as it unclear what indefinites mean, it will also remain obscure how they can serve as antecedents to pronouns
-
-Is this the same as the problem of multiple `scope bearing operators?'
-Sentences with multiple scope bearing operators - e.g.,
-quantified noun phrases or negations - are often ambiguous.
-
-%$• “Every student reads a book”
-%- ∀x(student(x) ⇒ ∃y(book(y) ∧ read(y)(x)))
-%- ∃y(book(y) ∧ ∀x(student(x) ⇒ read(y)(x)))
-
-Every farmer owns a donkey. It is pink. Second sentence decides the reading.
+In conclusion, Montague like grammars for dependency graphs could be very interesting to make. It would however require some welldefined rules for what we can expect to find under each type of arrow. This was a blind road.
 
 \subsection{Coreferences}\label{sec:coreferences}
 Coreferences (or anaphora) is essential in order to create advanced discourse, since it is what allows us maintain a topic beyond the first mention. Without coreferences we couldn't even express simple logical statements such as transitivity: `a man's brother's brother is his brother' etc.
@@ -900,92 +953,6 @@ After the final step different post processing options are usually performed. Fo
 The reason the rules are applied in the order above is to give the most certain rules the highest priority.
 
 The Stanford procedure above is currently the strongest competitor in various coreference competitions.
-
-\subsection{Dependency grammars*}
-
-This is an important thing to mention.
-
-Extracted from constituent trees using tregex\cite{de2006generating}
-
-\tikzstyle{level 1}=[level distance=2cm, sibling distance=3.5cm]
-\tikzstyle{level 2}=[level distance=2.5cm, sibling distance=3.5cm]
-\tikzstyle{level 3}=[level distance=2cm, sibling distance=3.5cm]
-\begin{figure}
-\centering
-\begin{tikzpicture}[grow=down, sloped]
-\node {root}
-    child {
-        node {owns}
-        child {
-            node {If}
-            edge from parent
-            node[above] {mark}
-        }
-        child {
-            node {farmer}
-            child {
-                node {a}
-                edge from parent
-                node[above] {det}
-            }
-            edge from parent
-            node[above] {nsubj}
-        }
-        child {
-            node {beats}
-            child {
-                node {he}
-                edge from parent
-                node[above] {nsubj}
-            }
-            child {
-                node {it}
-                edge from parent
-                node[above] {dobj}
-            }
-            edge from parent
-            node[above] {advcl}
-        }
-        child {
-            node {donkey}
-            child {
-                node {a}
-                edge from parent
-                node[above] {det}
-            }
-            edge from parent
-            node[above] {dobj}
-        }
-        edge from parent
-        node[above] {root}
-    };
-\end{tikzpicture}
-\caption{M1} \label{fig:M1}
-\end{figure}
-
-
-\begin{equation}
-NP < NN \$ VP
-\end{equation}
-
-An NP over an NN and w/ sister VP
-
-\begin{equation}
-NP < (NN < dog) \$ (VP <<\# (barks > VBZ))
-\end{equation}
-
-An NP both over an NN over `dog' and with
-a sister VP headed by `barks' under VBZ
-
-%\subsubsection{Semantics via dependencies}
-
-%This might need updating based on: http://en.wikipedia.org/wiki/Dependency_grammar and http://en.wikipedia.org/wiki/Phrase_structure_grammar
-
-It is an interesting idea to consider that we might be able to define our semantics over a dependency graph, in a similar way to the Montague approach described earlier. The dependency graph adds a lot of flexibility where the constituent tree used in the Montague approach is limited to the direct syntax of the tree. A good example is our favourite sentence `if a farmer owns a donkey, he beats it', where there isn't a very strong syntactical relationship between `farmer' and `he'. It's also been suggested that it is mostly due to luck that a lot of English fits relatively well to the Montague approach, where as in some languages the structure of the constituent tree might not say much about the actual semantics.
-
-I've worked hard on trying to define a Montague like set of equations for Enlish, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP -> Bool' and VPs are `Entity -> Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: ConstituentTree -> (VP -> Bool)'.With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
-
-Another problem worth considering is the fact that all information in the graph is drawn syntactically from the constituent tree. That is, the graph doesn't contain any information not in the tree, but the other direction is entirely possible. While it is hard to say exactly what's missing, it is worth noting.
 
 \section{Implementation (8)}
 
@@ -1283,15 +1250,15 @@ similar discourse algebras
 \end{itemize}
 
 \section{Acknowledgments}
-I would like to thank Samson Abrahamski for introducing me to the world of Natural Language parsing and semantics, for helpful and stimulating discussins and for keeping my on the right path
+I would like to thank Samson Abrahamski for introducing me to the world of Natural Language parsing and semantics and for helpful and stimulating discussions.
 
-Thanks to Phil Blunsom and Edward Grefenstette for exciting and enlightening lectures into the classical and modern approaches.
+Also thanks to Phil Blunsom and Edward Grefenstette for exciting and enlightening lectures into the classical and modern approaches.
 
 Thanks to the Natural Language Processing Group at Stanford University for making their software and results easily available for use in my project\cite{klein2003accurate}.
 
-Thanks to Érica Baena Kato for keeping me awake with interesting linguistic perspectives.
+Thanks to Érica Baena Kato for providing interesting linguistic perspectives on many issues.
 
-Thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for actually taking donkeys welfare seriously and rescuing neglected donkeys in the UK and all over the world.
+Finnaly I wish to thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for taking donkey's welfare seriously and rescuing neglected donkeys in the UK and all over the world.
 
 \newpage
 \section{Appendix}
