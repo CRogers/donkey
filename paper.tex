@@ -211,7 +211,7 @@ The Montague Grammar, as Montague's approach came to be know, works amazingly we
     child {
         node {NP}
         child {
-            node {Det}
+            node {DT}
             edge from parent
             child {
                 node {the}
@@ -242,7 +242,7 @@ The Montague Grammar, as Montague's approach came to be know, works amazingly we
             node {NP}
             edge from parent
             child {
-                node {Det}
+                node {DT}
                 edge from parent
                 child {
                     node {a}
@@ -989,173 +989,80 @@ Another problem worth considering is the fact that all information in the graph 
 
 \section{Implementation (8)}
 
-alpha/beta renaming: We don't need it because we use globally unique variable names
+The requirements for the testing framework are very simple: Support as big a chunk of English as possible, while keeping to the intended meaning.
 
-Montague grammars have been used for many years in the quest of machine translation. The idea was that to use logic as a `universal language' to which we could translate any sentence, and ascend back into whatever language we'd like. Hence you would think that the web was flooded with code and long machine readable lists of rules, but this is however not the case.
+Since this program is going to be used for research by computational lingusts, easy access to modify the code is more useful than big user interfaces and parameterization. Our interface is going to be simple text based, with an input file of text you want translated and a command you run on said file to start producing logifications.
 
-Perhaps the lack of usable material is due to the fact that most computer scientists abandoned the formal approach two decades ago for instead to try their luck with machine learning and vector space models. These models are however starting to show their weaknesses, specially in very logical sentences, and people are starting to wonder if there are still things to be learned from Montague's approach.
-\begin{quotation}
-`... we are convinced that the capacities of [Montague Grammar] have not been exploited to the limit, that sometimes an analysis is carried out in a rival framework simply because it is more fashionable' - Groendijk \& Stokhof in `Dynamic Montague Grammar'\cite{groenendijk1990dynamic}
-\end{quotation}
+\subsection{Interfacing with Stanford}
 
-Nonetheless the lack of machine tested composition rules means that nearly all of the rules I shall present are of my own creation. Because these rules are tested in practice on a large set of English sentences, they hopefully avoid some mistakes and oversights that I have found in purely theoretical papers. It seams like the correct approach to start with a small working fragment, and slowly add more phrase rules and sentences. The opposite of this approach is what is often observed when logicians and philosophers go astray in very abstract corners of English, without having covered the basic ground.
+The Stanford Parser tools provide a rich Java library for interfacing directly with the system. They have classes for things like constituent trees, dependencies, correferences and more. Obviously I couldn't use any of that. Instead I ran a simple shell script they include, which outputs the relevant information in XML.
 
+Haskell has a nice XML library in Text.XML.Light. However the constituent found by the parser were not actually in xml, but in a simple plain text format. To parse this I wrote my own parser using the great monadic Parsec library.
 
+The next step for my code was to tag the relevant tree leafs with correct variable names, so it could go into the Montague code. As stated before the Stanford toolchain provided me with correference tagging, but unfortunately not in a great format for my needs. If a sentence said `A man and a dog, they had a shower', it would assign the same `mention' to `a man' and `a dog', but nothing to `a shower'. Luckily Haskell is quite good at such tree manipulation. One thing I made sure was that I always use distinct variables so I never have to perform $\alpha$-conversion.
 
+One major issue with the Stanford tools is the fact that they are very slow. It uses less than a second per input text, but actually starting the program takes more than two minutes. This is due to the suite loading large compressed files of language statistics into RAM. This issue is the reason my program works with batches of inputs.
 
-Incremental dynamics\quote{van2001incremental}
+\subsection{Syntax and Semantics}
 
-DPL Semantics - Functional Version
-DPL Semantics - Relational Version
-A state is an element of $D^V$ (function from variables to domain)
-In functional semantics a state is a function $D^V -> P(D^V)$
-In relational semantics it is a relation $P(D^V x D^V)$
+An interesting issue is the fact that we deal with 4 types of logic. Each having a syntactic and semantic part. That means we have 8 kinds of truth ($\top$), 8 kinds of implication, 8 kinds of everything. And this is with only two Donkey Monoids implemented.
 
-There is not a big first order logic component in my project, but in the following it will often be useful to refer to the following structure
+The mentioned types are the following:
 
 \begin{haskell}
-data Prop =
-    T | F
-  | Not   Prop
-  | And   Prop Prop
-  | Or    Prop Prop
-  | Predi Ref [Ref]
-  | Exist Ref Prop
-  | All Ref Prop
-  | Impl Prop Prop
+data Fol = T | F | ,,,
+type IFol = Interpretation -> Bool
+
+data Dpl = DT | DF | ,,,
+type IDpl = Interpretation -> Assignment -> Assignment -> Bool
+type IDpl2 = Interpretation -> Assignment -> [Assignment]
+
+data Visser1 = VT | VF | ,,,
+type IVisser1 = (Dpl, Dpl, Integer)
+data Visser2 = VT | VF | ,,,
+type IVisser2 = (Dpl, Dpl, Dpl, Dpl, Integer, Integer)
 \end{haskell}
 
-And since we are going to deal with some large computer generated formulas, I've implemented a simple simplification function, which simply applies basic identities for $\top$ and $\bot$, and a combination of De Morgan's laws and the implication identity to eliminate negations.
+Notice that DPL has two possible interpretations\footnote{This is more of curiosity due to the fact that a DPL formula is a relation between two assignments, and that an assignment can either be thought of as a set of pairs: $P(D^V \times D^V)$ or a function from type $X$ to a set of type $X$: $D^V \rightarrow P(D^V)$. The first one is nice for proofs, but the second one has a nice and short programmatic definition.}. None of these are actually used in the final program, but they serve well to test this middle layer of the program.
 
-One interesting part is that since the simplifier has no look ahead, it will sometimes not find all applicable simplifications in one pass. For example
-%
-\begin{haskell}
-simplify (Not (Impl p F)) = Not (simplify (Impl p F))
-                          = Not (Not simplify p)
-                          = Not (Not q)
-\end{haskell}
-%
-Hence we need to run it a couple of times to get a good result. We can run it until the output doesn't change, or even simpler, just use a function like
-%
-\begin{haskell}
-fexp :: (a -> a) -> Int -> (a -> a)
-fexp f e = (iterate (f.) id) !! e
-\end{haskell}
+For each syntactic type I've defined a number of functions:
+\begin{description}
+\item[`simplify'] which takes a formula of the given syntactic type and repeatedly applies a number of identities thought to simplify the logic\footnote{This is extra important because the conversion of Donkey Monoids into DPL and DPL into FOL creates a lot of `dummy' $\top$s.}.
+\item[`tex' and `pretty'] which prints the formula in either \TeX or Unicode format. It's in a way main part of the program's user interface. Hence I have taken extra care to make sure it has visually pleasing bracketing.
+\item[`int'] which converts the formula to its semantic counterpart. There are also interpretation functions that interpret a logic in the logic `below' it, hence creating one directional conversion functions.
+\end{description}
 
-\subsection{My implementation of DPL semantics}
+In terms of the semantic types we have to be careful. Types such as `Interpretation $\rightarrow$ Bool' forgets to allow for basic `errors' such as references to unbound variables. For FOL we can check this statically and not allow the syntax, but for a DPL sentence $(\exists x\cdot P(x) \cup \exists y)\cdot Q(x)$ the existance of $x$ in $Q(x)$ depends on the value of $P(x)$.
 
-Syntactically we will be using the following structure
+One option in case of an error is to simply return $\bot$ and say the formula evaluated to false, but perhaps we want to distinguish the cases. I have experimented with a lot of types, such as `Interpretation $\rightarrow$ Maybe Bool', which can return the value `Nothing' in case of an error. It doesn't make the formulas any nicer though. If we decide to even implement Visser's `many world' semantics as discussed earlier, we get absolutely terrible formulas that don't honour the simplicity of the logic in any way.
 
-\begin{lstlisting}
-data DPL =
-    DT | DF
-  | DComp DPL DPL
-  | DOr DPL DPL
-  | DNot DPL
-  | DImpl DPL DPL
-  | DExists Ref
-  | DPredi Ref [Ref]
-\end{lstlisting}
-
-Below are some direct implementation of the semantics for DPL. We use the types
-\begin{lstlisting}
-type Assignment = [(Ref, Val)]
-type Relation = Assignment -> [Assignment]
-\end{lstlisting}
-This differs from the indirect set of types are used in the earlier formalisms:
-\begin{lstlisting}
-type Assignment = [(Ref, Val)]
-type Relation = Assignment -> Assignment -> Bool
-\end{lstlisting}
-
-intuitive
-
-uses well known isomorphism
-
-more direct
-
-The later is very difficult to implement, since the semantics require quantification over all assignments. Like for composition.
-
-\begin{lstlisting}
-:: Relation
-true = id
-false = const []
-
-predi1 :: [Val] -> Ref -> Rel
-predi1 f k = filter (\as -> elem (get k as) f)
-
-predi2 :: [(Val,Val)] -> Ref -> Ref -> Rel
-predi2 f k l = filter (\as -> elem (get k as, get l as) f)
-
-:: Relation -> Relation
-neg r = filter (\as -> null (r [as]))
-
-:: Relation -> Relation -> Relation
-comp = flip (.)
-impl s r = rnot (s `comp` (rnot r))
-\end{lstlisting}
-Then comes the most interesting one. To ``randomly reset'' a variable, we have to make sure that we have all assignments in the cross product of new values for the variable and what was there before.
-
-Bum bum. Maybe we should just use a set, then we could overwrite variable assignments
-\begin{lstlisting}
-exist :: Ref -> [Val] -> Rel
-exist k vs ass = [a : as | a <- news, as <- olds]
-	where olds = map (filter ((/=k) . fst)) ass
-	      news = [(k,v) | v <- vs]
-\end{lstlisting}
-
-\subsection{Handling variables}
-One thing I haven't found much \cite{visser1999donkey}
-Stanford: \cite{lee2013deterministic}
-\cite{lee2011stanford}
-\cite{raghunathan2010multi}
-Coreferences
-Using the parse tree and NPs
-
-The free variable thing is a problem in the sense that we have decided the meaning of a sentence is a truth value. Maybe we should change it to assignment -> Truth...
-
-Something that's very interesting is when to use free variables and when to use bound variables. We can think of free variables as actors known by the context and bound variables as actors introduced in the sentence. So if we had `The farmer had a friend. His name was Anders', we could write the first part as $\exists y \cdot friends(x,y)$ and the second part as $name(y, `Anders')$. This is important to keep compositionality, but it does of course raise the interesting question of how to make sure that the variable for `Anders' in the first and the second sentence is the same.
-
-In addition to being essential for composition, free variables are also very useful for information extraction type sentences. We can imagine writing a curious researcher writing into a search engine `farmers who like donkeys' which translates into $farmer(x) \cdot likes(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y)$.
-
-So how do we know when to include an $\exists$ and when not to?
-
-The coreference parser does however not find entities that are only mentioned once. Hence to make the later processing simpler, we assign those entity to free variable now as well.
-
-The task is slightly complicated by the fact that NP's can be nested, so `The farmer and the donkey' is a NP consisting of two smaller NP's `The farmer' and `the donkey' separated by `and'.
-
-We resolve this by assigning top down, overwriting `word to ref' assignments with fresh variables as we go deeper down the tree. This way, for our short sentence, we might end up with the assignment $\{`The': `y', `farmer': `y', `and': `x', `the': `z', `donkey': `z'\}$
-
-I parse the constituent tree using parsec\cite{leijen2001parsec}
-
-\begin{lstlisting}
-toMapping :: [Ref] -> ConstituentTree Word -> ([Ref], Map Int Ref)
-toMapping vs (Leaf _ _) = (vs, empty)
-
-toMapping vs tr@(Phrase "NP" subs) = (vs', submaps `union` np)
-  where np = mapInterval 0 (tsize tr) v
-        (v:vs', submaps) = toMapping vs (Phrase "" subs)
-
-toMapping vs (Phrase _ []) = (vs, empty)
-toMapping vs (Phrase _ (sub:subs)) = (vs'', p `union` shifted)
-  where (vs', subm) = toMapping vs (Phrase "" subs)
-        shifted = mapKeys (+tsize sub) subm
-        (vs'', p) = toMapping vs' sub
-\end{lstlisting}
-
-where $tsize :: ConstituentTree Word -> Int$ gives the number of words in the tree
-
-
-\subsubsection{Errors}
-
-What do we do when they fail?
-Also something from the disjunction chapter.
-
-What if my states always contain the entire domain as their domain. Just add a $\bot$ to the entity set, then everything will be mapped to that as default.
-
+In the current version of my program, I have decided to go with the simplest possible type, and simply report errors through Haskell's error system.
 
 \subsection{The grammar}
-This is not as bad as it sounds. It is similar to Montague and what the Stanford Parser does for dependencies.
+
+\newsavebox{\LstBox}
+\begin{lrbox}{\LstBox}
+\begin{haskell}
+data PosTree a = P PosTag [PosTree a] | L PosTag a
+type IWord = (Word, Index)
+\end{haskell}
+\end{lrbox}
+
+Once I have sculpted the input text into a nice tree shape\footnote{I use the type `PosTree IWord' where:\\
+\usebox{\LstBox}}, I parse it to my `montague' function. As I described in the early chapters, this applies a set of rules recursively to create a formal interpretation.
+
+Now, since Montague grammars have been around for a long time, and used in commercial machine translating systems from the 70ies and 80ies, you would think the web was would be flooded with code and long machine readable lists of rules I could use to bootstrap my system. This doesn't seem to be the case. Perhaps this is due to people abandoning this approach for vector models before the internet had really picked up the speed of today.
+
+Some people are however wondering if there might still be things to learn from Montague's approach, like Groendijk \& Stokhof in Dynamic Montague Grammar\cite{groenendijk1990dynamic}:
+\begin{quotation}
+`... we are convinced that the capacities of [Montague Grammar] have not been exploited to the limit, that sometimes an analysis is carried out in a rival framework simply because it is more fashionable'
+\end{quotation}
+
+Nonetheless, while that particular paper does have some interesting lists, it is worrying that not even Montague's original papers supply more than a few examples.
+
+This means that nearly all of the rules I shall present are of my own creation. Because these rules are tested in practice on a large set of English sentences, they will hopefully avoid some simple mistakes and oversights that are easy to make in purely theoretical settings. It seams like a good approach to start from a small working fragment, and slowly add more phrase rules and sentences. The opposite of this approach is what is often observed when logicians and philosophers go astray in very abstract corners of English, without having covered the basic ground.
+
+The following describes the set of rules I use in my program:
 
 Let $\phi$, $\psi$, $\omega$ be lists of phrase nodes, let $\alpha$, $\beta$, $\gamma$ leaf nodes.
 Then we can define a set of interpretation functions $\llbracket\cdot\rrbracket_\text{type}$ from phrase nodes to logic:
@@ -1191,24 +1098,26 @@ Then we can define a set of interpretation functions $\llbracket\cdot\rrbracket_
 \llbracket (_\text{VB}\text{do})(_\text{RB}\text{not})(_\text{VP}\phi)\rrbracket_\text{VP} &:= \lambda x.?_0(\Bowtie\cdot\llbracket \phi\rrbracket_\text{VP}x\cdot\Bowtie\cdot\bot)
 \end{aligned}\end{equation*}
 
+The mentioned `montague' function basically passes the tree to $\llbracket\cdot\rrbracket_\text{ROOT}$ and does a bit of cleaning of the result.
 
-\subsubsection{Using machine learning}
-The $\bowtie$ and $\triangle$ notation makes logic look close enough to natural language that it starts looking tempting to use machine learning methods such as those used in translation to translate.
+\subsection{Machine Learning}
 
-My main problem here is that such translation requires large amounts of bilingual data. It was out of scope for my project to try create such.
+Machine Learning is one gaping hole we haven't mentioned in this paper. Obviously something as dynamic as natural language we can never just define a set of rules like we did above. Programming a computer to learn a set of rules like that is unfortunately not something much research has gone into, and so no large banks of input/output pairs exist to learn from.
+
+Another idea for logification using machine learning is to entirely skip the Montague step. The $\Bowtie$ and $\triangle$ monoid makes logic look close enough to natural language, that it starts to become tempting utilizing machine learning methods from translation. Unfortunately this idea runs into the same barrier as the above: that for superviced learning, we first need a large base of already translated sentences.
 
 \subsection{Testing}
 In the previous sections we have tried to be as formal and careful as possible in our derivations and proofs, but as Knuth famously said:
 
 \begin{quotation}
-Beware of bugs in the above code; I have only proved it correct, not tried it.
+`Beware of bugs in the above code; I have only proved it correct, not tried it.'
 \end{quotation}
 
-In the actual implementation of my program I have used the \emph{QuickCheck} and \emph{HUnit} test environments to write unit tests for algebraic properties and actual inputs to my program. To enable QuickTest of the different properties on constituent trees, a random generator of sentences was implemented.
+In the actual implementation of my program I have used the \emph{QuickCheck} and \emph{HUnit} test environments to write unit tests for algebraic properties and actual inputs to my program. To enable QuickTest to test the different preparation algorithms on constituent trees, I implemented a random generator\footnote{In conclusion QuickTest wasn't as useful as I had hoped, since defining my functions as properties to be tested, required far more code than the functions themselves.}.
 
 What remains to test is the validity of the Montague grammar introduced in the previous section. As reasonable as it seems we want to reduce the likelihood of it containing conflicting definitions. In a transformation grammar over natural language we are always running the risk of have been too narrow sighted in its definition. The classic example being `($_\text{DT}$a)' interpreted as $\exists$, but then actually being an $\forall$ if used in an `if' phrase.
 
-In DPL we don't have that particular problem, but instead we can run into problems with the way the scopes of composed elements affect each other. In Visser logic it is even worse, as $\Bowtie$s and $\triangle$s introduced much later in the discourse, can get transposed far around the final statement.
+In DPL we don't have that particular problem, but instead we can run into problems with the way the scopes of composed elements affect each other. In Visser logic it is even worse, as $\Bowtie$s and $\triangle$s can teleport elements introduced much later in the discourse far around the final statement.
 
 Hence, as reasonable as the introduced grammar seems, we want to reduce the likelihood of conflicts as much as possible. Until now we have been very focused on the same one or two simple sentences, or whatever sentences were relevant to the features we were discussing, but now we are going to introduce a much larger set of complicated test cases. Ideally we want test cases for testing every combination of grammar rules immaginable.
 
@@ -1331,7 +1240,15 @@ A final example that really shows how DPL scope and free variables all play alon
 
 \end{enumerate}
 
+This concludes the implementation part of the paper.
+
 \section{Perspectives/Conclusions (2)}
+
+
+Issue: Stanford is very slow. Loads huge libraries of English statistics
+Output: unicode or \TeX
+Input: I chose to just put everything in the haskell file, so I could add comments
+
 
 Move 1: Summary 
 Summarizes the most important aspects of the project work.  
@@ -1432,14 +1349,17 @@ Remember that we have defined, for assignments $\alpha$ and $\beta$, DPL formula
 Since the proof is over the syntax of DPL, we use $\llbracket\cdot\rrbracket$ as the interpretation function so that $\alpha\llbracket\psi\rrbracket\beta$ is the FOL statement `$(\alpha,\beta)\in\Psi$', where $\Psi$ is the relation defined by $\psi$.
 \begin{align}
 %
-\intertext{Let's start out with the most tricky derivation. How does the resetting, unbounded $\exists$ of DPL translate into the defining, bounded $\eixsts$ of FOL?}
+\intertext{Let's start out with the most tricky derivation. How does the resetting, unbounded $\exists$ of DPL translate into the defining, bounded $\exists$ of FOL?}
 %
 \alpha\models\langle\exists x\rangle\phi
  & \leftrightarrow \exists\beta (\alpha\llbracket\exists x\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \text{This is the definition from the DPL chapter:}\nonumber\\
  & \leftrightarrow \exists\beta (\forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \wedge \beta\models\phi) \nonumber\\
+ & \text{The trick is this switch to assignments:}\nonumber\\
  & \leftrightarrow \exists\beta (\exists\nu (\forall\omega (\alpha[x:=\nu]_{\omega} = \beta_{\omega})) \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow \exists\beta (\exists\nu (\alpha[x:=\nu] = \beta) \wedge \beta\models\phi) \nonumber\\
  & \leftrightarrow \exists\nu (\exists\beta (\alpha[x:=\nu] = \beta \wedge \beta\models\phi)) \nonumber\\
+ & \text{Here we apply the $\models$ definition:}\nonumber\\
  & \leftrightarrow \exists\nu (\alpha[x:=\nu]\models\phi) \nonumber\\
  & \leftrightarrow \alpha\models\exists x (\phi) \\
 %
@@ -1482,6 +1402,10 @@ The derivation for $\cdot$ goes more smoothly:}
 %
 \intertext{Because $\psi$ is this way `evaluated on $\top$ only', we know that no variables introduced in $\psi$ can affect $\phi$.}\nonumber
 \end{align}
+
+\subsection{Source Code*}
+
+Should I include this?
 
 \bibliographystyle{plain}
 \bibliography{refs}
