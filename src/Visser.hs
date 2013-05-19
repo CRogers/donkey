@@ -50,7 +50,7 @@ simp (VC p VT) = simp p
 simp (VC VT p) = simp p
 --simp (VC p VF) = VF
 --simp (VC VF p) = VF
--- TODO: Get rid of conjunctive, equal stream devices △△, ⋈⋈ etc.
+-- TODO: Get rid of conjunctive, equal stream devices
 -- Fall throughs
 simp (VC p q) = simp p `VC` simp q
 simp (VD p q) = simp p `VD` simp q

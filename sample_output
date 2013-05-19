@@ -1,0 +1,193 @@
+$ ./run.sh 
+Running Stanford Parser...
+java -mx3g -cp "../stanford-corenlp-full-2012-11-12/*" edu.stanford.nlp.pipeline.StanfordCoreNLP -outputDirectory /tmp -filelist /tmp/donkey_inputlist
+Searching for resource: StanfordCoreNLP.properties
+Searching for resource: edu/stanford/nlp/pipeline/StanfordCoreNLP.properties
+Adding annotator tokenize
+Adding annotator ssplit
+Adding annotator pos
+Loading default properties from tagger edu/stanford/nlp/models/pos-tagger/english-left3words/english-left3words-distsim.tagger
+Reading POS tagger model from edu/stanford/nlp/models/pos-tagger/english-left3words/english-left3words-distsim.tagger ... done [6.1 sec].
+Adding annotator lemma
+Adding annotator ner
+Loading classifier from edu/stanford/nlp/models/ner/english.all.3class.distsim.crf.ser.gz ... done [13.3 sec].
+Loading classifier from edu/stanford/nlp/models/ner/english.muc.7class.distsim.crf.ser.gz ... done [11.6 sec].
+Loading classifier from edu/stanford/nlp/models/ner/english.conll.4class.distsim.crf.ser.gz ... done [19.1 sec].
+Initialization JollyDayHoliday for sutime
+Reading TokensRegex rules from edu/stanford/nlp/models/sutime/defs.sutime.txt
+Reading TokensRegex rules from edu/stanford/nlp/models/sutime/english.sutime.txt
+May 18, 2013 10:48:01 PM edu.stanford.nlp.ling.tokensregex.CoreMapExpressionExtractor appendRules
+INFO: Ignoring inactive rule: temporal-composite-8:ranges
+Reading TokensRegex rules from edu/stanford/nlp/models/sutime/english.holidays.sutime.txt
+Adding annotator parse
+Loading parser from serialized file edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz ... done [3.1 sec].
+Adding annotator dcoref
+
+Processing file /tmp/donkey_input0 ... (writing to /tmp/donkey_input0.xml) [2.959 seconds]
+Processing file /tmp/donkey_input1 ... (writing to /tmp/donkey_input1.xml) [0.268 seconds]
+Processing file /tmp/donkey_input2 ... (writing to /tmp/donkey_input2.xml) [1.216 seconds]
+Processing file /tmp/donkey_input3 ... (writing to /tmp/donkey_input3.xml) [0.431 seconds]
+Processing file /tmp/donkey_input4 ... (writing to /tmp/donkey_input4.xml) [0.994 seconds]
+Processing file /tmp/donkey_input5 ... (writing to /tmp/donkey_input5.xml) [0.640 seconds]
+Processing file /tmp/donkey_input6 ... (writing to /tmp/donkey_input6.xml) [1.576 seconds]
+Processing file /tmp/donkey_input7 ... (writing to /tmp/donkey_input7.xml) [0.965 seconds]
+Processing file /tmp/donkey_input8 ... (writing to /tmp/donkey_input8.xml) [0.774 seconds]
+Processing file /tmp/donkey_input9 ... (writing to /tmp/donkey_input9.xml) [1.216 seconds]
+Processing file /tmp/donkey_input10 ... (writing to /tmp/donkey_input10.xml) [6.559 seconds]
+Processing file /tmp/donkey_input11 ... (writing to /tmp/donkey_input11.xml) [0.652 seconds]
+Processing file /tmp/donkey_input12 ... (writing to /tmp/donkey_input12.xml) [0.450 seconds]
+Processing file /tmp/donkey_input13 ... (writing to /tmp/donkey_input13.xml) [0.133 seconds]
+Processing file /tmp/donkey_input14 ... (writing to /tmp/donkey_input14.xml) [0.176 seconds]
+Processing file /tmp/donkey_input15 ... (writing to /tmp/donkey_input15.xml) 
+Processing file /tmp/donkey_input16 ... (writing to /tmp/donkey_input16.xml) [0.491 seconds]
+Processing file /tmp/donkey_input17 ... (writing to /tmp/donkey_input17.xml) [0.144 seconds]
+Processing file /tmp/donkey_input18 ... (writing to /tmp/donkey_input18.xml) [0.240 seconds]
+Processing file /tmp/donkey_input19 ... (writing to /tmp/donkey_input19.xml) [0.156 seconds]
+Processing file /tmp/donkey_input20 ... (writing to /tmp/donkey_input20.xml) [0.230 seconds]
+Processing file /tmp/donkey_input21 ... (writing to /tmp/donkey_input21.xml) 
+Processing file /tmp/donkey_input22 ... (writing to /tmp/donkey_input22.xml) [0.286 seconds]
+Processing file /tmp/donkey_input23 ... (writing to /tmp/donkey_input23.xml) [0.331 seconds]
+Processing file /tmp/donkey_input24 ... (writing to /tmp/donkey_input24.xml) [0.110 seconds]
+Processing file /tmp/donkey_input25 ... (writing to /tmp/donkey_input25.xml) [0.236 seconds]
+Processing file /tmp/donkey_input26 ... (writing to /tmp/donkey_input26.xml) 
+Processing file /tmp/donkey_input27 ... (writing to /tmp/donkey_input27.xml) [0.153 seconds]
+Processing file /tmp/donkey_input28 ... (writing to /tmp/donkey_input28.xml) [0.177 seconds]
+Processing file /tmp/donkey_input29 ... (writing to /tmp/donkey_input29.xml) [0.168 seconds]
+Processing file /tmp/donkey_input30 ... (writing to /tmp/donkey_input30.xml) [0.121 seconds]
+Processing file /tmp/donkey_input31 ... (writing to /tmp/donkey_input31.xml) [0.176 seconds]
+Processing file /tmp/donkey_input32 ... (writing to /tmp/donkey_input32.xml) [0.111 seconds]
+Processing file /tmp/donkey_input33 ... (writing to /tmp/donkey_input33.xml) [0.205 seconds]
+Processing file /tmp/donkey_input34 ... (writing to /tmp/donkey_input34.xml) 
+Processing file /tmp/donkey_input35 ... (writing to /tmp/donkey_input35.xml) 
+Processing file /tmp/donkey_input36 ... (writing to /tmp/donkey_input36.xml) 
+Processing file /tmp/donkey_input37 ... (writing to /tmp/donkey_input37.xml) [0.160 seconds]
+Processing file /tmp/donkey_input38 ... (writing to /tmp/donkey_input38.xml) 
+Processing file /tmp/donkey_input39 ... (writing to /tmp/donkey_input39.xml) 
+Processing file /tmp/donkey_input40 ... (writing to /tmp/donkey_input40.xml) [0.184 seconds]
+Processing file /tmp/donkey_input41 ... (writing to /tmp/donkey_input41.xml) [0.121 seconds]
+Processing file /tmp/donkey_input42 ... (writing to /tmp/donkey_input42.xml) [0.156 seconds]
+Processing file /tmp/donkey_input43 ... (writing to /tmp/donkey_input43.xml) [0.120 seconds]
+Processing file /tmp/donkey_input44 ... (writing to /tmp/donkey_input44.xml) [0.356 seconds]
+Processing file /tmp/donkey_input45 ... (writing to /tmp/donkey_input45.xml) [0.172 seconds]
+Processing file /tmp/donkey_input46 ... (writing to /tmp/donkey_input46.xml) 
+Processing file /tmp/donkey_input47 ... (writing to /tmp/donkey_input47.xml) [0.104 seconds]
+Processing file /tmp/donkey_input48 ... (writing to /tmp/donkey_input48.xml) 
+Processing file /tmp/donkey_input49 ... (writing to /tmp/donkey_input49.xml) [0.131 seconds]
+Processing file /tmp/donkey_input50 ... (writing to /tmp/donkey_input50.xml) 
+Processing file /tmp/donkey_input51 ... (writing to /tmp/donkey_input51.xml) 
+Processing file /tmp/donkey_input52 ... (writing to /tmp/donkey_input52.xml) [0.201 seconds]
+Processing file /tmp/donkey_input53 ... (writing to /tmp/donkey_input53.xml) 
+Annotation pipeline timing information:
+PTBTokenizerAnnotator: 0.2 sec.
+WordsToSentencesAnnotator: 0.0 sec.
+POSTaggerAnnotator: 0.4 sec.
+MorphaAnnotator: 0.7 sec.
+NERCombinerAnnotator: 7.4 sec.
+ParserAnnotator: 14.0 sec.
+DeterministicCorefAnnotator: 1.5 sec.
+TOTAL: 24.1 sec. for 599 tokens at 24.9 tokens/sec.
+Pipeline setup: 56.5 sec.
+Total time for StanfordCoreNLP pipeline: 81.5 sec.
+Exit code: ExitSuccess
+If a man eats a sausage, he is happy.
+?0(⋈ ⋅△⋅∃a⋅man(a)⋅△⋅△⋅∃b⋅sausage(b)⋅△⋅eat(a,b)⋅⋈ ⋅?1(happy(a)))
+∃a⋅man(a)⋅∃b⋅sausage(b)→(eat(a,b)→(⊤→happy(a)))
+∀a(man(a)→∀b(sausage(b)∧eat(a,b)→happy(a)))
+
+Every person has a pet.
+?0(⋈ ⋅△⋅∃a⋅person(a)⋅△⋅⋈ ⋅△⋅∃b⋅pet(b)⋅△⋅have(a,b))
+∃a⋅person(a)→∃b⋅pet(b)⋅(⊤→have(a,b))
+∀a(person(a)→∃b(pet(b)∧have(a,b)))
+
+Every man supports every woman.
+?0(⋈ ⋅△⋅∃a⋅man(a)⋅△⋅⋈ ⋅?0(⋈ ⋅△⋅∃b⋅woman(b)⋅△⋅⋈ ⋅support(a,b)))
+∃a⋅man(a)⋅∃b⋅woman(b)→(⊤→support(a,b))
+∀a(man(a)→∀b(woman(b)→support(a,b)))
+
+Every man supports no woman.
+?0(⋈ ⋅△⋅∃a⋅man(a)⋅△⋅⋈ ⋅?0(⋈ ⋅∃b⋅woman(b)⋅support(a,b)⋅⋈ ⋅⊥))
+∃a⋅man(a)→(⊤→¬(∃b⋅woman(b)⋅support(a,b)))
+∀a(man(a)→∀b(woman(b)→¬support(a,b)))
+
+Every farmer beats some donkey.
+?0(⋈ ⋅△⋅∃a⋅farmer(a)⋅△⋅⋈ ⋅△⋅∃b⋅donkey(b)⋅△⋅beat(a,b))
+∃a⋅farmer(a)→∃b⋅donkey(b)⋅(⊤→beat(a,b))
+∀a(farmer(a)→∃b(donkey(b)∧beat(a,b)))
+
+If a farmer owns a donkey, he beats it
+?0(⋈ ⋅△⋅∃a⋅farmer(a)⋅△⋅△⋅∃b⋅donkey(b)⋅△⋅own(a,b)⋅⋈ ⋅?1(beat(a,b)))
+∃a⋅farmer(a)⋅∃b⋅donkey(b)→(own(a,b)→(⊤→beat(a,b)))
+∀a(farmer(a)→∀b(donkey(b)∧own(a,b)→beat(a,b)))
+
+A man comes in. He sees a donkey. He smiles.
+△⋅∃a⋅man(a)⋅△⋅come-in(a)⋅△⋅∃b⋅donkey(b)⋅△⋅see(a,b)⋅smile(a)
+⊤→∃a⋅man(a)⋅∃b⋅donkey(b)⋅come-in(a)⋅see(a,b)⋅smile(a)
+∃a(man(a)∧∃b(donkey(b)∧come-in(a)∧see(a,b)∧smile(a)))
+
+A farmer. A Donkey. If he owns it, he beats it.
+△⋅∃a⋅farmer(a)⋅△⋅△⋅∃b⋅donkey(b)⋅△⋅?0(⋈ ⋅own(a,b)⋅⋈ ⋅?1(beat(a,b)))
+⊤→∃a⋅farmer(a)⋅∃b⋅donkey(b)⋅(own(a,b)→(⊤→beat(a,b)))
+∃a(farmer(a)∧∃b(donkey(b)∧(own(a,b)→beat(a,b))))
+
+A dog barks. If it is beaten, it whines.
+△⋅∃a⋅dog(a)⋅△⋅bark(a)⋅?0(⋈ ⋅beat(b)⋅⋈ ⋅?1(whine(b)))
+⊤→∃a⋅dog(a)⋅bark(a)⋅(beat(b)→(⊤→whine(b)))
+∃a(dog(a)∧bark(a)∧(beat(b)→whine(b)))
+
+If a farmer owns a donkey, he beats it. If he rewards it, he doesn't own it.
+?0(⋈ ⋅△⋅∃a⋅farmer(a)⋅△⋅△⋅∃b⋅donkey(b)⋅△⋅own(a,b)⋅⋈ ⋅?1(beat(a,b)))⋅?0(⋈ ⋅reward(a,b)⋅⋈ ⋅?1(?0(⋈ ⋅own(a,b)⋅⋈ ⋅⊥)))
+∃a⋅farmer(a)⋅∃b⋅donkey(b)→(own(a,b)→(⊤→beat(a,b)))⋅(reward(a,b)→(⊤→¬own(a,b)))
+∀a(farmer(a)→∀b(donkey(b)→(own(a,b)→beat(a,b))∧(reward(a,b)→¬own(a,b))))
+
+If a farmer owns a donkey, he owns a horse. If he doesn't own it, he owns a cow.
+?0(⋈ ⋅△⋅∃a⋅farmer(a)⋅△⋅△⋅∃b⋅donkey(b)⋅△⋅own(a,b)⋅⋈ ⋅?1(△⋅∃c⋅horse(c)⋅△⋅own(a,c)))⋅?0(⋈ ⋅?0(⋈ ⋅own(a,b)⋅⋈ ⋅⊥)⋅⋈ ⋅?1(△⋅∃d⋅cow(d)⋅△⋅own(a,d)))
+∃a⋅farmer(a)⋅∃b⋅donkey(b)→(own(a,b)→(⊤→∃c⋅horse(c)⋅own(a,c)))⋅(¬own(a,b)→(⊤→∃d⋅cow(d)⋅own(a,d)))
+∀a(farmer(a)→∀b(donkey(b)→(own(a,b)→∃c(horse(c)∧own(a,c)))∧(¬own(a,b)→∃d(cow(d)∧own(a,d)))))
+
+If a woman is American, she loves a soldier. If she is Dutch, she loves a bike-rider.
+?0(⋈ ⋅△⋅∃a⋅woman(a)⋅△⋅american(a)⋅⋈ ⋅?1(△⋅∃b⋅soldier(b)⋅△⋅love(a,b)))⋅?0(⋈ ⋅dutch(a)⋅⋈ ⋅?1(△⋅∃c⋅bike-rider(c)⋅△⋅love(a,c)))
+∃a⋅woman(a)→(american(a)→(⊤→∃b⋅soldier(b)⋅love(a,b)))⋅(dutch(a)→(⊤→∃c⋅bike-rider(c)⋅love(a,c)))
+∀a(woman(a)→(american(a)→∃b(soldier(b)∧love(a,b)))∧(dutch(a)→∃c(bike-rider(c)∧love(a,c))))
+
+A farmer owns a donkey. It is brown and he beats it every day.
+△⋅∃a⋅farmer(a)⋅△⋅△⋅∃b⋅donkey(b)⋅△⋅own(a,b)⋅brown(b)⋅beat-every-day(a,b)
+⊤→∃a⋅farmer(a)⋅∃b⋅donkey(b)⋅own(a,b)⋅brown(b)⋅beat-every-day(a,b)
+∃a(farmer(a)∧∃b(donkey(b)∧own(a,b)∧brown(b)∧beat-every-day(a,b)))
+
+A farmer starves a horse and beats a donkey.
+△⋅∃a⋅farmer(a)⋅△⋅△⋅∃b⋅horse(b)⋅△⋅starve(a,b)⋅△⋅∃c⋅donkey(c)⋅△⋅beat(a,c)
+⊤→∃a⋅farmer(a)⋅∃b⋅horse(b)⋅∃c⋅donkey(c)⋅starve(a,b)⋅beat(a,c)
+∃a(farmer(a)∧∃b(horse(b)∧∃c(donkey(c)∧starve(a,b)∧beat(a,c))))
+
+All donkeys and a horse sing a song.
+?0(⋈ ⋅△⋅∃a⋅donkey(a)⋅△⋅⋈ ⋅△⋅∃b⋅horse(b)⋅△⋅?0(⋈ ⋅∃c⋅eq-on-of(c,a,b)⋅⋈ ⋅△⋅∃d⋅song(d)⋅△⋅sing(c,d)))
+∃a⋅donkey(a)→∃b⋅horse(b)⋅∃d⋅song(d)⋅(⊤→(∃c⋅eq-on-of(c,a,b)→sing(c,d)))
+∀a(donkey(a)→∃b(horse(b)∧∃d(song(d)∧∀c(eq-on-of(c,a,b)→sing(c,d)))))
+
+Some farmer and entrepreneur beats a donkey.
+△⋅∃a⋅farmer(a)⋅entrepreneur(a)⋅△⋅△⋅∃b⋅donkey(b)⋅△⋅beat(a,b)
+⊤→∃a⋅farmer(a)⋅entrepreneur(a)⋅∃b⋅donkey(b)⋅beat(a,b)
+∃a(farmer(a)∧entrepreneur(a)∧∃b(donkey(b)∧beat(a,b)))
+
+A man and a woman owned a horse and a donkey. If the donkey did not walk, and the man was a farmer, he beat it.
+△⋅∃a⋅man(a)⋅△⋅△⋅∃b⋅woman(b)⋅△⋅?0(⋈ ⋅∃c⋅eq-on-of(c,a,b)⋅⋈ ⋅△⋅∃d⋅horse(d)⋅△⋅△⋅∃e⋅donkey(e)⋅△⋅?0(⋈ ⋅∃f⋅eq-on-of(f,d,e)⋅⋈ ⋅own(c,f)))⋅?0(⋈ ⋅?0(⋈ ⋅walk(e)⋅⋈ ⋅⊥)⋅a-farmer(a)⋅⋈ ⋅?1(beat(a,e)))
+⊤→∃a⋅man(a)⋅∃b⋅woman(b)⋅∃d⋅horse(d)⋅∃e⋅donkey(e)⋅(∃c⋅eq-on-of(c,a,b)→(∃f⋅eq-on-of(f,d,e)→own(c,f)))⋅(¬walk(e)⋅a-farmer(a)→(⊤→beat(a,e)))
+∃a(man(a)∧∃b(woman(b)∧∃d(horse(d)∧∃e(donkey(e)∧∀c(eq-on-of(c,a,b)→∀f(eq-on-of(f,d,e)→own(c,f)))∧(¬walk(e)∧a-farmer(a)→beat(a,e))))))
+
+She is a mother of five
+a-mother-of-five(a)
+⊤→a-mother-of-five(a)
+a-mother-of-five(a)
+
+If a farmer owns it and he beats it, it is a donkey
+?0(⋈ ⋅△⋅∃a⋅farmer(a)⋅△⋅own(a,b)⋅beat(a,b)⋅⋈ ⋅?1(a-donkey(b)))
+∃a⋅farmer(a)→(own(a,b)⋅beat(a,b)→(⊤→a-donkey(b)))
+∀a(farmer(a)∧own(a,b)∧beat(a,b)→a-donkey(b))
+
+No man walks in the park. He yodels.
+?0(⋈ ⋅∃a⋅man(a)⋅walk-in-the-park(a)⋅⋈ ⋅⊥)⋅yodel(a)
+⊤→¬(∃a⋅man(a)⋅walk-in-the-park(a))⋅yodel(a)
+∀a(man(a)→¬walk-in-the-park(a))∧yodel(a)
+
+A farmer beats a donkey, if he owns it.
+Main.hs: Unsuported by intVP: [L "VB" ("beat",(0,2)),P "NP" [L "DT" ("a",(0,3)),L "NN" ("donkey",(0,4))],L "," (",",(0,5)),P "SBAR" [L "IN" ("if",(0,6)),P "S" [P "NP" [L "PRP" ("he",(0,7))],P "VP" [L "VB" ("own",(0,8)),P "NP" [L "PRP" ("it",(0,9))]]]]]

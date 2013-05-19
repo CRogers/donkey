@@ -6,7 +6,7 @@
 \usepackage{amsthm,amssymb,amsmath,dsfont,mathrsfs,nicefrac,wasysym,listings}
 \usepackage{tikz}
 \usepackage{enumitem}
-
+\usepackage{courier} 
 
 \usetikzlibrary{shapes,arrows}
 
@@ -16,44 +16,72 @@
 
 \renewcommand{\arraystretch}{1.1}
 
-\lstloadlanguages{Haskell}
-\lstnewenvironment{haskell}
-    {\lstset{}%
-      \csname lst@SetFirstLabel\endcsname}
-    {\csname lst@SaveFirstLabel\endcsname}
-    \lstset{
-      basicstyle=\small\ttfamily,
-      escapeinside={/+}{+/},
-      flexiblecolumns=false,
-      xleftmargin=0.05\textwidth,
-      basewidth={0.5em,0.45em},
-      literate={+}{{$+$}}1
-               {/}{{$/$}}1
-               {*}{{$*$}}1
-               {=}{{$=$}}1
-               {>}{{$>$}}1
-               {<}{{$<$}}1
-               {\\}{{$\lambda$}}1
-               {++}{{$+\!\!\!+$}}1
-               {::}{{$:\!\!\!:$}}1
-               {\\\\}{{\char`\\\char`\\}}1
-               {->}{{$\rightarrow$}}2
-               {>=}{{$\geq$}}2
-               {<-}{{$\leftarrow$}}2
-               {<=}{{$\leq$}}2
-               {=>}{{$\Rightarrow$}}2
-               {/=}{{$\neq$}}2
-               {.}{{$\circ$}}2
-               {<<}{{$\ll$}}2
-               {>>}{{$\gg$}}2
-               {>>=}{{$\gg\!=$}}2
-               {>=>}{{$>\!=\!>$}}2
-               {|}{{$\mid$}}1
-               {undefined}{{$\bot$}}1
-               {`elem`}{{$\in$}}1
-    }
+\lstdefinestyle{haskellstyle}{%
+  basicstyle=\scriptsize\ttfamily,
+  language=Haskell,
+  escapeinside={/+}{+/},
+  flexiblecolumns=false,
+  xleftmargin=-0.05\textwidth,
+  basewidth={0.5em,0.45em},
+  breaklines=true,
+  literate={+}{{$+$}}1
+           {/}{{$/$}}1
+           {*}{{$*$}}1
+           {=}{{$=$}}1
+           {>}{{$>$}}1
+           {<}{{$<$}}1
+           {\\}{{$\lambda$}}1
+           {++}{{$+\!\!\!+$}}1
+           {::}{{$:\!\!\!:$}}1
+           {\\\\}{{\char`\\\char`\\}}1
+           {->}{{$\rightarrow$}}2
+           {>=}{{$\geq$}}2
+           {<-}{{$\leftarrow$}}2
+           {<=}{{$\leq$}}2
+           {=>}{{$\Rightarrow$}}2
+           {/=}{{$\neq$}}2
+%           { . }{{$\circ$}}2
+           {<<}{{$\ll$}}2
+           {>>}{{$\gg$}}2
+           {>>=}{{$\gg\!=$}}2
+           {>=>}{{$>\!=\!>$}}2
+           {|}{{$\mid$}}1
+           {undefined}{{$\bot$}}1
+           {`elem`}{{$\in$}}1
+           {⋈}{{$\Bowtie$}}1
+           {⋅}{{$\cdot$}}1
+           {△}{{$\triangle$}}1
+           {∀}{{$\forall$}}1
+           {∃}{{$\exists$}}1
+           {⊥}{{$\bot$}}1
+           {⊤}{{$\top$}}1
+           {→}{{$\Rightarrow$}}1
+           {∨}{{$\vee$}}1
+           {¬}{{$\neg$}}1
+           {∧}{{$\wedge$}}1
+}
 
+\lstdefinestyle{bashstyle}{%
+  basicstyle=\scriptsize\ttfamily,
+  escapeinside={/+}{+/},
+  flexiblecolumns=false,
+  xleftmargin=-0.05\textwidth,
+  breaklines=true,
+  basewidth={0.6em,0.45em},
+  literate = {⋈}{{$\Bowtie$}}1
+           {⋅}{{$\cdot$}}1
+           {△}{{$\triangle$}}1
+           {∀}{{$\forall$}}1
+           {∃}{{$\exists$}}1
+           {⊥}{{$\bot$}}1
+           {⊤}{{$\top$}}1
+           {→}{{$\Rightarrow$}}1
+           {∨}{{$\vee$}}1
+           {¬}{{$\neg$}}1
+           {∧}{{$\wedge$}}1
+}
 
+\lstnewenvironment{haskell}{\lstset{style=haskellstyle}}{}
 
 % Samson suggests using the word 'Computational'
 
@@ -99,21 +127,23 @@
 %Move 6: Conclusions or implications
 %Move 7: Achievements of the project
 
-Donkey Monoids are a set of variations of Dynamic Predicate Logic (DPL) introduced by Albert Visser. The rationale behind them is a stride towards a logic that can more easily approximate natural language in aspects such as polarity and scope. Indeed their name derives from the famous `Donkey Sentence' by Geach\cite{geach1962reference} which exhibit these issues so well.
+In this paper I build a fully automatic system for translation of natural language into formal logic. I combine a variety of tools and theories to target standard issues such as anaphora resolution, sentence polarity etc. In particular I base my framework on dynamic logics in form of Dynamic Predicate Logic and a set of enhancements by Albert Visser\cite{visser1999donkey}.
 
-Visser didn't test his ideas computationally and neither did most people involved with DPL. In fact most of the classical literature on logification of natural language has this `problem'. In this paper I supply such an experiment, combining technologies introduced over the last four decades, creating a fully functioning `English to logic' framework.
+`Donkey Monoids', as I will call these monoidal DPL variants, are part of a movement in linguistics towards logics that can more naturally approximate human language in aspects such as polarity and scope. Indeed their name derives from the famous `Donkey Sentence' by Geach\cite{geach1962reference} which exhibit these issues so well.
 
-The transformation rules of the supported English fragment are defined as a Montague Grammar, the semantics of which is discussed and defined in the first part of the paper. I apply the framework to a large collection of sentences, showing the conversion process step by step. Finally I discuss ways to enlarge the supported fragment of English, how we can combat and interprete the inherent ambiguity we meet, and how the flexibility of Donkey Monoids relate to the classical Montague lambda structures.
+Visser didn't test his ideas computationally and neither did most people involved with DPL. In fact most of the classical literature on logification of natural language exhibits this `problem': Not testing computationally makes it easy to miss obvious details. With the present paper I supply such an experiment.
+
+I build a rewriting system with a well defined set rules, discussing possible semantics. I apply the framework to a large collection of sentences, showing the conversion process step by step. Finally I discuss ways to enlarge the supported fragment of English, how we can combat and interprete the inherent ambiguity we meet, and how the flexibility of Donkey Monoids relate to the classical Montague lambda structures.
 
 \end{abstract}
 
 \smallskip\smallskip
-\noindent \small{\textbf{Keywords:} Montague Grammar, Dynamic Predicate Logic, Natural Language, Meaning, Donkey, Monoid, Computational, Haskell}
+\noindent \small{\textbf{Keywords:} Natural Language Semantics, Meaning, Dynamic Predicate Logic, Donkey, Monoid, Montague Grammar, Computational, Haskell}
 
 \tableofcontents
 
 
-\section{Introduction (5)}
+\section{Introduction}
 % 5 pagish Donkey example to follow through.
 
 % Move 1 Background 
@@ -129,28 +159,28 @@ The transformation rules of the supported English fragment are defined as a Mont
 
 % No donkeys were hurt in the making of this paper
 
-There are many reasons why it is interesting to represent information in a logical language. For a computer scientist, the biggest advantage is that we can compute with logic. There is a horde of algorithms for doing querying, question answering, reasoning, unification and resolution. They key to this powerhouse is obtaining a first order logic form of your information.
+There are many reasons why it is interesting to represent information in a logical language. For a computer scientist, the biggest advantage is that we can compute with logic. There is a horde of algorithms for doing querying, question answering, reasoning, unification and resolution - to all of which they key is a formal logic definition of your information.
 
 \begin{description}
 \item[Knowledge bases] In the field of Knowledge Representation and Reasoning, they long ago discovered that formal logic provides a good language for buliding ontologies. Typical users are crime fighters or life scientists that need to draw conclusions based on complex systems\cite{malone2010modeling} where most of the known facts are only described in natural language. Today those people use mainly have to manually build large models in gui tools, but an automated approach is much wanted.
 
 \item[Semantic search] From the early days of database systems logic was identified\cite{fagin1995reasoning} as a good language for querying. Today technologies like Facebook Graph Search allows users to execute searches like `Restaurants in London my friends have been to'. The missing piece is a reliable translation system.
 
-\item[Robots] Since the beginning of Artificial Intelligence, logic based approaches have done well.\cite{russell2010artificial} Robots need to store relationships they learn about the world and react to it. For modern `robots' like apples Siri to be able to communicate with people, a translation layer between natural language and logic is a plausible path.
+\item[Robots] Since the beginning of Artificial Intelligence, logic based approaches have done well.\cite{russell2010artificial} Robots need to store relationships they learn about the world and react to it. For modern `robots' like Apple's Siri to be able to communicate with people, a translation layer between natural language and logic is a plausible path.
 \end{description}
 
 It would seem that getting computers to understand and work with natural language is on of the biggest challenges in information technologies this day. Moving the problems into the space of formal logic is a classical and tempting path. It does however remain open whether our formal logics actually have the power to express most of the sentences people casually voice on a daily basis. In this paper we will assume it does for enough practical cases to be useful.
 
-The reason logics like DPL and Visser Monoids exist is a famous sentence noted by Peter Thomas Geach in 1962\cite{geach1962reference}: `Every farmer who owns a donkey beats it'. As we will see, this sentence illustrates that even if we restrict ourselves to factual sentences, formal first order logic still runs into a lot of problems when representing many natural sentences. In fact this sentence broke early automatic approaches to logification, and led to the construction of Discourse Representation Theory (DRT)\cite{kamp1993discourse}.
+The reason logics like DPL and Visser Monoids exist is a famous sentence noted by Peter Thomas Geach in 1962\cite{geach1962reference}: `Every farmer who owns a donkey beats it'. As we will see, this sentence illustrates that even if we restrict ourselves to factual sentences, formal first-order logic still runs into a lot of problems when representing many natural sentences. In fact this sentence broke early automatic approaches to logification, and led to the construction of Discourse Representation Theory (DRT)\cite{kamp1993discourse}.
 
 Before I go into more details on my automatic logification scheme, let's have a look at some of the issues we run into if we try approach the task manually. This should help us get a feeling of what a formal logic translation of natural language actually looks like:
 \begin{enumerate}
 
 \item `Socrates is a donkey': $donkey(Socrates)$. This is a classical logical example, treating Socrates as a constant. If we want to do without constants we can write: $\forall x(Socrates(x)\rightarrow donkey(x))$. See how this allows for more than one Socrates to exist.
 
-\item `All his donkeys are treated well': This sentence somewhat willingly let's itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ referring to some (male?) entity in the context of the discourse.
+\item `All his donkeys are treated well': This sentence somewhat willingly lets itself translate into: $\forall y(his(x,y)\wedge donkey(y) \rightarrow treated\_well(y))$, which has a free variable $x$ referring to some (male?) entity in the context of the discourse.
 
-\item `Every farmer beats his donkey': This sentence clearly has two possible meanings: $\forall x(farmer(x)\rightarrow \exists y (beats(x,y)\wedge his(x,y)\wedge donkey(y))$ if `his' refers to the farmers or $\exists y(his(x,y)\wedge donkey(y)\wedge \forall z(farmer(z) \rightarrow beats(z,y))$ if it refers to somebody else. There is no way we can know without more context information.
+\item `Every farmer beats his donkey': This sentence clearly has two possible meanings: $\forall x(farmer(x)\rightarrow \exists y (beats(x,y)\wedge his(x,y)\wedge donkey(y))$, if `his' refers to the farmers, or $\exists y(his(x,y)\wedge donkey(y)\wedge \forall z(farmer(z) \rightarrow beats(z,y))$ if it refers to somebody else. There is no way we can know without more context information.
 
 \item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesn't\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'. In any case it makes it hard to say what the logical meaning of `the' really is.
 
@@ -159,7 +189,7 @@ Before I go into more details on my automatic logification scheme, let's have a 
 \item `Jane beats a donkey': This is easy to translate to $\exists x(donkey(x)\wedge beat(Jane,x))$, but are we comfortable that this is also our interpretation of the sentence `It is not the case that Jane doesn't beat a donkey' and even `Jane beats a donkey and either it is raining or it isn't'? It is hard to imagine a language with strong logical foundations, where those three sentences wouldn't be equal.
 \end{enumerate}
 
-These examples should hopefully have shown that some uses of English, especially example 4 and 5, are well beyond what we can hope to automatically logify. However you might think the sentences of `factual nature' like 1 and 2 shouldn't be too hard? Unfortunately, as sentences get longer and more complex we will see that they are, and this is where Donkey Monads, Dynamic Predicate Logic (DPL) and Discourse Representation Theory (DRT) have a role to play. Let's take a close look at that `Donkey Sentence': `If a farmer owns a donkey, he beats it'.
+Hopefully those examples make a convincing argument that some uses of English, especially example 4 and 5, are well beyond what we can hope to automatically logify. However you might think the sentences of `factual nature' like 1 and 2 look pretty trivial? In this paper we will see that they are certainly possible, but as sentences get longer and more complex, certainly tricky, and this is where Donkey Monoids, Dynamic Predicate Logic (DPL) and Discourse Representation Theory (DRT) come into play. Let's take a close look at that `Donkey Sentence': `If a farmer owns a donkey, he beats it'.
 
 From the examples before, and perhaps from common intuition, we might find it natural to think of the sentence as two subsentences combined by `if': `if (a farmer owns a donkey) (he beats it)'. Translating the parentheses first: `A farmer owns a donkey' logifies to $\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y))$, and `he beats it' translates to $beats(x,y)$. Hence the whole formula should probably be:
 %
@@ -181,9 +211,9 @@ What turns out to be the correct logification is this:
 \forall x (farmer(x) \rightarrow \forall y (owns(x,y) \wedge donkey(y) \rightarrow beats(x,y))) \label{correct_donkey}
 \end{align}
 %
-A far cry from our original `guess'. Moreover the above version even have the oddity that the interpretation of `all' is `the logical one': The formula \eqref{correct_donkey} is, in addition to the intended situations, also considered true if no farmers exist in the domain, or none of them own donkeys.
+A far cry from our original `guess'. Moreover the above version even has the oddity that the interpretation of `all' is `the logical one': The formula \eqref{correct_donkey} is, in addition to the intuitive situations\footnote{For non logicians at least.}, also considered true if no farmers exist in the domain, or none of them own donkeys.
 
-Now the above example may seem a bit contrived. Why did I have to try to combine the meaning from the obviously wrong pieces? Wasn't some other strategy more obvious? Before we go into details of such logification strategies, let's first see how easy it could have been, if we instead of first order logic had used Visser's Donkey Monoids:
+Now the above example may seem a bit contrived. Why did I have to try to combine the meaning from the obviously wrong pieces? Wasn't some other strategy more obvious? Before we go into details of such logification strategies, let's first see how easy it could have been, if we instead of first-order logic had used Visser's Donkey Monoids:
 %
 \begin{align}
 \Bowtie \cdot \exists x \cdot farmer(x) \cdot owns(x,y) \cdot\triangle\cdot\exists y \cdot donkey(y) \cdot\triangle\cdot\Bowtie\cdot beats(x,y)
@@ -191,15 +221,15 @@ Now the above example may seem a bit contrived. Why did I have to try to combine
 %
 If we read $\exists$ as `a' this is basically identical to the English sentence. The donkey monoid even supports placing the transitive verb between the two referants. Clearly some magic is going on, that we will have to investigate further.
 
-Neat as the Donkey Monoids are, interested as we are in automation, we should be very concerned about those magical $\Bowtie$s and $\triangle$s that have popped up in our formula. What do they mean? How do they work? And how do we know when to use them? Visser himself, while answering question 1 and 2 in detail, doesn't give many hints on question 3. Only that they are probably controlled by adverbs and similar `helping words'.
+Neat as the Donkey Monoids are, and interested as we are in their automation, we should be very concerned about those magical $\Bowtie$s and $\triangle$s which have popped up in our formula. We'll want to ask questions such ask (1) What do they mean? (2) How do they work? And (3) how do we know when to use them? Visser himself, while answering question 1 and 2 in great detail, doesn't give many hints on 3. Only that they `switches' are probably controlled by adverbs and other support words.
 
 So if we don't know how to use them, how can we know if the Donkey Monoids are good logics for natural language? In the later chapters I will discuss their formal meaning in more detail and also what semantic meaning I intend to give them. In the final chapters we will see just how much flexibility this approach allows us.
 
 We need a framework to encode our rules into, and luckily the field of computational semantics offer several solutions. Basically there are two well described ways to go: statistical vector space methods, which is very much the most popular alternative right now, and logical methods. As you might have guessed I will lean in the dirrection of the later. The most well described methods are Montague Grammars and Discourse Representation Theory (invented after the donkey sentence).
 
-In the early sixties the American logician, Richard Montague, was a teaching a class in which the students had to do logification of simple sentences. He noticed that there were many patterns in the way they did it, and conjectured that it would be possible to formalize the entire process. So he set out to write a series of papers that became very influential in the philosophy of language, linguistics and computer science.
+In the early sixties the American logician, Richard Montague, was teaching a class in which the students had to do logification of simple sentences. He noticed that there were many patterns in the way they did it, and conjectured that it would be possible to formalize the entire process. So he set out to write a series of papers that became very influential in the philosophy of language, linguistics and computer science.
 
-The Montague Grammar, as Montague's approach came to be know, works amazingly well, it's simplicity taken into account. It is not hard to see how one might convince oneself that it could be used to describe all of language. The basic idea is to define logical formulas recursively over the so called constituent tree of a sentence. The tree is based on the idea of context free grammars for natural language developed mainly by Noam Chomsky\cite{chomsky2002syntactic}. Figure \ref{fig:const_tree} is an example of what it might look like.
+The Montague Grammar, as Montague's approach came to be know, has survived in computational linguistics for decades. Perhaps its main charm is in its rich promises for a simple, consistent way to describe all of language. The basic idea is to define logical formulas recursively over the so called constituent tree of a sentence. The tree is based on the idea of context free grammars for natural language developed mainly by Noam Chomsky\cite{chomsky2002syntactic}. Figure \ref{fig:const_tree} is an example of what one might look like.
 
 \tikzstyle{level 1}=[level distance=1cm,sibling distance=3.5cm]
 \tikzstyle{level 2}=[level distance=1cm,sibling distance=2.25cm]
@@ -274,31 +304,31 @@ The Montague Grammar, as Montague's approach came to be know, works amazingly we
 
 We will see later how exactly the Montague Grammar obtains a full sentence formula from its reqursive process, but in any case for a computer scientist the introduction of trees is always a promising step.
 
-The main thing to notice now is that for Montague's approach to work, it is crucial that we can always get the meaning of a composed phrase from a composition of the meaning of its subphrases. This compositional property is exactly what we saw earlier that first order logic doesn't posses, and Montague goes through many hoops to simmulate it.
+The main thing to notice now is that for Montague's approach to work, it is crucial that we can always get the meaning of a composed phrase from a composition of the meaning of its subphrases. This compositional property is exactly what we saw earlier that first-order logic doesn't posses, and Montague goes through many hoops to simulate it.
 
-I do however avoid many of those problems, since my goal here is not to test the validity of Montague's proposed rules, but to experiment with how Donkey Monoids and to an extent DPL behaves when put in the framework described. To draw a full circle I am however then going to translate the Donkey Monoids into first order logic so we can easily check if our formulas have the meanings we expect.
+I do however avoid many of those problems, since my choices of logic behave much more compositionally than the FOL in Montague's proposed rules. To draw a full circle I am however going to translate the obtained Donkey Monoid representations into first-order logic so we can easily check if our formulas have the meanings we expect.
 
 This is the chain I am going to build:
 
 \begin{description}
 \item[1 Natural Language] We start with a file of simple English natural language sentences. Each line is processed on its own, but may contain more than one sentence.
 
-\item[2 POS tagger] This is the first of three Stanford NLP programs my Haskell script is going to pass the text to. The POS tagger tokenizes the sentences and statstically tries to figures out part of speach for each word. This is our first source of error.
+\item[2 POS tagger] This is the first of three Stanford NLP programs my Haskell script is going to pass the text to. Then the POS tagger tokenizes the sentences and statstically tries to figures out part of speech for each word. This is also my first source of error.
 
 \item[3 Constituent Grammar] It might be that the reason Montague and other early pioneers didn't test their programs mechanically was their lack of access to a good parser. The Stanford Parser is the best on the market, but it still an error rate of around 5\% which is one in every two sentences.
 
-\item[4 Correference Resolution] A lot have been said about how anaphora might be resolved using formal Montague Grammar like approaches. DRT is especially focused on this topic. None the less the current champeon of anaphora competitions\cite{lee2011stanford}\cite{raghunathan2010multi} is the heuristical Stanford Deterministic Coreference Resolution System, the workings of which I will explain in detail.
+\item[4 Correference Resolution] A lot has been said about how anaphora might be resolved using formal Montague Grammar like approaches. DRT is especially focused on this topic. None the less the current champion of anaphora competitions\cite{lee2011stanford}\cite{raghunathan2010multi} is the heuristical Stanford Deterministic Coreference Resolution System, the workings of which I will explain in detail.
 
 \item[5 Donkey Monoid] For us the step from 4 to 5 is the most interesting, as it is where we go from syntax to semantics. If we manage to push our original text through to here, not much can go wrong. Only issue is if the logical meaning we create is not the one intended by the speaker.
 
-\item[6 Dynamic Predicate Logic] Since the Donkey Monoids are variants of DPL, they are easy to convert into it. It is much more surprising that DPL lets itself convert into first order logic.
+\item[6 Dynamic Predicate Logic] Since the Donkey Monoids are variants of DPL, they are easy to convert into it. It is much more surprising that DPL lets itself convert into first-order logic.
 
-\item[7 First Order Logic] We end up translating our dynamic logics into this old friend. This is mainly done to test the conversion algorithm, and because the first order logic is what we are used to read. The results can be surprising.
+\item[7 First-Order Logic] We end up translating our dynamic logics into this old friend. This is mainly done to test the conversion algorithm, and because the first-order logic is what we are used to read. The results can be surprising.
 \end{description}
 
 However before we can go into the many technical details, we need to develop a very good understanding of the logics and ideas we are working with.
 
-\section{Formal Stuff (10)}
+\section{Dynamic Semantics and Montague}
 
 % This should be around 10 pages
 %Background should introduce any information that is necessary for the examiner to understand your project. 
@@ -308,9 +338,9 @@ However before we can go into the many technical details, we need to develop a v
 
 In these chapters I'm going to describe the logical theories by Visser and earlier dynamic semantists. I will introduce some addtions of my own and prove interesting properties about them. Finally, but most importantly, I will go into depth with the tools and ideas we need to write a strong logification framework.
 
-In the previous chapter I showed how First Order Logic lack certain compositional properties. A possible solution to this problem is to use a so called `update logic' (a logic with update semantics). Update semantics are logics inspired on the semantics of programming languages where a variable, once introduced, will stick around for a period not know at the time of it's introduction.
+In the previous chapter I showed how first-order logic lacks certain compositional properties. A possible solution to this problem is to use a so called `update logic' (a logic with update semantics). Update semantics are logics inspired on the semantics of programming languages where a variable, once introduced, will stick around for a period not know at the time of it's introduction.
 
-The idea of those logics is a `growth of information in time'. Starting from no information, and with each statement adding more. Information is here seen in the information theoretic way, where no information is when everything is possible ($\top$) and total information is when nothing is possible ($\bot$).
+The idea of those logics is a `growth of information in time', starting from no information, and with each statement adding more. Information is here seen in the semantic way, where no information is when everything is possible ($\top$) and total information is when nothing is possible ($\bot$).
 
 Logicians and linguists have come up with many different update logics since the 80s. I will quickly describe the four most cited ones, to give an idea of the landscape we're working in:
 %
@@ -374,18 +404,18 @@ Where $Sat$ is the function that takes a file to the set of `individuals' `satis
     \path (owns) edge node {obj} (z);
 \end{tikzpicture}
 
-Notice here in particular the interesting the `dependent' arrow. This arrow communicates that there is a one-many relationship between farmer and donkey, and hence that we are talking about a specific donkey for each farmer, not a single poor donkey beaten by everyone.
+Notice here in particular the interesting `dependent' arrow. This arrow communicates that there is a one-many relationship between farmer and donkey, and hence that we are talking about a specific donkey for each farmer, not a single poor donkey beaten by everyone.
 
 \item Dynamic Predicate Logic, 1991 by Groenendijk and Stokhof\cite{groenendijk1991dynamic}, is what I will focus on in the remains of this paper. In contrast to some of the previous models, the authors of Dynamic Predicate Logic (DPL) don't make any big philosophical claims on connections between their model and the brain. Instead they simply create a logic that is isomorphic to PL, while keeping a reasonable amount of `update semantics' like properties, such as being closer syntactically to natural language.
 
-DPL also doesn't provide any guidance into resolving anaphora. Just like giving meaning to the actual concepts, this must be handled outside of the logic. We will see later in this paper that this stance makes sense, since the current state of the art anaphora resolvers are simply based on simple heuristics over noun phrases.
+DPL also doesn't provide any guidance into resolving anaphora. Just like giving meaning to the actual concepts, this must be handled outside of the logic. We will see later in this paper that this stance makes sense, since the current state of the art anaphora resolvers are based on simple heuristics over noun phrases.
 
-In the end of this chapter we will see how a certain monadic construction by Visser can give us as much flexibility in DPL as we would get with a more involved system such as DRT or FCS.
+In the end of this chapter we will see how a certain monoid construction by Visser can give us as much flexibility in DPL as we would get with a more involved system such as DRT or FCS.
 \end{itemize}
 
 \subsection{DPL}
 
-Dynamic Predicate Logic has been developed by a wide group of people: Jan van Eijck and Fer-Jan de Vries\cite{eijck1992dynamic}, Hans Kamp, Veltman, Groenendijk and Stokhof. It is the linguist version of Dynamic Logic invented by Pratt\cite{pratt1976semantical} which is again build on top of Floyd-Hoare Logic for reasoning about computer programs.
+Dynamic Predicate Logic has been developed by a wide group of people: Jan van Eijck and Fer-Jan de Vries\cite{eijck1992dynamic}, Hans Kamp, Veltman, Groenendijk and Stokhof. It is the linguist version of Dynamic Logic invented by Pratt\cite{pratt1976semantical} which is again built on top of Floyd-Hoare Logic for reasoning about computer programs.
 
 The logic cleverly uses these advances in logical understanding to create an update logic in a pragmatic way, without any external constructs and a minimum of new syntax, while still getting all the benefits of compositionality etc.
 
@@ -473,68 +503,9 @@ Of course this `static negation' might not always be the right thing. Consider t
 
 The DPL $\psi_1\rightarrow\psi_2$ in particular can be seen as the filter, that if you can get `through' $\psi_1$ then you must also be able to get through $\psi_2$. But notice that $\gamma$ doesn't have to equal $\alpha$. Hence variables introduced in $\psi_1$ can well bind variables in $\psi_2$. This will show to be extremely important in the treatment of donkey sentences later.
 
-Talking about binding, also notice that our union or `or' construct is a bit special. $\psi_1$ and $\psi_2$ cannot bind variables in each other, but in $(\psi_1\cup\psi_2)\cdot\psi_3$ they can both bind variables in $\psi_3$. This is going to introduce a lot of weird situations later. In the next section we will look closer at these problems, and also consider the alternative definition of `or': $\neg(\neg\psi_1\cdot\neg\psi_2)$.
+Talking about binding, also notice that our union or `or' construct is a bit special. $\psi_1$ and $\psi_2$ cannot bind variables in each other, but in $(\psi_1\cup\psi_2)\cdot\psi_3$ they can both bind variables in $\psi_3$. We won't actually use `or' in the main implementation\footnote{Turns out the Stanford tools find it weird as well.}, but in the appendix~\ref{sec:problem_disj} I look more closely at the weird situations that can arrise. I also consider the alternative definition of `or': $\neg(\neg\psi_1\cdot\neg\psi_2)$.
 
-\subsubsection{The problem with disjunction}
-
-We won't actually use `or' in the implementation.
-Example of the problems we still have in the logic.
-Can't tell what variables are available where.
-
-A major problem with our use of `relation union' as disjunction is the way it allows seemingly sound sentences to combine into syntactically invalid ones. Consider the sentence `Either a farmer owns a donkey or he doesn't'. We would write that as
-\begin{align}
-\exists x\cdot farmer(x)\cdot(\exists y\cdot owns(x,y)\cdot donkey(y)\vee \bot) \label{owns_donkey_or_not}
-\end{align}
-Now concatenating this sentence with `he beats it': $beat(x,y)$ would give us a problem. In fact this problem would be more than a syntactic problem, because before we know the model and the existence of the donkey, we don't know if the sentence is valid or not.
-
-Visser\cite{visser1999donkey} suggests that we should build our logic on sets of relations read disjunctively instead of just relations. This `possible world' scenario would transform \eqref{owns_donkey_or_not}$\cdot beats(x,y)$ into $\{\exists x\cdot farmer(x)\cdot\exists y\cdot donkey(y)\cdot owns(x,y)\cdot beats(x,y), \exists x\cdot farmer(x)\cdot\bot\cdot beats(x,y)\} = \{\exists x\cdot farmer(x)\cdot\exists y\cdot donkey(y)\cdot owns(x,y)\cdot beats(x,y), \bot\}$. This clearly is always well defined.
-
-Visser's idea doesn't fully save us though. If we now consider `a farmer either owns a donkey or owns a horse':
-\begin{align}
-\exists x\cdot farmer(x)\cdot(&\exists y\cdot owns(x,y)\cdot donkey(y)\nonumber\\
-                              &\vee \exists z\cdot owns(x,z)\cdot horse(z))
-\end{align}
-And combines that with `He beats the donkey': $beat(x,y)$, we get, in Visser's model, $\{\exists x\cdot farmer(x)\cdot\exists y\cdot owns(x,y)\cdot donkey(y)\cdot beats(x,y), \exists x\cdot farmer(x)\cdot\exists z\cdot owns(x,z)\cdot horse(z)\cdot beats(x,y)\}$. The second one is clearly not valid (though we wouldn't get a problem if there is no horse or farmer) which we might catch `at compile time' and replace it with something like `$\bot$' or `error'. This sort of error handling is discussed and implemented in the implementation section, but is not terribly interesting from a formal point of view.
-
-Much more interesting are the following two questions: How could we have translated \label{owns_donkey_or_horse} so it would actually work? After all it seemed like a reasonable sentence until variable naming got us. And does the way variable binding works with our definition actually make sense?
-
-Clearly just renaming $z$ to $y$ in the horse term would have solved the first problem. However to work in a compositional way, that would either require great luck, or renaming, and we don't have a renaming operator.
-
-A trick we could consider is to declare an `object' variable outside of the disjunction:
-\begin{align}
-\exists s\cdot farmer(s)\cdot\exists o\cdot(
-      &\exists y\cdot owns(s,y)\cdot donkey(y)\cdot o=y \nonumber\\
-      &\vee \exists z\cdot owns(s,z)\cdot horse(z)\cdot o=z)\cdot beats(s,o)
-\end{align}
-%
-This even inspires on idea that we might be able to build everything up around subjects, objects, indirect objects etc. This is explored in the implementation, but it does suffer from many problems. E.g. we might well have a sentence very similar to the above: `A farmer owns a donkey and owns a horse. He beat them'. Here we suddenly have two objects in the same sentence.
-
-Sentences like the above are easy to make in English because the absence of noun genders make it easy to use the same pronoun to refer to a lot of things at once. By choosing the right actors however, it is always possible to run into problems.
-
-The problem is perhaps the non-linearity in the way variables pass through the disjunction. Somehow we lose track of their history when the `results' are merged together.
-
-This leads on to the other question we mentioned: Is the binding flow through our disjunction operator really any good? We are is inspired by the sentence `Either a farmer or his scapegoat must go to court. In any case he will be picked up by sunset'. In terms of DPL formulas, this would be modelled something like $(\psi_1\cup\psi_2)\cdot\psi_3$. Clearly we have a problem here: Variables bound in $\psi_1$ are not accessible in $\psi_2$.
-
-This sentence suggests that we might want to define a disjunction operator with a linear flow of variables: $\psi_1\to\psi_2\to\psi_3$ instead of $\psi_1\to\psi_3\text{ and }\psi_2\to\psi_3$. However there is a problem: We currently define `false' as the absence of possible assignments. Hence if $\psi_1$ is false, there is no way we can define disjunction to push it's variables into $\psi_2$. If any variables were left undefined, $\psi_1$ wouldn't be false.
-
-There is a cure to this problem. When we extend our logic with more power in the monad chapter, we get a second chance. However Let's first have a look at an obvious alternative definition for disjunction considered by Groenendijk\cite{groenendijk1991dynamic}. We'll call it `static disjunction':
-\begin{align}
-\alpha[\psi_1\vee\psi_2]\beta
- :\equiv&\ \alpha[\neg(\neg\psi_1\wedge\neg\psi_2)]\beta \nonumber\\
- \leftrightarrow&\ \alpha[\neg\psi_1\rightarrow\psi_2]\beta \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha[\neg\psi_1]\gamma\rightarrow\gamma\models[\psi_2]) \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma((\alpha=\gamma\wedge\gamma\not\models\psi_1)\rightarrow\gamma\models[\psi_2]) \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha=\gamma\rightarrow(\gamma\models\psi_1\vee\gamma\models\psi_2)) \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge (\alpha\models\psi_1\vee\alpha\models\psi_2) \label{sem_or}
-\end{align}
-
-The idea to this follows natural from De Morgan's laws of classical logic. Clearly the semantics are different from the ones we defined for $\cup$. However not in a good way. This static disjunction doesn't allow any variables to escape from inside it's reach.
-
-So does this fix our problem of binding between clauses? No. In fact this definition doesn't even allow binding from a clause and out. The villain is $\neg\psi$. From the first mention we defined it to be static so it wouldn't allow unsafe, arbitrary assignments as long as they didn't satisfy $\psi$. We wanted our logic to be reasonably monotonic, and we got what we deserved. $\neg$ not only closed down this version of disjunction, but our implication definition as well.
-
-We can imagine defining $\neg$ dynamically: $\neg\psi_1\cdot\psi_2 = \neg(\psi_1\cdot\psi_2)$. However not in our current model, and it won't solve any of our problems with disjunction. It does however allow this sentence: `It is not the case that a farmer doesn't own a donkey. He beats it'. While it made sense not to allow variables to escape from a single $\neg$, we want them to escape from a double.
-
-\subsubsection{Connection with first order logic}
+\subsubsection{Connection with First-Order Logic}
 
 An interesting property of DPL is that it is isomorphic with classical logic. Any PL formula corresponds to one in DPL and vice versa. This gives an alternative way to define and understand the semantics of DPL, and it relaxes us that nothing `weird' is going on. We might also be a bit disappointed that after all this, we don't possess any extra power, but let's forget about that for now, and see how the conversion works.
 
@@ -662,7 +633,7 @@ A farmer owns a donkey. He beats it.
 %
 That is very close to the order of the natural language!
 
-And combining the two monads we can do our original sentence as
+And combining the two monoids we can do our original sentence as
 %
 \begin{quote}
 If a farmer owns a donkey, he beats it
@@ -689,7 +660,7 @@ With the meaning being $(-,1) \cdot (-,0) \rightarrow (+,1) \cdot (+,0)$. Notice
 
 Notice $\Bowtie$ and $\triangle$ are commutative, since they work entirely on their own indicator. It's an interesting question to consider what sentences might require three or more levels of scoping. We could define $\triangle$ to go up in scope and $\bigtriangledown$ to go down. Instead of ${0,1}$ we would work on $\mathbb{Z}$.
 
-For now we define the monad as follows:
+For now we define the monoid as follows:
 %
 \begin{flalign}
 &\top := \langle \top, \top, \top, \top, +, 0 \rangle & \\
@@ -729,7 +700,7 @@ There is in my opinion no important theoretical difference between natural langu
 
 He believed that just as Chomsky had formulated the syntax of language in a mathematical framework, so too should it be possible to define the meaning of every sentence, based on the meaning of its parts and a set of compositional rules.
 
-While the above remains a hot topic in the philosophy of language, we are going to take a more practical stand. In our quest to automate the translation of language into Visser's monadic DPL, it is interesting that Montague was able to define such a large fragment of English using familiar tools of compositionality and lambda calculus.
+While the above remains a hot topic in the philosophy of language, we are going to take a more practical stand. In our quest to automate the translation of language into Visser's DPL monoid, it is interesting that Montague was able to define such a large fragment of English using familiar tools of compositionality and lambda calculus.
 
 The basic idea is very simple. For each postag we define a type. E.g. $S$ has the type $Bool$ and $VP$ has the type $Entity \rightarrow Bool$, the intuition being that the VP returns true if the entity `does what the VP described' and false otherwise. An NP is given type type $VP \rightarrow Bool$ which allows it to create a scope for a variable and pass it to the VP, or whatever it sees fitting for that NP.
 
@@ -768,7 +739,7 @@ You might have noticed we didn't discuss how the variables $r_1$ and $r_2$ were 
 
 Later in the implementation section we will look at more issues regarding to using Montague Grammars in practise. First we need to look at a very important source of ambiguity in sentences.
 
-\subsubsection{Weak and strong readings}
+\subsubsection{Weak and Strong Readings}
 
 `Weak' and `strong' are quite accepted terms in linguistics for describing different ways to interprete quantifiers. In line with information theory, we can say that weak readings are about weak information and strong readings about strong information.
 
@@ -952,9 +923,9 @@ After the final step different post processing options are usually performed. Fo
 
 The reason the rules are applied in the order above is to give the most certain rules the highest priority.
 
-The Stanford procedure above is currently the strongest competitor in various coreference competitions.
+The Stanford procedure above is currently the strongest competitor in various coreference competitions.\cite{lee2011stanford}\cite{raghunathan2010multi}
 
-\section{Implementation (8)}
+\section{Implementation}
 
 The requirements for the testing framework are very simple: Support as big a chunk of English as possible, while keeping to the intended meaning.
 
@@ -977,16 +948,16 @@ An interesting issue is the fact that we deal with 4 types of logic. Each having
 The mentioned types are the following:
 
 \begin{haskell}
-data Fol = T | F | ,,,
+data Fol = T | F | ...
 type IFol = Interpretation -> Bool
 
-data Dpl = DT | DF | ,,,
+data Dpl = DT | DF | ...
 type IDpl = Interpretation -> Assignment -> Assignment -> Bool
 type IDpl2 = Interpretation -> Assignment -> [Assignment]
 
-data Visser1 = VT | VF | ,,,
+data Visser1 = VT | VF | ...
 type IVisser1 = (Dpl, Dpl, Integer)
-data Visser2 = VT | VF | ,,,
+data Visser2 = VT | VF | ...
 type IVisser2 = (Dpl, Dpl, Dpl, Dpl, Integer, Integer)
 \end{haskell}
 
@@ -1005,7 +976,7 @@ One option in case of an error is to simply return $\bot$ and say the formula ev
 
 In the current version of my program, I have decided to go with the simplest possible type, and simply report errors through Haskell's error system.
 
-\subsection{The grammar}
+\subsection{The Grammar}
 
 \newsavebox{\LstBox}
 \begin{lrbox}{\LstBox}
@@ -1209,7 +1180,7 @@ A final example that really shows how DPL scope and free variables all play alon
 
 This concludes the implementation part of the paper.
 
-\section{Conclusions and Perspectives (2)}
+\section{Conclusions}
 
 I have successfully developed a testing framework that lets researchers define logics and interpretation functions and test them on large inputs of interesting text. I have discussed many possible directions I could have taken, I have proved every result involved, and I have done extensive testing.
 
@@ -1237,18 +1208,6 @@ Even higher up are lots of classical linguistic problems. Sentences such as `The
 
 Finally I have mentioned that we might be able to expand the Donkey Monoids with more functionality as we sees fit during Montague rule making. The possibility for pushing control elements into the semantic of the logic is really the beauty of Visser's approach and unfortunately a road I haven't studied much in this paper. It is not hard to immagine $(Dpl,Dpl,Dpl,Dpl,Integer,Integer)$ exchanged for something like $(Dpl,...,PosTag)$ and coresponding composition rules.
 
-\subsection{Personal Report*}
-
-What the...
-
-\begin{itemize}
-\item Studied computational linguistics and learned about state of the art technologies
-\item Found out what was going on with dynamic logics and 
-similar discourse algebras
-\item Ran into many issues some of which have been discussed in great deal before (like strong vs. weak readings) and some that haven't had as much attention (like semantics of `and' and `or').
-\item Combined the technologies and theory in a way not tried before, which yielded very good results
-\end{itemize}
-
 \section{Acknowledgments}
 I would like to thank Samson Abrahamski for introducing me to the world of Natural Language parsing and semantics and for helpful and stimulating discussions.
 
@@ -1262,7 +1221,8 @@ Finnaly I wish to thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for t
 
 \newpage
 \section{Appendix}
-\subsection{Derivation of DPL preconditions}
+
+\subsection{Derivation of DPL Preconditions}
 Remember that we have defined, for assignments $\alpha$ and $\beta$, DPL formula $\psi$ and FOL formula $\phi$: $\alpha\models\langle\psi\rangle\phi$ to mean $\exists\beta(\alpha\llbracket\psi\rrbracket\beta\wedge\beta\models\phi)$. $\alpha\models\phi$ is just the usual $\models$ from FOL.
 
 Since the proof is over the syntax of DPL, we use $\llbracket\cdot\rrbracket$ as the interpretation function so that $\alpha\llbracket\psi\rrbracket\beta$ is the FOL statement `$(\alpha,\beta)\in\Psi$', where $\Psi$ is the relation defined by $\psi$.
@@ -1322,9 +1282,78 @@ The derivation for $\cdot$ goes more smoothly:}
 \intertext{Because $\psi$ is this way `evaluated on $\top$ only', we know that no variables introduced in $\psi$ can affect $\phi$.}\nonumber
 \end{align}
 
-\subsection{Source Code*}
+\subsection{The Problem with Disjunction}\label{sec:problem_disj}
 
-Should I include this?
+%We won't actually use `or' in the implementation.
+%Example of the problems we still have in the logic.
+%Can't tell what variables are available where.
+
+A major problem with our use of the union of relations as disjunction is the way it allows seemingly sound sentences to combine into syntactically invalid ones. Consider the sentence `Either a farmer owns a donkey or he doesn't'. We would write that as
+\begin{align}
+\exists x\cdot farmer(x)\cdot(\exists y\cdot owns(x,y)\cdot donkey(y)\vee \bot) \label{owns_donkey_or_not}
+\end{align}
+Now concatenating this sentence with `he beats it': $beat(x,y)$ would give us a problem. In fact this problem would be more than a syntactic problem, because before we know the model and the existence of the donkey, we don't know if the sentence is valid or not.
+
+Visser\cite{visser1999donkey} suggests that we should build our logic on sets of relations read disjunctively instead of just relations. This `possible world' scenario would transform \eqref{owns_donkey_or_not}$\cdot beats(x,y)$ into $\{\exists x\cdot farmer(x)\cdot\exists y\cdot donkey(y)\cdot owns(x,y)\cdot beats(x,y), \exists x\cdot farmer(x)\cdot\bot\cdot beats(x,y)\} = \{\exists x\cdot farmer(x)\cdot\exists y\cdot donkey(y)\cdot owns(x,y)\cdot beats(x,y), \bot\}$. This clearly is always well defined.
+
+Visser's idea doesn't fully save us though. If we now consider `a farmer either owns a donkey or owns a horse':
+\begin{align}
+\exists x\cdot farmer(x)\cdot(&\exists y\cdot owns(x,y)\cdot donkey(y)\nonumber\\
+                              &\vee \exists z\cdot owns(x,z)\cdot horse(z))
+\end{align}
+And combines that with `He beats the donkey': $beat(x,y)$, we get, in Visser's model, $\{\exists x\cdot farmer(x)\cdot\exists y\cdot owns(x,y)\cdot donkey(y)\cdot beats(x,y), \exists x\cdot farmer(x)\cdot\exists z\cdot owns(x,z)\cdot horse(z)\cdot beats(x,y)\}$. The second one is clearly not valid (though we wouldn't get a problem if there is no horse or farmer) which we might catch `at compile time' and replace it with something like `$\bot$' or `error'. This sort of error handling is discussed and implemented in the implementation section, but is not terribly interesting from a formal point of view.
+
+Much more interesting are the following two questions: How could we have translated \label{owns_donkey_or_horse} so it would actually work? After all it seemed like a reasonable sentence until variable naming got us. And does the way variable binding works with our definition actually make sense?
+
+Clearly just renaming $z$ to $y$ in the horse term would have solved the first problem. However to work in a compositional way, that would either require great luck, or renaming, and we don't have a renaming operator.
+
+A trick we could consider is to declare an `object' variable outside of the disjunction:
+\begin{align}
+\exists s\cdot farmer(s)\cdot\exists o\cdot(
+      &\exists y\cdot owns(s,y)\cdot donkey(y)\cdot o=y \nonumber\\
+      &\vee \exists z\cdot owns(s,z)\cdot horse(z)\cdot o=z)\cdot beats(s,o)
+\end{align}
+%
+This even inspires on idea that we might be able to build everything up around subjects, objects, indirect objects etc. This is explored in the implementation, but it does suffer from many problems. E.g. we might well have a sentence very similar to the above: `A farmer owns a donkey and owns a horse. He beat them'. Here we suddenly have two objects in the same sentence.
+
+Sentences like the above are easy to make in English because the absence of noun genders make it easy to use the same pronoun to refer to a lot of things at once. By choosing the right actors however, it is always possible to run into problems.
+
+The problem is perhaps the non-linearity in the way variables pass through the disjunction. Somehow we lose track of their history when the `results' are merged together.
+
+This leads on to the other question we mentioned: Is the binding flow through our disjunction operator really any good? We are is inspired by the sentence `Either a farmer or his scapegoat must go to court. In any case he will be picked up by sunset'. In terms of DPL formulas, this would be modelled something like $(\psi_1\cup\psi_2)\cdot\psi_3$. Clearly we have a problem here: Variables bound in $\psi_1$ are not accessible in $\psi_2$.
+
+This sentence suggests that we might want to define a disjunction operator with a linear flow of variables: $\psi_1\to\psi_2\to\psi_3$ instead of $\psi_1\to\psi_3\text{ and }\psi_2\to\psi_3$. However there is a problem: We currently define `false' as the absence of possible assignments. Hence if $\psi_1$ is false, there is no way we can define disjunction to push it's variables into $\psi_2$. If any variables were left undefined, $\psi_1$ wouldn't be false.
+
+There is a cure to this problem. When we extend our logic with more power in the monoid chapter, we get a second chance. However Let's first have a look at an obvious alternative definition for disjunction considered by Groenendijk\cite{groenendijk1991dynamic}. We'll call it `static disjunction':
+\begin{align}
+\alpha[\psi_1\vee\psi_2]\beta
+ :\equiv&\ \alpha[\neg(\neg\psi_1\wedge\neg\psi_2)]\beta \nonumber\\
+ \leftrightarrow&\ \alpha[\neg\psi_1\rightarrow\psi_2]\beta \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha[\neg\psi_1]\gamma\rightarrow\gamma\models[\psi_2]) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma((\alpha=\gamma\wedge\gamma\not\models\psi_1)\rightarrow\gamma\models[\psi_2]) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha=\gamma\rightarrow(\gamma\models\psi_1\vee\gamma\models\psi_2)) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge (\alpha\models\psi_1\vee\alpha\models\psi_2) \label{sem_or}
+\end{align}
+
+The idea to this follows natural from De Morgan's laws of classical logic. Clearly the semantics are different from the ones we defined for $\cup$. However not in a good way. This static disjunction doesn't allow any variables to escape from inside it's reach.
+
+So does this fix our problem of binding between clauses? No. In fact this definition doesn't even allow binding from a clause and out. The villain is $\neg\psi$. From the first mention we defined it to be static so it wouldn't allow unsafe, arbitrary assignments as long as they didn't satisfy $\psi$. We wanted our logic to be reasonably monotonic, and we got what we deserved. $\neg$ not only closed down this version of disjunction, but our implication definition as well.
+
+We can imagine defining $\neg$ dynamically: $\neg\psi_1\cdot\psi_2 = \neg(\psi_1\cdot\psi_2)$. However not in our current model, and it won't solve any of our problems with disjunction. It does however allow this sentence: `It is not the case that a farmer doesn't own a donkey. He beats it'. While it made sense not to allow variables to escape from a single $\neg$, we want them to escape from a double.
+
+\subsection{Sample Output}
+
+\lstinputlisting[style=bashstyle]{sample_output}
+
+\subsection{Source Code}
+
+\lstinputlisting[style=haskellstyle,caption=\lstname]{src/Main.hs}
+\lstinputlisting[style=haskellstyle,caption=\lstname]{src/Stanford.hs}
+\lstinputlisting[style=haskellstyle,caption=\lstname]{src/ToLogic.hs}
+\lstinputlisting[style=haskellstyle,caption=\lstname]{src/Dpl.hs}
+\lstinputlisting[style=haskellstyle,caption=\lstname]{src/Visser.hs}
+\lstinputlisting[style=haskellstyle,caption=\lstname]{src/Tests.hs}
+\lstinputlisting[style=haskellstyle,caption=\lstname]{src/Utils.hs}
 
 \bibliographystyle{plain}
 \bibliography{refs}
