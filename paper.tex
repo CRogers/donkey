@@ -338,7 +338,7 @@ However before we can go into the many technical details, we need to develop a v
 
 In these chapters I'm going to describe the logical theories by Visser and earlier dynamic semanticists. I will introduce some additions of my own and prove interesting properties about them. Finally, but most importantly, I will go into depth with the tools and ideas we need to write a strong logification framework.
 
-In the previous chapter I showed how first-order logic lacks certain compositional properties. A possible solution to this problem is to use a so called `update logic' (a logic with update semantics). Update semantics are logics inspired on the semantics of programming languages where a variable, once introduced, will stick around for a period not know at the time of it's introduction.
+In the previous chapter I showed how first-order logic lacks certain compositional properties. A possible solution to this problem is to use a so called `update logic' (a logic with update semantics). Update semantics are logics inspired on the semantics of programming languages where a variable, once introduced, will stick around for a period not know at the time of its introduction.
 
 The idea of those logics is a `growth of information in time', starting from no information, and with each statement adding more. Information is here seen in the semantic way, where no information is when everything is possible ($\top$) and total information is when nothing is possible ($\bot$).
 
@@ -417,9 +417,7 @@ In the end of this chapter we will see how a certain monoid construction by Viss
 
 Dynamic Predicate Logic has been developed by a wide group of people: Jan van Eijck and Fer-Jan de Vries\cite{eijck1992dynamic}, Hans Kamp, Veltman, Groenendijk and Stokhof. It is the linguist version of Dynamic Logic invented by Pratt\cite{pratt1976semantical} which is again built on top of Floyd-Hoare Logic for reasoning about computer programs.
 
-The logic cleverly uses these advances in logical understanding to create an update logic in a pragmatic way, without any external constructs and a minimum of new syntax, while still getting all the benefits of compositionality etc.
-
-To model a simple sentence `A man comes in. He sees a donkey. He smiles.', we write:
+DPL cleverly uses this basic logical research to create a very simple, self-contained logic, while still getting all the benefits of compositionality etc. To model a simple sentence `A man comes in. He sees a donkey. He smiles.', we write:
 %
 \begin{align}
 &(\exists x \cdot man(x) \cdot comes\_in(x)) \nonumber\\
@@ -429,23 +427,29 @@ To model a simple sentence `A man comes in. He sees a donkey. He smiles.', we wr
 
 (The parenthesis is only for clarity. The logic is 100\% associative). Notice how we introduce referents casually as we progress in the discourse. We even manage to look pretty similar to PL at the same time. 
 
-Too understand the semantics of the above, let's start by only considering a dynamic propositional logic with three propositions: $P$, $Q$ and $R$. We'll write $p$ to indicate a predicate is true and $\overline{p}$ if it's false. We talked about earlier, that the update semantics modeled `growth of information over time', so we'll start with case that every $2^3$ state is possible:
+Too understand the semantics of the above, let's start by considering a simple example with two variables ($a$ and $b$) and a domain with three entities ($0$, $1$ and $2$). I said earlier, that the update semantics modeled `growth of information over time', so we'll start with the case that every $3^2$ assignments are possible:
 %
 \begin{align}
-\{\overline{PQR}, \overline{PQ}R, \overline{P}Q\overline{R}, \overline{P}QR, P\overline{QR}, P\overline{Q}R, PQ\overline{R}, PQR\} \label{dpl_all_states}
+\{&\langle a\mapsto0,b\mapsto0\rangle, \langle a\mapsto0,b\mapsto1\rangle, \langle a\mapsto0,b\mapsto2\rangle,\nonumber\\
+&\langle a\mapsto1,b\mapsto0\rangle, \langle a\mapsto1,b\mapsto1\rangle, \langle a\mapsto1,b\mapsto2\rangle,\nonumber\\
+&\langle a\mapsto2,b\mapsto0\rangle, \langle a\mapsto2,b\mapsto1\rangle, \langle a\mapsto2,b\mapsto2\rangle\}\label{dpl_all_states}
 \end{align}
 
-Now we'll consider a statement in our predicate logic as a relation between possible states. For example $P\overline{Q}R[P\cdot Q]P\overline{Q}R$ is false, while $P\overline{Q}R[P\cup Q]PQR$ is true. If we take the image of \eqref{dpl_all_states} under $P\cdot\neg Q$ we get
+A DPL formula is defined as a relation between assignments, and $\llbracket\cdot\rrbracket$ is the function that takes a formula to its relation. For example $\langle a\mapsto1,b\mapsto1\rangle\llbracket a=1\rrbracket\langle a\mapsto1,b\mapsto1\rangle$ is true because the $a=1$ `program' executes successfully. We also require that simple tests like this one doesn't change the state, so $\langle a\mapsto 1,b\mapsto2\rangle$ would not have been a valid assignment on the right hand side.
+
+Just like with programs, we can combine multiple formulas into bigger ones: $\langle a\mapsto0,b\mapsto2\rangle\llbracket a=0\cdot b=a\rrbracket\psi$ is false for all $\psi$, and $\langle a\mapsto2,b\mapsto1\rangle\llbracket a=0\cup b<2\rrbracket\langle a\mapsto2,b\mapsto1\rangle$ is true. If we take the image of \eqref{dpl_all_states} under $a=0\cdot\neg (b=2)$ we get
 %
 \begin{align}
-\{P\overline{QR}, P\overline{Q}R\} \label{dpl_PnQ_states}
+\{&\langle a\mapsto0,b\mapsto0\rangle, \langle a\mapsto0,b\mapsto1\rangle\} \label{dpl_PnQ_states}
 \end{align}
 
-If we then take the image of \eqref{dpl_PnQ_states} under $\overline{P}$ we end up with the empty set of states. That is there is no possible assignment satisfying our formula, and we consider it a falsum.
+If we take the image of \eqref{dpl_PnQ_states} under $a=1$, we end up with the empty set of states. That is because there are no possible assignments satisfying our formula. Hence we consider $a=0\cdot\neg (b=2)\cdot a=1$ a falsum, also defined as $\bot$.
 
-The most interesting question is how we work with quantifiers. Which on earth relation could $\exists S$ be? We are going to take a hint from computer programming and consider the variable declaration: $S:=\bot$. We want to write this in DPL as $\exists S \cdot \neg S$, such that e.g. $P\overline{Q}[\exists S \cdot \neg S]P\overline{QS}$ is true. Now since $\cdot\neg S$ acts as a filter, removing all assignments that doesn't have $\overline{S}$, it must be that $\exists S$ is a `random reset, introducing $S$ and allowing it every value, such that $P\overline{Q}[\exists S]P\overline{QS}$ and $P\overline{Q}[\exists S]P\overline{Q}S$ are both true. The image of \eqref{dpl_all_states} under $\exists S$ has 16 possible states.
+So why do we define all of this using relations, and not just functions from states to truth values? The reason is that we want to introduce a special relation $\exists x$ (for some variable name $x$). We want it to analogous to $\exists x(...)$ from first-order logic. It's not immediately obvious what the correct definition should be.
 
-Let's have a look at the model theoretic definition of the semantics. Visser builds this up in two steps: First a relational algebra and then DPL on top of it. But since DPL is basically identical to the relational algebra, we are going to try and do it in one step.
+The trick is to consider the conjunctive DPL relation $\exists x\cdot x=1$ - we want this to work such that $\langle a\mapsto0\rangle\llbracket\exists x\cdot x=1\rrbracket\langle a\mapsto0,x\mapsto1\rangle$. Now considering $x=1$ is a filter, it must be that $\exists x$ is a relation that allows any value for $x$ on its second argument. For example we see that the image of \eqref{dpl_all_states} under $\exists x$ has 27 possible states.
+
+Let's have a look at the model theoretic definition of the semantics. This is sometimes done in two steps: First defining a relational algebra and then builid DPL on top of it. However DPL is basically identical to the relational algebra, so we are going to try and do everything in one step:
 
 Let a signature $\Sigma$ for DPL be a structure $\langle Pred, Ar, Var\rangle$. $Pred$ is the set of predicate symbols containing at least $=$, $\top$ and $\bot$. $Ar$ is the function from predicate symbols to their arity and in particular we have $Ar(=) \mapsto 2$, $Ar(\top) \mapsto 0$, $Ar(\bot) \mapsto 0$. Finally $Var$ is the set of variable symbols we may use. We are not going to work with constants in this treatment.
 
@@ -454,10 +458,8 @@ We are further going to define:
 \begin{align}
 Prop_\Sigma &= \{P(x_1,\dots,x_n) \mid P \in Pred,\ Ar(P)=n,\ x_1,\dots,x_n\in Var\}\\
 Reset_\Sigma &= \{\exists x \mid x\in Var\}\\
-Atom_\Sigma &= Var \cup Prop_\Sigma \cup Reset_\Sigma
+Atom_\Sigma &= Prop_\Sigma \cup Reset_\Sigma
 \end{align}
-
-A model $\mathcal{M}$ of a signature $\Sigma$ is a tuple $\langle\mathcal{D},\mathcal{I}\rangle$ where $\mathcal{D}$ is a domain which we will always set as $\{\top,\bot\}$, and $\mathcal{I}$ is the interpretation function $Prop_\Sigma\to\mathcal{D}$.
 
 The set of formulas we will say to be the smallest set $Form_\Sigma$ satisfying:
 \begin{align}
@@ -467,39 +469,53 @@ The set of formulas we will say to be the smallest set $Form_\Sigma$ satisfying:
 \text{If } \psi_1,\psi_2\in Form_\Sigma \text{ then } &\psi_1\cup\psi_2\in Form_\Sigma
 \end{align}
 
-We are also going to say that an assignment can satisfy a formula, defined as:
+A model $\mathcal{M}$ of a signature $\Sigma$ is a tuple $\langle\mathcal{D},\mathcal{I}\rangle$. The model is very similar to first-order logic in that $\mathcal{D}$ is the domain, a set of entities, and $\mathcal{I}$ is the interpretation function $Prop_\Sigma\to(Asgmt\to\mathbb{B})$, ($Asgmt$ being the set of possible assignments, $\mathbb{B}$ the set of boolean values).
+
+Just like in first-order logic we want to denote whether a formula is true or false, and just like in first-order logic we do this by saying that an assignment can satisfy a formula, defined as below. If a formula is satisfied by all assignments (equivalent to being satisfied by the empty assignment), it is a tautology.
 \begin{align}
-\alpha\models\psi :\equiv \exists\beta(\alpha[\psi]\beta)
+\alpha\models\psi :\equiv \exists\beta(\alpha\llbracket\psi\rrbracket\beta)
 \end{align}
 
-Let $[\cdot]$ be the interpretation function from syntax to relation. Then we define the semantics of our logic pointwise for all assignments $\alpha$ and $\beta$:
+We then define our relations in the set theoretic way, as sets of pairs:
 \begin{align}
-\alpha[\psi_1\cdot\psi_2]\beta :\equiv&\ \exists\gamma (\alpha[\psi_1]\gamma \wedge \gamma[\psi_2]\beta) \label{sem_and} \\
-\alpha[\psi_1\cup\psi_2]\beta :\equiv&\ \alpha[\psi_1]\beta \vee \alpha[\psi_2]\beta \label{sem_union} \\
-\alpha[P(x_1,\dots,x_n)]\beta :\equiv&\ \alpha = \beta \wedge \mathcal{I}(P(\alpha_{x_1},\dots,\alpha_{x_n})) \label{sem_pred} \\
-\alpha[\neg\psi]\beta :\equiv&\ \alpha = \beta \wedge \alpha\not\models[\psi] \label{sem_neg}\\
-\alpha[\exists x]\beta :\equiv&\ \forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \label{sem_exists} \\
-\intertext{Using those basic axioms we can derive for our built in propositions:}
-\alpha[\bot]\beta \leftrightarrow&\ \alpha = \beta \wedge \bot \nonumber\\
-                  \leftrightarrow&\ \bot \label{sem_bot}\\
-\alpha[\top]\beta \leftrightarrow&\ \alpha = \beta \wedge \top \nonumber\\
-                  \leftrightarrow&\ \alpha = \beta \label{sem_top}\\
-\intertext{Taking $\psi_1\rightarrow\psi_2$ to mean $\neg(\psi_1\wedge\neg\psi_2)$ we also get the following neat equation, originally by Groenendijk and Stokhof\cite{groenendijk1991dynamic}:}
-\alpha[\psi_1\rightarrow\psi_2]\beta
- :\equiv&\ \alpha[\neg(\psi_1\wedge\neg\psi_2)]\beta \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \alpha\not\models[\psi_1\wedge\neg\psi_2] \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\alpha[\psi_1\wedge\neg\psi_2]\gamma) \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha[\psi_1]\delta\wedge\delta[\neg\psi_2]\gamma)) \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha[\psi_1]\delta\wedge\delta=\gamma\wedge\delta\not\models[\psi_2])) \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\forall\delta(\delta=\gamma\rightarrow(\alpha[\psi_1]\delta\rightarrow\delta\models[\psi_2]))) \nonumber\\
- \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha[\psi_1]\gamma\rightarrow\gamma\models[\psi_2]) \label{sem_impl}
+\llbracket\psi_1\cdot\psi_2\rrbracket :\equiv&\ \{\langle\alpha,\beta\rangle \in Asgmt^2 \mid \exists\gamma(\langle\alpha,\gamma\rangle\in\llbracket\psi_1\rrbracket\wedge\langle\gamma,\beta\rangle\in\llbracket\psi_2\rrbracket)\} \label{sem_set_and} \\
+\llbracket P(x_1,\dots,x_n)\rrbracket :\equiv&\ \{\langle\alpha,\alpha\rangle \in Asgmt^2 \mid \mathcal{I}(P)(\alpha)\} \label{sem_set_pred}
+\end{align}
+%
+Or we can define them more succinctly, pointwise for all assignments $\alpha$, $\beta$:
+\begin{align}
+\alpha\llbracket \psi_1\cdot\psi_2\rrbracket \beta :\equiv&\ \exists\gamma (\alpha\llbracket \psi_1\rrbracket \gamma \wedge \gamma\llbracket \psi_2\rrbracket \beta) \label{sem_and} \\
+\alpha\llbracket \psi_1\cup\psi_2\rrbracket \beta :\equiv&\ \alpha\llbracket \psi_1\rrbracket \beta \vee \alpha\llbracket \psi_2\rrbracket \beta \label{sem_union} \\
+\alpha\llbracket P(x_1,\dots,x_n)\rrbracket \beta :\equiv&\ \alpha = \beta \wedge \mathcal{I}(P)(\alpha) \label{sem_pred} \\
+\alpha\llbracket \neg\psi\rrbracket \beta :\equiv&\ \alpha = \beta \wedge \alpha\not\models\llbracket \psi\rrbracket  \label{sem_neg}\\
+\alpha\llbracket \exists x\rrbracket \beta :\equiv&\ \forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \label{sem_exists}
+\end{align}
+%
+Using those basic axioms we can derive $\top$ and $\bot$ given our usual interpretations:
+\begin{align}
+\alpha\llbracket \bot\rrbracket \beta \equiv&\ \alpha = \beta \wedge \mathcal{I}(\bot)(\alpha) \equiv \bot \label{sem_bot}\\
+\alpha\llbracket \top\rrbracket \beta \equiv&\ \alpha = \beta \wedge \mathcal{I}(\top)(\alpha) \equiv \alpha = \beta \label{sem_top}\\
+\end{align}
+%
+Taking $\psi_1\rightarrow\psi_2$ to mean $\neg(\psi_1\wedge\neg\psi_2)$ we also get the following neat equation, originally by Groenendijk and Stokhof\cite{groenendijk1991dynamic}
+\begin{align}
+\alpha\llbracket \psi_1\rightarrow\psi_2\rrbracket \beta
+ :\equiv&\ \alpha\llbracket \neg(\psi_1\wedge\neg\psi_2)\rrbracket \beta \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \alpha\not\models\llbracket \psi_1\wedge\neg\psi_2\rrbracket  \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\alpha\llbracket \psi_1\wedge\neg\psi_2\rrbracket \gamma) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha\llbracket \psi_1\rrbracket \delta\wedge\delta\llbracket \neg\psi_2\rrbracket \gamma)) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \neg\exists\gamma(\exists\delta(\alpha\llbracket \psi_1\rrbracket \delta\wedge\delta=\gamma\wedge\delta\not\models\llbracket \psi_2\rrbracket )) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\forall\delta(\delta=\gamma\rightarrow(\alpha\llbracket \psi_1\rrbracket \delta\rightarrow\delta\models\llbracket \psi_2\rrbracket ))) \nonumber\\
+ \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha\llbracket \psi_1\rrbracket \gamma\rightarrow\gamma\models\llbracket \psi_2\rrbracket ) \label{sem_impl}
 \end{align}
 
-In my implementation section, I describe how the above can be efficiently implemented in Haskell using an isomorphism between relations $\mathcal{P}(A\times B)$ and functions $A\to\mathcal{P}(B)$. I also show how the kleiski combinator takes the role of $\cdot$.
 
-However let's first look at some of the implications of the above definitions. For example, how can we intuitively understand the DPL notion of $\rightarrow$? Well, first notice that many of the equations start with $\alpha=\beta\wedge\dots$. These equations we can think of intuitively as having a closed scope. We saw earlier how DRT nicely determined that the `it' in `A farmer doesn't own a donkey. He beats it' couldn't refer to `a donkey' because the negation didn't let it's variable out. In DPL we get the same effect. Because an assignment must be the same before and after a negated clause, all new variables introduced inside the clause have disappeared.
 
-Of course this `static negation' might not always be the right thing. Consider the sentences `It is not that case that a farmer doesn't own a donkey. He beats it'. This should be a good sentence, but we can't handle it. In the next chapter we will look at how this might be handled.
+In my implementation section, I describe how the above can be efficiently implemented in Haskell using an isomorphism between relations $\mathcal{P}(A\times B)$ and functions $A\to\mathcal{P}(B)$. I also show how the Kleisli combinator takes the role of $\cdot$.
+
+However let's first look at some of the implications of the above definitions. For example, how can we intuitively understand the DPL notion of $\rightarrow$? Well, first notice that many of the equations start with $\alpha=\beta\wedge\dots$. These equations we can think of intuitively as having a closed scope. We saw earlier how DRT nicely determined that the `it' in `Some farmer owns no donkey. He beats it' couldn't refer to `a donkey' because the negation didn't let its variable out. In DPL we get the same effect. Because an assignment must be the same before and after a negated clause, all new variables introduced inside the clause have disappeared.
+
+Of course this `static negation' might not always be the right thing. Consider the sentences `It is not that case that a farmer doesn't own a donkey. He beats it'. This should be a good sentence, but we can't handle it. In section~\ref{sec:problem_disj} I will look at how this might be handled.
 
 The DPL $\psi_1\rightarrow\psi_2$ in particular can be seen as the filter, that if you can get `through' $\psi_1$ then you must also be able to get through $\psi_2$. But notice that $\gamma$ doesn't have to equal $\alpha$. Hence variables introduced in $\psi_1$ can well bind variables in $\psi_2$. This will show to be extremely important in the treatment of donkey sentences later.
 
@@ -507,58 +523,41 @@ Talking about binding, also notice that our union or `or' construct is a bit spe
 
 \subsubsection{Connection with First-Order Logic}
 
-An interesting property of DPL is that it is isomorphic with classical logic. Any PL formula corresponds to one in DPL and vice versa. This gives an alternative way to define and understand the semantics of DPL, and it relaxes us that nothing `weird' is going on. We might also be a bit disappointed that after all this, we don't possess any extra power, but let's forget about that for now, and see how the conversion works.
+An interesting property of DPL is that it is isomorphic with classical logic. Any PL formula corresponds to one in DPL and vice versa. This gives an alternative way to define and understand the semantics of DPL, and it relaxes us that nothing `weird' is going on. We might also be a bit disappointed that after all this work, we don't possess any extra power, but let's forget about that for now, and see how the conversion works.
 
-Let $\phi$ be a formula in negation normal form, or something. Hmm, come back here once the disjunction chapter is done.
+We can define a conversion function $\llbracket\cdot\rrbracket$ from FOL to DPL very easily. The only trick is that we need a way in DPL to create the closed scopes used in FOL. $\neg(\neg(\cdot))$ does nicely:
 \begin{align}
-&[\exists x(\phi)] \equiv \neg(\neg(\exists x \cdot [\phi]))\\
-&[\forall x(\phi)] \equiv \exists x \rightarrow [\phi]\\
-&[\phi_1\wedge\phi_2] \equiv [\phi_1]\cdot[\phi_2]\\
-&[\phi_1\vee\phi_2] \equiv \dots\\
-&[\neg(\exists x)] \equiv \dots\\
-&[\neg(\phi_1\wedge\phi_2)] \equiv \neg[\phi_1]\cdot\neg[\phi_2]\\
-&[\neg(\phi_1\vee\phi_2)] \equiv \dots
+\llbracket P(x_1,\dots,x_n)\rrbracket &\equiv P(x_1,\dots,x_n)\\
+\llbracket \neg(\phi)\rrbracket &\equiv \neg\llbracket \phi\rrbracket\\
+\llbracket \phi_1\wedge\phi_2\rrbracket &\equiv \llbracket \phi_1\rrbracket\cdot\llbracket \phi_2\rrbracket\\
+\llbracket \phi_1\vee\phi_2\rrbracket &\equiv \llbracket \phi_1\rrbracket\cup\llbracket \phi_2\rrbracket\\
+\llbracket \exists x(\phi)\rrbracket &\equiv \neg(\neg(\exists x \cdot \llbracket \phi\rrbracket))\\
+\llbracket \forall x(\phi)\rrbracket &\equiv \exists x \rightarrow \llbracket \phi\rrbracket
 \end{align}
 
-Similarly we may create PL formulas with the same meaning as any DPL formula. But perhaps we should be a bit concerned on how to interpret the meaning of a PL formula and a DPL formula being equivalent. After all DPL formulas are relations where PL formulas a propositions. In the above it was all easy, but let's think again about what we are doing.
+Similarly we can create a function from DPL to FOL, but perhaps we should be a bit concerned on how to interpret the meaning of an FOL formula and a DPL formula being equivalent. After all DPL formulas are relations where PL formulas are propositions. In the above it was all easy, but let's think again about what we are doing.
 
-Remember that we said an assignment could model a DPL relation. If we consider the truth value of a DPL relation to be whether there exists any relation that models it $\exists\alpha(\alpha\models\psi)$, we can use a trick. The trick is to think of the weakest precondition such an assignment must satisfy, and model that in PL. In fact the precondition is not just for our assignment, but for the entire model. For example to model $\exists x\cdot farmer(x)$ the starting assignment might well be empty ($\bot$), but our model must contain an entity for which $farmer$ is true.
+We are going to use our definition of $\alpha\models\phi$ for DPL formulas. An FOL formula $\phi$ and a DPL formula $\psi$ are defined to be equivalent exactly when $\forall\alpha(\alpha\models\phi\leftrightarrow\alpha\models\psi)$. Perhaps the best way to see why this is a good definition (other than its simplicity) is to think programs and weakest preconditions. Every initial state for the `computation' $farmer(y)\cdot\exists x\cdot x=y$ must model $farmer(y)\wedge\exists x(x=y)$ in order to succeed.
 
-To smoothen the following derivations, we will introduce a special syntax `$\langle\psi\rangle\phi$' where $\psi$ is a DRA formula, $\phi$ is a PL formula and the whole thing is a PL formula. For some assignment $\alpha$, we define `$\alpha\models\langle\psi\rangle\phi$' to mean $\exists\beta(\alpha[\psi]\beta \wedge \beta\models\phi)$.
+To smoothen the following derivations, we will define the function $\langle\psi\rangle\phi:DPL\times FOL\to FOL$ by
+\begin{align}
+\alpha\models\langle\psi\rangle\phi\ \leftrightarrow\ \exists\beta(\alpha\llbracket\psi\rrbracket\beta \wedge \beta\models\phi)\label{foldpl}
+\end{align}
+Notice from this definition that $\langle\psi\rangle\top$ is the conversion function from DPL to FOL.
+Using definition \eqref{foldpl} and formulas \eqref{sem_and} to \eqref{sem_exists} we can derive the following equivalences. See appendix~\ref{sec:derivation_dpl} for my full derivations.
 %
 \begin{align}
-\alpha\models\langle\exists x\rangle\phi
- & \leftrightarrow \alpha\models\exists x (\phi) \label{conv_exists}\\
-\alpha\models\langle\psi_1\cdot\psi_2\rangle\phi
- & \leftrightarrow \alpha\models\langle\psi_1\rangle\langle\psi_2\rangle\phi \label{conv_and}\\
-\alpha\models\langle\psi_1 \cup \psi_2\rangle\phi
- & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi \label{conv_or}\\
- \alpha\models\langle\psi_1 \vee \psi_2\rangle\phi
-\alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
- & \leftrightarrow \alpha\models P(x_1,\dots,x_n) \wedge \phi \label{conv_pred}\\
-\alpha\models\langle\neg\psi\rangle\phi
- & \leftrightarrow \alpha\models \neg\langle\psi\rangle\top \wedge \phi \label{conv_neg}
+\langle\exists x\rangle\phi & \equiv \exists x (\phi) \label{conv_exists}\\
+\langle\psi_1\cdot\psi_2\rangle\phi & \equiv \langle\psi_1\rangle\langle\psi_2\rangle\phi \label{conv_and}\\
+\langle\psi_1 \cup \psi_2\rangle\phi & \equiv \langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi \label{conv_or}\\
+\langle P(x_1,\dots,x_n)\rangle\phi & \equiv  P(x_1,\dots,x_n) \wedge \phi \label{conv_pred}\\
+\langle\neg\psi\rangle\phi & \equiv  \neg\langle\psi\rangle\top \wedge \phi \label{conv_neg}\\
+\langle\psi_1\vee\psi_2\rangle\phi & \equiv (\langle\psi_1\rangle\top \vee \langle\psi_2\rangle\top) \wedge\phi \label{conv_vee}
 \end{align}
 
-See the appendix for my full derivations of every equation. Also notice that $\alpha\models\langle\bot\rangle\phi\leftrightarrow a\models\bot$ and $\alpha\models\langle\top\rangle\phi\leftrightarrow a\models\phi$ follow trivially from \eqref{conv_pred}. Equations for `convenience' operators such as $\rightarrow$ and $\vee$ can be derived too:
-\begin{align}
-\langle\psi_1\vee\psi_2\rangle\phi
-& \leftrightarrow \langle\neg(\neg\psi_1\cdot\neg\psi_2)\rangle\phi \nonumber\\
-& \leftrightarrow \neg\langle\neg\psi_1\cdot\neg\psi_2\rangle\top \wedge\phi \nonumber\\
-& \leftrightarrow \neg\langle\neg\psi_1\rangle\langle\neg\psi_2\rangle\top \wedge\phi \nonumber\\
-& \leftrightarrow \neg\langle\neg\psi_1\rangle(\neg\langle\psi_2\rangle\top) \wedge\phi \nonumber\\
-& \leftrightarrow \neg(\neg\langle\psi_1\rangle\top \wedge \neg\langle\psi_2\rangle\top) \wedge\phi \nonumber\\
-& \leftrightarrow (\langle\psi_1\rangle\top \vee \langle\psi_2\rangle\top) \wedge\phi \label{conv_vee}
-\end{align}
+The simple predicates $\langle\bot\rangle\phi\equiv\bot$ and $\langle\top\rangle\phi\equiv\phi$ follow trivially from \eqref{conv_pred}. Using the first 5 equations, equivalences for derives operators such as $\rightarrow$ and $\vee$ can be derived syntactically as also shown in appendix~\ref{sec:derivation_dpl}.
 
-In the implementation we will use the above equations to recursively convert our DPL formulas to PL. The $\langle\rangle$ notation easily lends itself to calculation by a stack manipulation function.
-
-The rules will look like:
-\begin{haskell}
-addDpl :: Prop -> [DPL] -> Prop
-addDpl p ((DNot d):ds) = addDpl (And (Not (addDpl T [d])) p) ds
-\end{haskell}
-
+An alternative way to the $\langle\psi\rangle\phi$ function for looking at the above equations is to think of the $\langle\cdot\rangle$s as elements on a stack. This is indeed how I have implemented the DPL to FOL routine in appendix~\ref{sec:source_code}.
 
 \subsection{Donkey Monoids}
 
@@ -1063,7 +1062,7 @@ In the test of this program, we used a branch of 100 sentences. Some copied from
 
 In the following section we will run through the most interesting sentences used, and hopefully make it a bit clearer how the different steps of translation work.
 
-\subsubsection{Examples}
+\subsubsection{A Bunch of Examples}
 
 In this section we translate 12 sentences from English to the Visser logic to DPL and finally to FOL as described in the earlier sections.
 
@@ -1186,7 +1185,7 @@ I have successfully developed a testing framework that lets researchers define l
 
 My program can correctly logify entire paragraphs of text containing advanced anaphora, conjunctive nouns, verbs and adjectives, implications and scoping. It handles sentences with free variables as well as entirely factual sentences.
 
-A few examples of sentences that my framework already supports, but which fail due to short comings in the Stanford toolkit are `Every dog sees a cat. It chases it.' where the anaphora doesn't get resolved, and `Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo' that manages to slightly confuse the parser.
+A few examples of sentences that my framework already supports, but which fail due to shortcomings in the Stanford toolkit are `Every dog sees a cat. It chases it.' where the anaphora doesn't get resolved, and `Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo' that manages to slightly confuse the parser.
 
 My tests of Visser's Donkey Monoids show that they can be used for automatic logification, but that they lose some of their charm. Mainly it seems that the $\Bowtie$ and $\triangle$ switches are a bit too strong, and hence require extensive use of the scoping function $?(\cdot)$. At least the rules I came up with essentially uses Donkey Monoids as if they were DPL.
 
@@ -1217,70 +1216,11 @@ Thanks to the Natural Language Processing Group at Stanford University for makin
 
 Thanks to Érica Baena Kato for providing interesting linguistic perspectives on many issues.
 
-Finally I wish to thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for taking donkey's welfare seriously and rescuing neglected donkeys in the UK and all over the world.
+Finally I wish to thank The Donkey Sanctuary\cite{donkey2013sanctuary} for taking donkey's welfare seriously and rescuing neglected donkeys in the UK and all over the world.
 
 \newpage
 \section{Appendix}
 
-\subsection{Derivation of DPL Preconditions}
-Remember that we have defined, for assignments $\alpha$ and $\beta$, DPL formula $\psi$ and FOL formula $\phi$: $\alpha\models\langle\psi\rangle\phi$ to mean $\exists\beta(\alpha\llbracket\psi\rrbracket\beta\wedge\beta\models\phi)$. $\alpha\models\phi$ is just the usual $\models$ from FOL.
-
-Since the proof is over the syntax of DPL, we use $\llbracket\cdot\rrbracket$ as the interpretation function so that $\alpha\llbracket\psi\rrbracket\beta$ is the FOL statement `$(\alpha,\beta)\in\Psi$', where $\Psi$ is the relation defined by $\psi$.
-\begin{align}
-%
-\intertext{Let's start out with the most tricky derivation. How does the resetting, unbounded $\exists$ of DPL translate into the defining, bounded $\exists$ of FOL?}
-%
-\alpha\models\langle\exists x\rangle\phi
- & \leftrightarrow \exists\beta (\alpha\llbracket\exists x\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
- & \text{This is the definition from the DPL chapter:}\nonumber\\
- & \leftrightarrow \exists\beta (\forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \wedge \beta\models\phi) \nonumber\\
- & \text{The trick is this switch to assignments:}\nonumber\\
- & \leftrightarrow \exists\beta (\exists\nu (\forall\omega (\alpha[x:=\nu]_{\omega} = \beta_{\omega})) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\exists\nu (\alpha[x:=\nu] = \beta) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\nu (\exists\beta (\alpha[x:=\nu] = \beta \wedge \beta\models\phi)) \nonumber\\
- & \text{Here we apply the $\models$ definition:}\nonumber\\
- & \leftrightarrow \exists\nu (\alpha[x:=\nu]\models\phi) \nonumber\\
- & \leftrightarrow \alpha\models\exists x (\phi) \\
-%
-\intertext{Where we have taken $\alpha[x:=\nu]$ to mean the $\alpha$ with $\alpha_x$ assigned to the value of $\nu$.
-The derivation for $\cdot$ goes more smoothly:}
-%
-\alpha\models\langle\psi_1\cdot\psi_2\rangle\phi
- & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1\cdot\psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta(\exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \gamma\llbracket\psi_2\rrbracket\beta) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \exists\beta(\gamma\llbracket\psi_2\rrbracket\beta \wedge \beta\models\phi)) \nonumber\\
- & \leftrightarrow \exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \gamma\models\langle\psi_2\rangle\phi) \nonumber\\
- & \leftrightarrow \alpha\models\langle\psi_1\rangle\langle\psi_2\rangle\phi
-%
-\intertext{$\cup$ interestingly doesn't translate to $\langle\psi_1\vee\psi_2\rangle\phi$ as we might have expected:}
-%
-\alpha\models\langle\psi_1 \cup \psi_2\rangle\phi
- & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1 \cup \psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta ((\alpha\llbracket\psi_1\rrbracket\beta \vee \alpha\llbracket\psi_2\rrbracket\beta) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1\rrbracket\beta \wedge \beta\models\phi) \vee \exists\beta (\alpha\llbracket\psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow (\alpha\models\langle\psi_1\rangle\phi) \vee (\alpha\models\langle\psi_2\rangle\phi) \nonumber\\
- & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi
-%
-\intertext{For predicates it's mostly a matter of juggling variables, values and assignments:}
-%
-\alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
- & \leftrightarrow \exists\beta (\alpha\llbracket P(x_1,\dots,x_n)\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha = \beta \wedge P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \alpha\models P(x_1,\dots,x_n) \wedge \phi
-%
-\intertext{$\neg$ is interesting because it has to create a scope:}
-%
-\alpha\models\langle\neg\psi\rangle\phi
- & \leftrightarrow \exists\beta (\alpha\llbracket\neg\psi\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \exists\beta (\alpha=\beta \wedge \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma) \wedge \beta\models\phi) \nonumber\\
- & \leftrightarrow \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma) \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma \wedge \gamma\models\top) \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \alpha\not\models\langle\psi\rangle\top \wedge \alpha\models\phi \nonumber\\
- & \leftrightarrow \alpha\models \neg\langle\psi\rangle\top \wedge \phi
-%
-\intertext{Because $\psi$ is this way `evaluated on $\top$ only', we know that no variables introduced in $\psi$ can affect $\phi$.}\nonumber
-\end{align}
 
 \subsection{The Problem with Disjunction}\label{sec:problem_disj}
 
@@ -1322,12 +1262,12 @@ The problem is perhaps the non-linearity in the way variables pass through the d
 
 This leads on to the other question we mentioned: Is the binding flow through our disjunction operator really any good? We are is inspired by the sentence `Either a farmer or his scapegoat must go to court. In any case he will be picked up by sunset'. In terms of DPL formulas, this would be modelled something like $(\psi_1\cup\psi_2)\cdot\psi_3$. Clearly we have a problem here: Variables bound in $\psi_1$ are not accessible in $\psi_2$.
 
-This sentence suggests that we might want to define a disjunction operator with a linear flow of variables: $\psi_1\to\psi_2\to\psi_3$ instead of $\psi_1\to\psi_3\text{ and }\psi_2\to\psi_3$. However there is a problem: We currently define `false' as the absence of possible assignments. Hence if $\psi_1$ is false, there is no way we can define disjunction to push it's variables into $\psi_2$. If any variables were left undefined, $\psi_1$ wouldn't be false.
+This sentence suggests that we might want to define a disjunction operator with a linear flow of variables: $\psi_1\to\psi_2\to\psi_3$ instead of $\psi_1\to\psi_3\text{ and }\psi_2\to\psi_3$. However there is a problem: We currently define `false' as the absence of possible assignments. Hence if $\psi_1$ is false, there is no way we can define disjunction to push its variables into $\psi_2$. If any variables were left undefined, $\psi_1$ wouldn't be false.
 
-There is a cure to this problem. When we extend our logic with more power in the monoid chapter, we get a second chance. However Let's first have a look at an obvious alternative definition for disjunction considered by Groenendijk\cite{groenendijk1991dynamic}. We'll call it `static disjunction':
+There is a cure to this problem. When we extend our logic with more power in the monoid chapter, we get a second chance. However let's first have a look at an obvious alternative definition for disjunction considered by Groenendijk\cite{groenendijk1991dynamic}. We'll call it `static disjunction':
 \begin{align}
 \alpha[\psi_1\vee\psi_2]\beta
- :\equiv&\ \alpha[\neg(\neg\psi_1\wedge\neg\psi_2)]\beta \nonumber\\
+ :\equiv&\ \alpha[\neg(\neg\psi_1\wedge\neg\psi_2)]\beta \label{sem_or_def}\\
  \leftrightarrow&\ \alpha[\neg\psi_1\rightarrow\psi_2]\beta \nonumber\\
  \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma(\alpha[\neg\psi_1]\gamma\rightarrow\gamma\models[\psi_2]) \nonumber\\
  \leftrightarrow&\ \alpha = \beta \wedge \forall\gamma((\alpha=\gamma\wedge\gamma\not\models\psi_1)\rightarrow\gamma\models[\psi_2]) \nonumber\\
@@ -1335,17 +1275,85 @@ There is a cure to this problem. When we extend our logic with more power in the
  \leftrightarrow&\ \alpha = \beta \wedge (\alpha\models\psi_1\vee\alpha\models\psi_2) \label{sem_or}
 \end{align}
 
-The idea to this follows natural from De Morgan's laws of classical logic. Clearly the semantics are different from the ones we defined for $\cup$. However not in a good way. This static disjunction doesn't allow any variables to escape from inside it's reach.
+The idea to this follows naturally from De Morgan's laws of classical logic. Clearly the semantics are different from the ones we defined for $\cup$. However not in a good way. This static disjunction doesn't allow any variables to escape from inside its reach.
 
 So does this fix our problem of binding between clauses? No. In fact this definition doesn't even allow binding from a clause and out. The villain is $\neg\psi$. From the first mention we defined it to be static so it wouldn't allow unsafe, arbitrary assignments as long as they didn't satisfy $\psi$. We wanted our logic to be reasonably monotonic, and we got what we deserved. $\neg$ not only closed down this version of disjunction, but our implication definition as well.
 
 We can imagine defining $\neg$ dynamically: $\neg\psi_1\cdot\psi_2 = \neg(\psi_1\cdot\psi_2)$. However not in our current model, and it won't solve any of our problems with disjunction. It does however allow this sentence: `It is not the case that a farmer doesn't own a donkey. He beats it'. While it made sense not to allow variables to escape from a single $\neg$, we want them to escape from a double.
 
+\subsection{Derivation of DPL Preconditions}\label{sec:derivation_dpl}
+Remember that we have defined, for assignments $\alpha$ and $\beta$, DPL formula $\psi$ and FOL formula $\phi$: $\alpha\models\langle\psi\rangle\phi$ to mean $\exists\beta(\alpha\llbracket\psi\rrbracket\beta\wedge\beta\models\phi)$. $\alpha\models\phi$ is just the usual $\models$ from FOL.
+
+Since the proof is over the syntax of DPL, we use $\llbracket\cdot\rrbracket$ as the interpretation function so that $\alpha\llbracket\psi\rrbracket\beta$ is the FOL statement `$(\alpha,\beta)\in\Psi$', where $\Psi$ is the relation defined by $\psi$.
+\begin{align}
+%
+\intertext{Let's start out with the most tricky derivation. How does the resetting, unbounded $\exists$ of DPL translate into the defining, bounded $\exists$ of FOL?}
+%
+\alpha\models\langle\exists x\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha\llbracket\exists x\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \text{This is the definition from the DPL chapter:}\nonumber\\
+ & \leftrightarrow \exists\beta (\forall\omega (\omega \neq x \rightarrow \alpha_{\omega} = \beta_{\omega}) \wedge \beta\models\phi) \nonumber\\
+ & \text{The trick is this switch to assignments:}\nonumber\\
+ & \leftrightarrow \exists\beta (\exists\nu (\forall\omega (\alpha[x:=\nu]_{\omega} = \beta_{\omega})) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\exists\nu (\alpha[x:=\nu] = \beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\nu (\exists\beta (\alpha[x:=\nu] = \beta \wedge \beta\models\phi)) \nonumber\\
+ & \text{Here we apply the $\models$ definition:}\nonumber\\
+ & \leftrightarrow \exists\nu (\alpha[x:=\nu]\models\phi) \nonumber\\
+ & \leftrightarrow \alpha\models\exists x (\phi) \tag{$\ref{conv_exists}$} \\
+%
+\intertext{Where we have taken $\alpha[x:=\nu]$ to mean the $\alpha$ with $\alpha_x$ assigned to the value of $\nu$.
+The derivation for $\cdot$ goes more smoothly:}
+%
+\alpha\models\langle\psi_1\cdot\psi_2\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1\cdot\psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta(\exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \gamma\llbracket\psi_2\rrbracket\beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \exists\beta(\gamma\llbracket\psi_2\rrbracket\beta \wedge \beta\models\phi)) \nonumber\\
+ & \leftrightarrow \exists\gamma (\alpha\llbracket\psi_1\rrbracket\gamma \wedge \gamma\models\langle\psi_2\rangle\phi) \nonumber\\
+ & \leftrightarrow \alpha\models\langle\psi_1\rangle\langle\psi_2\rangle\phi \tag{$\ref{conv_and}$}
+%
+\intertext{$\cup$ interestingly doesn't translate to $\langle\psi_1\vee\psi_2\rangle\phi$ as we might have expected:}
+%
+\alpha\models\langle\psi_1 \cup \psi_2\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1 \cup \psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta ((\alpha\llbracket\psi_1\rrbracket\beta \vee \alpha\llbracket\psi_2\rrbracket\beta) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha\llbracket\psi_1\rrbracket\beta \wedge \beta\models\phi) \vee \exists\beta (\alpha\llbracket\psi_2\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow (\alpha\models\langle\psi_1\rangle\phi) \vee (\alpha\models\langle\psi_2\rangle\phi) \nonumber\\
+ & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi \tag{$\ref{conv_or}$}
+%
+\intertext{For predicates it's mostly a matter of juggling variables, values and assignments:}
+%
+\alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha\llbracket P(x_1,\dots,x_n)\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha = \beta \wedge P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow P(\alpha_{x_1},\dots,\alpha_{x_n}) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \alpha\models P(x_1,\dots,x_n) \wedge \phi \tag{$\ref{conv_pred}$}
+%
+\intertext{$\neg$ is interesting because it has to create a scope:}
+%
+\alpha\models\langle\neg\psi\rangle\phi
+ & \leftrightarrow \exists\beta (\alpha\llbracket\neg\psi\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \exists\beta (\alpha=\beta \wedge \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma) \wedge \beta\models\phi) \nonumber\\
+ & \leftrightarrow \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \neg\exists\gamma(\alpha\llbracket\psi\rrbracket\gamma \wedge \gamma\models\top) \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \alpha\not\models\langle\psi\rangle\top \wedge \alpha\models\phi \nonumber\\
+ & \leftrightarrow \alpha\models \neg\langle\psi\rangle\top \wedge \phi \tag{$\ref{conv_neg}$}
+%
+\intertext{Because $\psi$ is this way `evaluated on $\top$ only', we know that no variables introduced in $\psi$ can affect $\phi$.
+The derivation of $\vee$ can be done from the previous results alone:}
+\langle\psi_1\vee\psi_2\rangle\phi
+& \equiv \langle\neg(\neg\psi_1\cdot\neg\psi_2)\rangle\phi & \text{by \eqref{sem_or_def}}\nonumber\\
+& \equiv \neg\langle\neg\psi_1\cdot\neg\psi_2\rangle\top \wedge\phi & \text{by \eqref{conv_neg}}\nonumber\\
+& \equiv \neg\langle\neg\psi_1\rangle\langle\neg\psi_2\rangle\top \wedge\phi & \text{by \eqref{conv_and}}\nonumber\\
+& \equiv \neg\langle\neg\psi_1\rangle(\neg\langle\psi_2\rangle\top) \wedge\phi & \text{by \eqref{conv_neg}}\nonumber\\
+& \equiv \neg(\neg\langle\psi_1\rangle\top \wedge \neg\langle\psi_2\rangle\top) \wedge\phi & \text{by \eqref{conv_neg}}\nonumber\\
+& \equiv (\langle\psi_1\rangle\top \vee \langle\psi_2\rangle\top) \wedge\phi &\text{by \eqref{sem_or_def}} \tag{$\ref{conv_vee}$}
+\end{align}
+
 \subsection{Sample Output}
 
 \lstinputlisting[style=bashstyle]{sample_output}
 
-\subsection{Source Code}
+\subsection{Source Code}\label{sec:source_code}
 
 \lstinputlisting[style=bashstyle,caption=\lstname]{run.sh}
 \lstinputlisting[style=haskellstyle,caption=\lstname]{src/Main.hs}
