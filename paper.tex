@@ -133,7 +133,7 @@ In this paper I build a fully automatic system for translation of natural langua
 
 Visser didn't test his ideas computationally and neither did most people involved with DPL. In fact most of the classical literature on logification of natural language exhibits this `problem': Not testing computationally makes it easy to miss obvious details. With the present paper I supply such an experiment.
 
-I build a rewriting system with a well defined set rules, discussing possible semantics. I apply the framework to a large collection of sentences, showing the conversion process step by step. Finally I discuss ways to enlarge the supported fragment of English, how we can combat and interprete the inherent ambiguity we meet, and how the flexibility of Donkey Monoids relate to the classical Montague lambda structures.
+I build a rewriting system with a well defined set rules, discussing possible semantics. I apply the framework to a large collection of sentences, showing the conversion process step by step. Finally I discuss ways to enlarge the supported fragment of English, how we can combat and interpret the inherent ambiguity we meet, and how the flexibility of Donkey Monoids relate to the classical Montague lambda structures.
 
 \end{abstract}
 
@@ -162,7 +162,7 @@ I build a rewriting system with a well defined set rules, discussing possible se
 There are many reasons why it is interesting to represent information in a logical language. For a computer scientist, the biggest advantage is that we can compute with logic. There is a horde of algorithms for doing querying, question answering, reasoning, unification and resolution - to all of which they key is a formal logic definition of your information.
 
 \begin{description}
-\item[Knowledge bases] In the field of Knowledge Representation and Reasoning, they long ago discovered that formal logic provides a good language for buliding ontologies. Typical users are crime fighters or life scientists that need to draw conclusions based on complex systems\cite{malone2010modeling} where most of the known facts are only described in natural language. Today those people use mainly have to manually build large models in gui tools, but an automated approach is much wanted.
+\item[Knowledge bases] In the field of Knowledge Representation and Reasoning, they long ago discovered that formal logic provides a good language for building ontologies. Typical users are crime fighters or life scientists that need to draw conclusions based on complex systems\cite{malone2010modeling} where most of the known facts are only described in natural language. Today those people use mainly have to manually build large models in GUI tools, but an automated approach is much wanted.
 
 \item[Semantic search] From the early days of database systems logic was identified\cite{fagin1995reasoning} as a good language for querying. Today technologies like Facebook Graph Search allows users to execute searches like `Restaurants in London my friends have been to'. The missing piece is a reliable translation system.
 
@@ -184,20 +184,20 @@ Before I go into more details on my automatic logification scheme, let's have a 
 
 \item `The happy donkey doesn't exist': Here we get into more problems. We might write: $\exists x(happy\_donkey(x)\rightarrow doesn't\_exist(x))$, but that asserts some sort of entity representing the non existing donkey. Alternatively we could write $\exists x(happy\_donkey(x)\rightarrow \bot)$, but that is another sentence: `There are no happy donkeys'. In any case it makes it hard to say what the logical meaning of `the' really is.
 
-\item `The donkeys are being stubborn!': This is an often used example of an `implied action' sentence and thought to have the same meaning as `Please go out and beat them!'. The best we can do here seems to be $please\_beat\_the\_doneys()$ or perhaps $\forall x(donkey(x)\rightarrow please\_beat(x))$ or even $please(\forall x(donkey(x)\rightarrow beat(x)))$.
+\item `The donkeys are being stubborn!': This is an often used example of an `implied action' sentence and thought to have the same meaning as `Please go out and beat them!'. The best we can do here seems to be $please\_beat\_the\_donkeys()$ or perhaps $\forall x(donkey(x)\rightarrow please\_beat(x))$ or even $please(\forall x(donkey(x)\rightarrow beat(x)))$.
 
 \item `Jane beats a donkey': This is easy to translate to $\exists x(donkey(x)\wedge beat(Jane,x))$, but are we comfortable that this is also our interpretation of the sentence `It is not the case that Jane doesn't beat a donkey' and even `Jane beats a donkey and either it is raining or it isn't'? It is hard to imagine a language with strong logical foundations, where those three sentences wouldn't be equal.
 \end{enumerate}
 
 Hopefully those examples make a convincing argument that some uses of English, especially example 4 and 5, are well beyond what we can hope to automatically logify. However you might think the sentences of `factual nature' like 1 and 2 look pretty trivial? In this paper we will see that they are certainly possible, but as sentences get longer and more complex, certainly tricky, and this is where Donkey Monoids, Dynamic Predicate Logic (DPL) and Discourse Representation Theory (DRT) come into play. Let's take a close look at that `Donkey Sentence': `If a farmer owns a donkey, he beats it'.
 
-From the examples before, and perhaps from common intuition, we might find it natural to think of the sentence as two subsentences combined by `if': `if (a farmer owns a donkey) (he beats it)'. Translating the parentheses first: `A farmer owns a donkey' logifies to $\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y))$, and `he beats it' translates to $beats(x,y)$. Hence the whole formula should probably be:
+From the examples before, and perhaps from common intuition, we might find it natural to think of the sentence as two sub-sentences combined by `if': `if (a farmer owns a donkey) (he beats it)'. Translating the parentheses first: `A farmer owns a donkey' logifies to $\exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y))$, and `he beats it' translates to $beats(x,y)$. Hence the whole formula should probably be:
 %
 \begin{align}
 \exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y))) \rightarrow beats(x,y)
 \end{align}
 %
-Which is totally wrong. The $beats(x,y)$ clause ends up refering to the variables outside of their scope, and even if we try to push it inside the parentheses:
+Which is totally wrong. The $beats(x,y)$ clause ends up referring to the variables outside of their scope, and even if we try to push it inside the parentheses:
 %
 \begin{align}
 \exists x (farmer(x) \wedge \exists y (donkey(y)\wedge owns(x,y) \rightarrow beats(x,y))) \label{wrong_donkey_2}
@@ -219,13 +219,13 @@ Now the above example may seem a bit contrived. Why did I have to try to combine
 \Bowtie \cdot \exists x \cdot farmer(x) \cdot owns(x,y) \cdot\triangle\cdot\exists y \cdot donkey(y) \cdot\triangle\cdot\Bowtie\cdot beats(x,y)
 \end{align}
 %
-If we read $\exists$ as `a' this is basically identical to the English sentence. The donkey monoid even supports placing the transitive verb between the two referants. Clearly some magic is going on, that we will have to investigate further.
+If we read $\exists$ as `a' this is basically identical to the English sentence. The donkey monoid even supports placing the transitive verb between the two referents. Clearly some magic is going on, that we will have to investigate further.
 
 Neat as the Donkey Monoids are, and interested as we are in their automation, we should be very concerned about those magical $\Bowtie$s and $\triangle$s which have popped up in our formula. We'll want to ask questions such ask (1) What do they mean? (2) How do they work? And (3) how do we know when to use them? Visser himself, while answering question 1 and 2 in great detail, doesn't give many hints on 3. Only that they `switches' are probably controlled by adverbs and other support words.
 
 So if we don't know how to use them, how can we know if the Donkey Monoids are good logics for natural language? In the later chapters I will discuss their formal meaning in more detail and also what semantic meaning I intend to give them. In the final chapters we will see just how much flexibility this approach allows us.
 
-We need a framework to encode our rules into, and luckily the field of computational semantics offer several solutions. Basically there are two well described ways to go: statistical vector space methods, which is very much the most popular alternative right now, and logical methods. As you might have guessed I will lean in the dirrection of the later. The most well described methods are Montague Grammars and Discourse Representation Theory (invented after the donkey sentence).
+We need a framework to encode our rules into, and luckily the field of computational semantics offer several solutions. Basically there are two well described ways to go: statistical vector space methods, which is very much the most popular alternative right now, and logical methods. As you might have guessed I will lean in the direction of the later. The most well described methods are Montague Grammars and Discourse Representation Theory (invented after the donkey sentence).
 
 In the early sixties the American logician, Richard Montague, was teaching a class in which the students had to do logification of simple sentences. He noticed that there were many patterns in the way they did it, and conjectured that it would be possible to formalize the entire process. So he set out to write a series of papers that became very influential in the philosophy of language, linguistics and computer science.
 
@@ -302,9 +302,9 @@ The Montague Grammar, as Montague's approach came to be know, has survived in co
 \caption{A Constituent Tree} \label{fig:const_tree}
 \end{figure}
 
-We will see later how exactly the Montague Grammar obtains a full sentence formula from its reqursive process, but in any case for a computer scientist the introduction of trees is always a promising step.
+We will see later how exactly the Montague Grammar obtains a full sentence formula from its recursive process, but in any case for a computer scientist the introduction of trees is always a promising step.
 
-The main thing to notice now is that for Montague's approach to work, it is crucial that we can always get the meaning of a composed phrase from a composition of the meaning of its subphrases. This compositional property is exactly what we saw earlier that first-order logic doesn't posses, and Montague goes through many hoops to simulate it.
+The main thing to notice now is that for Montague's approach to work, it is crucial that we can always get the meaning of a composed phrase from a composition of the meaning of its sub-phrases. This compositional property is exactly what we saw earlier that first-order logic doesn't posses, and Montague goes through many hoops to simulate it.
 
 I do however avoid many of those problems, since my choices of logic behave much more compositionally than the FOL in Montague's proposed rules. To draw a full circle I am however going to translate the obtained Donkey Monoid representations into first-order logic so we can easily check if our formulas have the meanings we expect.
 
@@ -313,11 +313,11 @@ This is the chain I am going to build:
 \begin{description}
 \item[1 Natural Language] We start with a file of simple English natural language sentences. Each line is processed on its own, but may contain more than one sentence.
 
-\item[2 POS tagger] This is the first of three Stanford NLP programs my Haskell script is going to pass the text to. Then the POS tagger tokenizes the sentences and statstically tries to figures out part of speech for each word. This is also my first source of error.
+\item[2 POS tagger] This is the first of three Stanford NLP programs my Haskell script is going to pass the text to. Then the POS tagger tokenizes the sentences and statistically tries to figures out part of speech for each word. This is also my first source of error.
 
 \item[3 Constituent Grammar] It might be that the reason Montague and other early pioneers didn't test their programs mechanically was their lack of access to a good parser. The Stanford Parser is the best on the market, but it still an error rate of around 5\% which is one in every two sentences.
 
-\item[4 Correference Resolution] A lot has been said about how anaphora might be resolved using formal Montague Grammar like approaches. DRT is especially focused on this topic. None the less the current champion of anaphora competitions\cite{lee2011stanford}\cite{raghunathan2010multi} is the heuristical Stanford Deterministic Coreference Resolution System, the workings of which I will explain in detail.
+\item[4 Coreference Resolution] A lot has been said about how anaphora might be resolved using formal Montague Grammar like approaches. DRT is especially focused on this topic. None the less the current champion of anaphora competitions\cite{lee2011stanford}\cite{raghunathan2010multi} is the heuristical Stanford Deterministic Coreference Resolution System, the workings of which I will explain in detail.
 
 \item[5 Donkey Monoid] For us the step from 4 to 5 is the most interesting, as it is where we go from syntax to semantics. If we manage to push our original text through to here, not much can go wrong. Only issue is if the logical meaning we create is not the one intended by the speaker.
 
@@ -336,7 +336,7 @@ However before we can go into the many technical details, we need to develop a v
 %Requirements gives the program requirements. These chapters prepare the ground for the Design chapter.
 %That is: What do we need to handle to be able to solve this problem
 
-In these chapters I'm going to describe the logical theories by Visser and earlier dynamic semantists. I will introduce some addtions of my own and prove interesting properties about them. Finally, but most importantly, I will go into depth with the tools and ideas we need to write a strong logification framework.
+In these chapters I'm going to describe the logical theories by Visser and earlier dynamic semanticists. I will introduce some additions of my own and prove interesting properties about them. Finally, but most importantly, I will go into depth with the tools and ideas we need to write a strong logification framework.
 
 In the previous chapter I showed how first-order logic lacks certain compositional properties. A possible solution to this problem is to use a so called `update logic' (a logic with update semantics). Update semantics are logics inspired on the semantics of programming languages where a variable, once introduced, will stick around for a period not know at the time of it's introduction.
 
@@ -702,7 +702,7 @@ He believed that just as Chomsky had formulated the syntax of language in a math
 
 While the above remains a hot topic in the philosophy of language, we are going to take a more practical stand. In our quest to automate the translation of language into Visser's DPL monoid, it is interesting that Montague was able to define such a large fragment of English using familiar tools of compositionality and lambda calculus.
 
-The basic idea is very simple. For each postag we define a type. E.g. $S$ has the type $Bool$ and $VP$ has the type $Entity \rightarrow Bool$, the intuition being that the VP returns true if the entity `does what the VP described' and false otherwise. An NP is given type type $VP \rightarrow Bool$ which allows it to create a scope for a variable and pass it to the VP, or whatever it sees fitting for that NP.
+The basic idea is very simple. For each POS-tag we define a type. E.g. $S$ has the type $Bool$ and $VP$ has the type $Entity \rightarrow Bool$, the intuition being that the VP returns true if the entity `does what the VP described' and false otherwise. An NP is given type type $VP \rightarrow Bool$ which allows it to create a scope for a variable and pass it to the VP, or whatever it sees fitting for that NP.
 
 The point is that we always give a specific phrase type the same logical type. This allows our composition rules to know exactly what type each component has. Here are some more examples:
 \begin{itemize}
@@ -737,11 +737,11 @@ Until we can then finally compose the top NP and VP to get the sentence:
 
 You might have noticed we didn't discuss how the variables $r_1$ and $r_2$ were assigned. This is of course of utter importance in relation to anaphora resolution. However in the section \ref{sec:coreferences} we will discuss a way out of this problem.
 
-Later in the implementation section we will look at more issues regarding to using Montague Grammars in practise. First we need to look at a very important source of ambiguity in sentences.
+Later in the implementation section we will look at more issues regarding to using Montague Grammars in practice. First we need to look at a very important source of ambiguity in sentences.
 
 \subsubsection{Weak and Strong Readings}
 
-`Weak' and `strong' are quite accepted terms in linguistics for describing different ways to interprete quantifiers. In line with information theory, we can say that weak readings are about weak information and strong readings about strong information.
+`Weak' and `strong' are quite accepted terms in linguistics for describing different ways to interpret quantifiers. In line with information theory, we can say that weak readings are about weak information and strong readings about strong information.
 
 Makoto Kanazawa has written an entire paper on issues with weak and strong readings of donkey sentences\cite{kanazawa1994weak}. For the donkey sentence, we may have at least the following readings of the second `a':
 \begin{enumerate}
@@ -750,7 +750,7 @@ Makoto Kanazawa has written an entire paper on issues with weak and strong readi
 \item Unique reading: A farmer who owns a donkey beats the donkey he owns. 
 \end{enumerate}
 
-We have equally many reaings for the first `A', creating nine possible interpretations. This is because `a' is a very ambigious quantifier. Other quantifiers such as `every' and `all' are more clearly defined. `Some' is another example of an ambigious quantifier.
+We have equally many readings for the first `A', creating nine possible interpretations. This is because `a' is a very ambiguous quantifier. Other quantifiers such as `every' and `all' are more clearly defined. `Some' is another example of an ambiguous quantifier.
 
 Often we can use the context of a sentence to determine which meaning is the correct one. For example:
 \begin{quotation}
@@ -820,9 +820,9 @@ Dependency graphs are an alternative way of parsing sentences. Where constituent
 
 The flexibility of dependency graphs allow them to do a lot of interesting things. In our favourite example of the donkey and the farmer we had the problem that there wasn't a very strong syntactical relationship between `farmer' and `he'. In figure \ref{fig:dependency_graph} we see how the same sentence would look if parsed with a dependency parser.
 
-The first thing we notice is that dependency graphs focus on verbs. The verbs become the heads of the sentences, and everything else becomes the ` subject', `the object' or `the something else' of the verb. In our example `he beats it' becomes an `adverbial clause modifier' of the main verb. This means it modifies the verb, here in the sence of making the main verb a condition.
+The first thing we notice is that dependency graphs focus on verbs. The verbs become the heads of the sentences, and everything else becomes the ` subject', `the object' or `the something else' of the verb. In our example `he beats it' becomes an `adverbial clause modifier' of the main verb. This means it modifies the verb, here in the sense of making the main verb a condition.
 
-Dependency graphs naturally seems to offer more semantic information than constituent trees, and hence that they would be a good intermediate step towards our goal of logification. However the first disappointment arrise as we start to look at how they are created.
+Dependency graphs naturally seems to offer more semantic information than constituent trees, and hence that they would be a good intermediate step towards our goal of logification. However the first disappointment arise as we start to look at how they are created.
 
 The Stanford Parser makes dependency graphs using a special kind of regular expressions for trees called `tregex'\cite{de2006generating}. It defines tregex rules such as:
 %
@@ -839,9 +839,9 @@ Which means an NP over an NN over `dog' and with a sister VP headed by `barks' w
 
 Obviously this means we can't get any information from the graph that we couldn't also get from the tree. In fact it probably contains less. On the flip side however, the regular expressions are clearly more powerful than simple recursions as we define them in the Montague grammars.
 
-I've worked hard on trying to define a Montague like set of equations for Enlish, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP $\rightarrow$ Bool' and VPs are `Entity $\rightarrow$ Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: ConstituentTree $\rightarrow$ (VP $\rightarrow$ Bool)'. With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
+I've worked hard on trying to define a Montague like set of equations for English, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP $\rightarrow$ Bool' and VPs are `Entity $\rightarrow$ Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: ConstituentTree $\rightarrow$ (VP $\rightarrow$ Bool)'. With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
 
-In conclusion, Montague like grammars for dependency graphs could be very interesting to make. It would however require some welldefined rules for what we can expect to find under each type of arrow. This was a blind road.
+In conclusion, Montague like grammars for dependency graphs could be very interesting to make. It would however require some well defined rules for what we can expect to find under each type of arrow. This was a blind road.
 
 \subsection{Coreferences}\label{sec:coreferences}
 Coreferences (or anaphora) is essential in order to create advanced discourse, since it is what allows us maintain a topic beyond the first mention. Without coreferences we couldn't even express simple logical statements such as transitivity: `a man's brother's brother is his brother' etc.
@@ -854,7 +854,7 @@ It quickly becomes clear that the problem is not only syntactical. In the senten
 
 In my project I have taken advantage of the coreference tagger built into Stanford CoreNLP\cite{lee2013deterministic}\cite{lee2011stanford}\cite{raghunathan2010multi}. In the following section I will summarize the workings of this machine, made to work across large texts as well as simple sentences.
 
-Coreference tagging is one part of computational linguistics where machine learning algorithms still haven't been able to outperform large iterative applications of linguistic heuristics. Of course the procedure assumes (most likely) machine learned postagging and named entity recognition, but the main algorithm is transparent and deterministic.
+Coreference tagging is one part of computational linguistics where machine learning algorithms still haven't been able to outperform large iterative applications of linguistic heuristics. Of course the procedure assumes (most likely) machine learned POS-tagging and named entity recognition, but the main algorithm is transparent and deterministic.
 
 The idea is to iteratively go over the text with different `sieves'. The below example explains each step with an example I have adopted from \cite{lee2013deterministic}:
 
@@ -929,15 +929,15 @@ The Stanford procedure above is currently the strongest competitor in various co
 
 The requirements for the testing framework are very simple: Support as big a chunk of English as possible, while keeping to the intended meaning.
 
-Since this program is going to be used for research by computational lingusts, easy access to modify the code is more useful than big user interfaces and parameterization. Our interface is going to be simple text based, with an input file of text you want translated and a command you run on said file to start producing logifications.
+Since this program is going to be used for research by computational linguists, easy access to modify the code is more useful than big user interfaces and parametrization. Our interface is going to be simple text based, with an input file of text you want translated and a command you run on said file to start producing logifications.
 
 \subsection{Interfacing with Stanford}
 
-The Stanford Parser tools provide a rich Java library for interfacing directly with the system. They have classes for things like constituent trees, dependencies, correferences and more. Obviously I couldn't use any of that. Instead I ran a simple shell script they include, which outputs the relevant information in XML.
+The Stanford Parser tools provide a rich Java library for interfacing directly with the system. They have classes for things like constituent trees, dependencies, coreferences and more. Obviously I couldn't use any of that. Instead I ran a simple shell script they include, which outputs the relevant information in XML.
 
-Haskell has a nice XML library in Text.XML.Light. However the constituent found by the parser were not actually in xml, but in a simple plain text format. To parse this I wrote my own parser using the great monadic Parsec library.
+Haskell has a nice XML library in Text.XML.Light. However the constituent found by the parser were not actually in XML, but in a simple plain text format. To parse this I wrote my own parser using the great monadic Parsec library.
 
-The next step for my code was to tag the relevant tree leafs with correct variable names, so it could go into the Montague code. As stated before the Stanford toolchain provided me with correference tagging, but unfortunately not in a great format for my needs. If a sentence said `A man and a dog, they had a shower', it would assign the same `mention' to `a man' and `a dog', but nothing to `a shower'. Luckily Haskell is quite good at such tree manipulation. One thing I made sure was that I always use distinct variables so I never have to perform $\alpha$-conversion.
+The next step for my code was to tag the relevant tree leafs with correct variable names, so it could go into the Montague code. As stated before the Stanford tool chain provided me with coreference tagging, but unfortunately not in a great format for my needs. If a sentence said `A man and a dog, they had a shower', it would assign the same `mention' to `a man' and `a dog', but nothing to `a shower'. Luckily Haskell is quite good at such tree manipulation. One thing I made sure was that I always use distinct variables so I never have to perform $\alpha$-conversion.
 
 One major issue with the Stanford tools is the fact that they are very slow. It uses less than a second per input text, but actually starting the program takes more than two minutes. This is due to the suite loading large compressed files of language statistics into RAM. This issue is the reason my program works with batches of inputs.
 
@@ -970,9 +970,9 @@ For each syntactic type I've defined a number of functions:
 \item[`int'] which converts the formula to its semantic counterpart. There are also interpretation functions that interpret a logic in the logic `below' it, hence creating one directional conversion functions.
 \end{description}
 
-In terms of the semantic types we have to be careful. Types such as `Interpretation $\rightarrow$ Bool' forgets to allow for basic `errors' such as references to unbound variables. For FOL we can check this statically and not allow the syntax, but for a DPL sentence $(\exists x\cdot P(x) \cup \exists y)\cdot Q(x)$ the existance of $x$ in $Q(x)$ depends on the value of $P(x)$.
+In terms of the semantic types we have to be careful. Types such as `Interpretation $\rightarrow$ Bool' forgets to allow for basic `errors' such as references to unbound variables. For FOL we can check this statically and not allow the syntax, but for a DPL sentence $(\exists x\cdot P(x) \cup \exists y)\cdot Q(x)$ the existence of $x$ in $Q(x)$ depends on the value of $P(x)$.
 
-One option in case of an error is to simply return $\bot$ and say the formula evaluated to false, but perhaps we want to distinguish the cases. I have experimented with a lot of types, such as `Interpretation $\rightarrow$ Maybe Bool', which can return the value `Nothing' in case of an error. It doesn't make the formulas any nicer though. If we decide to even implement Visser's `many world' semantics as discussed earlier, we get absolutely terrible formulas that don't honour the simplicity of the logic in any way.
+One option in case of an error is to simply return $\bot$ and say the formula evaluated to false, but perhaps we want to distinguish the cases. I have experimented with a lot of types, such as `Interpretation $\rightarrow$ Maybe Bool', which can return the value `Nothing' in case of an error. It doesn't make the formulas any nicer though. If we decide to even implement Visser's `many world' semantics as discussed earlier, we get absolutely terrible formulas that don't honor the simplicity of the logic in any way.
 
 In the current version of my program, I have decided to go with the simplest possible type, and simply report errors through Haskell's error system.
 
@@ -987,7 +987,7 @@ type IWord = (Word, Index)
 \end{lrbox}
 
 Once I have sculpted the input text into a nice tree shape\footnote{I use the type `PosTree IWord' where:\\
-\usebox{\LstBox}}, I parse it to my `montague' function. As I described in the early chapters, this applies a set of rules recursively to create a formal interpretation.
+\usebox{\LstBox}}, I parse it to my `Montague' function. As I described in the early chapters, this applies a set of rules recursively to create a formal interpretation.
 
 Now, since Montague grammars have been around for a long time, and used in commercial machine translating systems from the 70ies and 80ies, you would think the web was would be flooded with code and long machine readable lists of rules I could use to bootstrap my system. This doesn't seem to be the case. Perhaps this is due to people abandoning this approach for vector models before the internet had really picked up the speed of today.
 
@@ -1036,13 +1036,13 @@ Then we can define a set of interpretation functions $\llbracket\cdot\rrbracket_
 \llbracket (_\text{VB}\text{do})(_\text{RB}\text{not})(_\text{VP}\phi)\rrbracket_\text{VP} &:= \lambda x.?_0(\Bowtie\cdot\llbracket \phi\rrbracket_\text{VP}x\cdot\Bowtie\cdot\bot)
 \end{aligned}\end{equation*}
 
-The mentioned `montague' function basically passes the tree to $\llbracket\cdot\rrbracket_\text{ROOT}$ and does a bit of cleaning of the result.
+The mentioned `Montague' function basically passes the tree to $\llbracket\cdot\rrbracket_\text{ROOT}$ and does a bit of cleaning of the result.
 
 \subsection{Machine Learning}
 
 Machine Learning is one gaping hole we haven't mentioned in this paper. Obviously something as dynamic as natural language we can never just define a set of rules like we did above. Programming a computer to learn a set of rules like that is unfortunately not something much research has gone into, and so no large banks of input/output pairs exist to learn from.
 
-Another idea for logification using machine learning is to entirely skip the Montague step. The $\Bowtie$ and $\triangle$ monoid makes logic look close enough to natural language, that it starts to become tempting utilizing machine learning methods from translation. Unfortunately this idea runs into the same barrier as the above: that for superviced learning, we first need a large base of already translated sentences.
+Another idea for logification using machine learning is to entirely skip the Montague step. The $\Bowtie$ and $\triangle$ monoid makes logic look close enough to natural language, that it starts to become tempting utilizing machine learning methods from translation. Unfortunately this idea runs into the same barrier as the above: that for supervised learning, we first need a large base of already translated sentences.
 
 \subsection{Testing}
 In the previous sections we have tried to be as formal and careful as possible in our derivations and proofs, but as Knuth famously said:
@@ -1057,9 +1057,9 @@ What remains to test is the validity of the Montague grammar introduced in the p
 
 In DPL we don't have that particular problem, but instead we can run into problems with the way the scopes of composed elements affect each other. In Visser logic it is even worse, as $\Bowtie$s and $\triangle$s can teleport elements introduced much later in the discourse far around the final statement.
 
-Hence, as reasonable as the introduced grammar seems, we want to reduce the likelihood of conflicts as much as possible. Until now we have been very focused on the same one or two simple sentences, or whatever sentences were relevant to the features we were discussing, but now we are going to introduce a much larger set of complicated test cases. Ideally we want test cases for testing every combination of grammar rules immaginable.
+Hence, as reasonable as the introduced grammar seems, we want to reduce the likelihood of conflicts as much as possible. Until now we have been very focused on the same one or two simple sentences, or whatever sentences were relevant to the features we were discussing, but now we are going to introduce a much larger set of complicated test cases. Ideally we want test cases for testing every combination of grammar rules imaginable.
 
-In the test of this program, we used a branch of 100 sentences. Some copied from the papers referenced, others invented based on features considered or the daily life of farmers and donkeys as immagined by the author. The sentences were converted to Visser, DPL and FOL, and the meanings were checked manually to make sense.
+In the test of this program, we used a branch of 100 sentences. Some copied from the papers referenced, others invented based on features considered or the daily life of farmers and donkeys as imagined by the author. The sentences were converted to Visser, DPL and FOL, and the meanings were checked manually to make sense.
 
 In the following section we will run through the most interesting sentences used, and hopefully make it a bit clearer how the different steps of translation work.
 
@@ -1071,7 +1071,7 @@ The sentences are all simplified through a number of syntactical identities defi
 
 \begin{enumerate}
 \item
-Let's start up with a very sequential example to showcase the strength of DPL. Notice how the sentences are easily concattenated with no need for scope handling.
+Let's start up with a very sequential example to showcase the strength of DPL. Notice how the sentences are easily concatenated with no need for scope handling.
 \begin{align*}
 &\text{\textbf{English}}&&\text{A man comes in. He sees a donkey. He smiles.} \\
 &\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot man(a) \cdot \triangle \cdot come\_in(a) \cdot \triangle \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot see(a,b) \cdot smile(a) \\
@@ -1087,7 +1087,7 @@ Now let's try a real donkey sentence. Notice how in this case the program choose
 &\text{\textbf{FOL}}&&\forall a(farmer(a) \rightarrow \exists b(donkey(b) \wedge beat(a,b))) \\
 \end{align*}
 \item
-We can also handle cases where `a farmer' is introduced inside the anticedent of an `if'.
+We can also handle cases where `a farmer' is introduced inside the antecedent of an `if'.
 \begin{align*}
 &\text{\textbf{English}}&&\text{If a farmer owns a donkey, he beats it} \\
 &\text{\textbf{Visser}}&&\Bowtie \cdot \triangle \cdot \exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot own(a,b) \cdot \Bowtie \cdot beat(a,b) \\
@@ -1111,7 +1111,7 @@ $?_0$ however only scopes off the consequent `channel' of the monoid. Hence this
 &\text{\textbf{FOL}}&&\forall a(farmer(a) \rightarrow \forall b(donkey(b) \rightarrow\\&&& (own(a,b) \rightarrow beat(a,b))\wedge (reward(a,b) \rightarrow \neg own(a,b)))) \\
 \end{align*}
 \item
-A big consequence of/decision in the grammar created, is that no new entities can be introduced in the `then part' of an `if'. The reason for this is that such objects are not guarenteed to exist on the ground of the sentence. We enforce this rule using the $?_1$ function.
+A big consequence of/decision in the grammar created, is that no new entities can be introduced in the `then part' of an `if'. The reason for this is that such objects are not guaranteed to exist on the ground of the sentence. We enforce this rule using the $?_1$ function.
 \begin{align*}
 &\text{\textbf{English}}&&\text{If a farmer owns a donkey, he owns a horse.}\\&&&\text{If he doesn't own it, he owns a cow.} \\
 &\text{\textbf{Visser}}&&?_0(\Bowtie \cdot \triangle \cdot \exists a \cdot farmer(a) \cdot \exists b \cdot donkey(b) \cdot \triangle \cdot own(a,b) \cdot \Bowtie\\&&&\cdot ?_1(\triangle \cdot \exists c \cdot horse(c) \cdot \triangle \cdot own(a,c))) \cdot\\&&& ?_0(\Bowtie\cdot ?_0(\Bowtie \cdot own(a,b) \cdot \Bowtie \cdot \bot) \cdot \Bowtie \cdot ?_1(\triangle \cdot \exists d \cdot cow(d) \cdot \triangle \cdot own(a,d))) \\
@@ -1120,7 +1120,7 @@ A big consequence of/decision in the grammar created, is that no new entities ca
 \end{align*}
 \item
 Because of the doubtful semantic meaning of disjunctive sentences discussed, I have instead chosen to focus on conjunctive problems. And there are a lot of those too. The first one is a case of a conjunctive VP.
-Notice that we treat `starves' as a transitive verb, even though the sentence is clearly ambigious. In this case the phrase parser makes the decision for us.
+Notice that we treat `starves' as a transitive verb, even though the sentence is clearly ambiguous. In this case the phrase parser makes the decision for us.
 \begin{align*}
 &\text{\textbf{English}}&&\text{A farmer starves a horse and beats a donkey.} \\
 &\text{\textbf{Visser}}&&\triangle \cdot \exists a \cdot farmer(a) \cdot  \exists b \cdot horse(b) \cdot \triangle \cdot starve(a,b)\\&&&\cdot \triangle \cdot \exists c \cdot donkey(c) \cdot \triangle \cdot beat(a,c) \\
@@ -1128,7 +1128,7 @@ Notice that we treat `starves' as a transitive verb, even though the sentence is
 &\text{\textbf{FOL}}&&\exists a(farmer(a) \wedge \exists b(horse(b) \wedge \exists c(donkey(c) \wedge starve(a,b) \wedge beat(a,c)))) \\
 \end{align*}
 \item
-In Montague's PTQ\cite{montague1973proper} he doesn't give rules for conjunction of NPs, but only sentences and VP's. In \cite{rooth1982conjunction} and \cite{partee1983generalized} Mats Rooth and Barbara Partee discuss different issues arrising, but never reach any usable construction. Personally I've found the below to be very useful for conjunctive NPs that act as a union.
+In Montague's PTQ\cite{montague1973proper} he doesn't give rules for conjunction of NPs, but only sentences and VP's. In \cite{rooth1982conjunction} and \cite{partee1983generalized} Mats Rooth and Barbara Partee discuss different issues arising, but never reach any usable construction. Personally I've found the below to be very useful for conjunctive NPs that act as a union.
 \begin{align*}
 &\text{\textbf{English}}&&\text{All donkeys and a horse sing a song.} \\
 &\text{\textbf{Visser}}&&\Bowtie \cdot \triangle \cdot \exists a \cdot donkey(a) \cdot \triangle \cdot \Bowtie \cdot \triangle \cdot \exists b \cdot horse(b) \cdot \triangle\\&&& \cdot ?_0(\Bowtie \cdot \exists c \cdot eq\_on\_of(c,a,b) \cdot \Bowtie \cdot \triangle \cdot \exists d \cdot song(d) \cdot \triangle \cdot sing(c,d)) \\
@@ -1168,7 +1168,7 @@ The following sentence is very similar to the original donkey sentences, but it 
 &\text{\textbf{FOL}}&&\forall a(farmer(a) \wedge own(a,b) \wedge beat(a,b) \rightarrow a\_donkey(b)) \\
 \end{align*}
 \item
-A final example that really shows how DPL scope and free variables all play along together is this the case of a `non existent' antecedent. The stanford coref tagger mistakingly tags the two men in this sentence as the same, but because negation creates a closed scope, the final sentence still comes out right.
+A final example that really shows how DPL scope and free variables all play along together is this the case of a `non existent' antecedent. The Stanford Coreference tagger mistakenly tags the two men in this sentence as the same, but because negation creates a closed scope, the final sentence still comes out right.
 \begin{align*}
 &\text{\textbf{English}}&&\text{No man walks in the park. He yodels.} \\
 &\text{\textbf{Visser}}&&?_0(\Bowtie \cdot \exists a \cdot man(a) \cdot walk\_in\_the\_park(a) \cdot \Bowtie \cdot \bot) \cdot yodel(a) \\
@@ -1186,7 +1186,7 @@ I have successfully developed a testing framework that lets researchers define l
 
 My program can correctly logify entire paragraphs of text containing advanced anaphora, conjunctive nouns, verbs and adjectives, implications and scoping. It handles sentences with free variables as well as entirely factual sentences.
 
-A few examples of sentences that my framework already supports, but which fail due to short commings in the Stanford toolkit are `Every dog sees a cat. It chases it.' where the anaphora doesn't get resolved, and `Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo' that manages to slightly confuse the parser.
+A few examples of sentences that my framework already supports, but which fail due to short comings in the Stanford toolkit are `Every dog sees a cat. It chases it.' where the anaphora doesn't get resolved, and `Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo' that manages to slightly confuse the parser.
 
 My tests of Visser's Donkey Monoids show that they can be used for automatic logification, but that they lose some of their charm. Mainly it seems that the $\Bowtie$ and $\triangle$ switches are a bit too strong, and hence require extensive use of the scoping function $?(\cdot)$. At least the rules I came up with essentially uses Donkey Monoids as if they were DPL.
 
@@ -1196,20 +1196,20 @@ My tests also show that the Montague grammar can be made very simple when implem
 
 I had a lot of issues with the Stanford Parser not being able to parse sentences correctly. In every paper I have read, this part always `just works', but I didn't have any options, but to discard the sentence. It would be interesting to make a fault tolerant logification system. Perhaps some knowledge from the semantics could be passed back to the syntax parser for better results.
 
-It would also be interesting to return more than one result in the case of ambiguity. We have seen how weak and strong readings of the actors in the sentences can give very different results. Also conjunction of transitive verbs like `A farmer starves and beats a donkey' are inherently ambigious. Perhaps if we returned many possible logifications for each sentence, we could take the interferance to get the real meaning.
+It would also be interesting to return more than one result in the case of ambiguity. We have seen how weak and strong readings of the actors in the sentences can give very different results. Also conjunction of transitive verbs like `A farmer starves and beats a donkey' are inherently ambiguous. Perhaps if we returned many possible logifications for each sentence, we could take the intersection to get the real meaning.
 
 In terms of expanding the scope of our translations, the fruits I have identified are hanging at different heights:
 
-At the lowest level there are a lot of trivial additions. Support in more cases for more negatives like `no' and `nobody' hasn't been explored well. Possessive pronouns is something I've struggeled with, but if we accept that `He took his jacket' translates to $\exists y\cdot owns(x,y)\cdot jacket(y)\cdot took(x,y)$ it shouldn't be hard. Also there are things like `existential there' and more kinds of SBARs like started by `then', `whom' etc. that we can add, but for the expense of additional complicated rules.
+At the lowest level there are a lot of trivial additions. Support in more cases for more negatives like `no' and `nobody' hasn't been explored well. Possessive pronouns is something I've struggled with, but if we accept that `He took his jacket' translates to $\exists y\cdot owns(x,y)\cdot jacket(y)\cdot took(x,y)$ it shouldn't be hard. Also there are things like `existential there' and more kinds of SBARs like started by `then', `whom' etc. that we can add, but for the expense of additional complicated rules.
 
 Higher up are things like adverbs. This will require a more complicated treatment of predicates to hopefully allow something like $furiously(beat(x,y))$. How exactly these things can be logified is still an open question in linguistics. Another fruit at this level is model verbs. Sentences like `It rains. It might rain' and `It might rain. It rains' should be treated differently. For this we could look into the field of modal logics.
 
-Even higher up are lots of classical linguistic problems. Sentences such as `The golden mountain does not exist', `The ancient greeks thought the morning star was the evening star' have had entire papers written on them, without any definive answers. Probably we'll have to consider the use case to know how a well defined computational logic should work. Another thing at the top level is novel words and sentence structures. These will clearly require some sort of machine learning.
+Even higher up are lots of classical linguistic problems. Sentences such as `The golden mountain does not exist', `The ancient Greeks thought the morning star was the evening star' have had entire papers written on them, without any definite answers. Probably we'll have to consider the use case to know how a well defined computational logic should work. Another thing at the top level is novel words and sentence structures. These will clearly require some sort of machine learning.
 
-Finally I have mentioned that we might be able to expand the Donkey Monoids with more functionality as we sees fit during Montague rule making. The possibility for pushing control elements into the semantic of the logic is really the beauty of Visser's approach and unfortunately a road I haven't studied much in this paper. It is not hard to immagine $(Dpl,Dpl,Dpl,Dpl,Integer,Integer)$ exchanged for something like $(Dpl,...,PosTag)$ and coresponding composition rules.
+Finally I have mentioned that we might be able to expand the Donkey Monoids with more functionality as we sees fit during Montague rule making. The possibility for pushing control elements into the semantic of the logic is really the beauty of Visser's approach and unfortunately a road I haven't studied much in this paper. It is not hard to imagine $(Dpl,Dpl,Dpl,Dpl,Integer,Integer)$ exchanged for something like $(Dpl,...,PosTag)$ and corresponding composition rules.
 
 \section{Acknowledgments}
-I would like to thank Samson Abrahamski for introducing me to the world of Natural Language parsing and semantics and for helpful and stimulating discussions.
+I would like to thank Samson Abramsky for introducing me to the world of Natural Language parsing and semantics and for helpful and stimulating discussions.
 
 Also thanks to Phil Blunsom and Edward Grefenstette for exciting and enlightening lectures into the classical and modern approaches.
 
@@ -1217,7 +1217,7 @@ Thanks to the Natural Language Processing Group at Stanford University for makin
 
 Thanks to Érica Baena Kato for providing interesting linguistic perspectives on many issues.
 
-Finnaly I wish to thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for taking donkey's welfare seriously and rescuing neglected donkeys in the UK and all over the world.
+Finally I wish to thanks to The Donkey Sanctuary\cite{donkey2013sanctuary} for taking donkey's welfare seriously and rescuing neglected donkeys in the UK and all over the world.
 
 \newpage
 \section{Appendix}
@@ -1261,7 +1261,7 @@ The derivation for $\cdot$ goes more smoothly:}
  & \leftrightarrow (\alpha\models\langle\psi_1\rangle\phi) \vee (\alpha\models\langle\psi_2\rangle\phi) \nonumber\\
  & \leftrightarrow \alpha\models\langle\psi_1\rangle\phi \vee \langle\psi_2\rangle\phi
 %
-\intertext{For predicates it's mostly a matter of juggling variables, values and assigments:}
+\intertext{For predicates it's mostly a matter of juggling variables, values and assignments:}
 %
 \alpha\models\langle P(x_1,\dots,x_n)\rangle\phi
  & \leftrightarrow \exists\beta (\alpha\llbracket P(x_1,\dots,x_n)\rrbracket\beta \wedge \beta\models\phi) \nonumber\\
@@ -1347,6 +1347,7 @@ We can imagine defining $\neg$ dynamically: $\neg\psi_1\cdot\psi_2 = \neg(\psi_1
 
 \subsection{Source Code}
 
+\lstinputlisting[style=bashstyle,caption=\lstname]{run.sh}
 \lstinputlisting[style=haskellstyle,caption=\lstname]{src/Main.hs}
 \lstinputlisting[style=haskellstyle,caption=\lstname]{src/Stanford.hs}
 \lstinputlisting[style=haskellstyle,caption=\lstname]{src/ToLogic.hs}
