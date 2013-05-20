@@ -560,30 +560,30 @@ The simple predicates $\langle\bot\rangle\phi\equiv\bot$ and $\langle\top\rangle
 An alternative way to the $\langle\psi\rangle\phi$ function for looking at the above equations is to think of the $\langle\cdot\rangle$s as elements on a stack. This is indeed how I have implemented the DPL to FOL routine in appendix~\ref{sec:source_code}.
 
 \subsection{Donkey Monoids}
-
-Imagine translating this sentence to DPL:
+With the introduction of DPL we came a long way in terms of a compositional logic. However looking once more at the donkey sentence variation:
 %
 \begin{quotation}
-A farmer owns a donkey, if he beats it
+A farmer owns a donkey, if he beats it.
 \end{quotation}
 %
-We would have to write something along the lines of:
+And its DPL formula:
 %
 \begin{equation}
-\exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot beats(x,y) \rightarrow owns(x,y)
+\exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot beats(x,y) \rightarrow owns(x,y)\label{eq:dpl_beats_if_owns}
 \end{equation}
 %
-The problem here is that reorderings like this work against our sought property of linearity: of being able to add new information as we go. We cannot compose `A farmer owns a donkey' and `if he beats it' in a meaningful way.
+We see that we still haven't reached the compositional Nirvana. Equation \eqref{eq:dpl_beats_if_owns} is clearly not based on the composition of `A farmer owns a donkey' and `if he beats it' in a direct way.
 
-To rescue us from this problem Albert Visser suggests constructing a special e-monoid over the dynamic relational algebra. The idea is that we are going to simultaneously work on two `streams' of dpl, and switch easily between them with a special element $\Bowtie$.
+\subsubsection{Polarity Switcher}
+To help our course, Albert Visser suggests the construction of a special monoid over DPL. The idea is that we are going to simultaneously work on two `streams' of DPL, and switch easily between them with a special constant $\Bowtie$.
 
-Our sentence from above will then be expressible as
+The inverse donkey sentence can now be expressed as:
 %
 \begin{equation}
 \Bowtie \cdot \exists x \cdot farmer(x) \cdot \exists y \cdot donkey(y) \cdot \Bowtie \cdot owns(x,y) \cdot \Bowtie \cdot beats(x,y)
 \end{equation}
 %
-which can be written in `stream form' as
+which `internally' is represented by the following streams of information:
 %
 \begin{equation}
 \begin{tabular}{|clll|}
@@ -593,32 +593,31 @@ which can be written in `stream form' as
 \end{tabular}
 \end{equation}
 %
-The meaning of the above is $(-) \rightarrow (+)$
+Visser interprets the above as the DPL formula $(-) \rightarrow (+)$.
 
-Another example from Visser is:
-\begin{quotation}
-A man keeps his word. He is honest
-\end{quotation}
-which roughly translates to:
+Another example from Visser is: `A man keeps his word. He is honest' which roughly translates into: $\Bowtie\cdot\exists x\cdot man(x)\cdot\Bowtie\cdot keepword(x)\cdot honest(x)$ for the general reading. Visser has a whole lot more examples in his paper\cite{visser1999donkey}.
+
+So how do we define this nifty $\Bowtie$? The trick is to move the entire dynamic predicate logic from before into an monoid that will help us keep track of some extra details.
+
+A monoid is an simple algebraic structure with a one associative binary operation and an identity element. Our monoid $\langle\mathcal{D},\cdot\rangle$ is going to have the domain $\mathcal{D}=DPL\times DPL\times\{+,-\}$, which is populated by:
 \begin{equation}
-\Bowtie\cdot\exists x\cdot man(x)\cdot\Bowtie\cdot keepword(x)\cdot honest(x)
+\langle\top,\phi,+\rangle \in \mathcal{D} \quad \text{for all}\enspace \phi\in\text{DPL}
 \end{equation}
-If you are interested in a lot more examples, see Visser's paper\cite{visser1999donkey}.
-
-So how do we define this nifty $\Bowtie$? The trick is to move the entire dynamic relation algebra from before into an e-monoid that will help us keep track of some details.
-
-If $\phi$ from before is the basic algebra, we specify the construction of our monoid $\Phi$ as follows.
-%
-\begin{flalign}
-&\top := \langle \top, \top, + \rangle & \\
-&\bot := \langle \top, \bot, + \rangle & \\
-&\Bowtie := \langle \top, \top, - \rangle & \\
-&\langle q_-, q_+, \alpha \rangle \cdot \langle r_-, r_+, \beta \rangle := \langle q_- \cdot r_{-\alpha}, q_+ \cdot r_{+\alpha}, \alpha\beta \rangle&
-\end{flalign}
+With no chance of confusion, we will simply denote these elements by their DPL representation. For example $\mathcal{D}$ contains the constants $\top$ and $\bot$ and the $\Bowtie$ constant here defined:
+\begin{align}
+\top &:= \langle \top, \top, + \rangle \\
+\bot &:= \langle \top, \bot, + \rangle \\
+\Bowtie &:= \langle \top, \top, - \rangle
+\end{align}
+The associative operation $\cdot$ is as below. To make the definition slicker, we give the set $\{+,-\}$ a multiplication operation $++\mapsto+$, $+-\mapsto-$, $-+\mapsto-$, $--\mapsto+$.
+\begin{align}
+&\langle q_-, q_+, \alpha \rangle \cdot \langle r_-, r_+, \beta \rangle := \langle q_- \cdot r_{-\alpha},\enspace q_+ \cdot r_{+\alpha},\enspace  \alpha\beta \rangle
+\end{align}
 %
 Notice how we keep the negative stream in the first position of the tuple, and the positive stream at the second position. The third position indicates to what stream we are currently writing. For example, if we are writing to the negative stream, and we apply an element that itself asks us to continue at its negative stream, we go back to the positive stream.
 
-An even more interesting element than $\Bowtie$ is $\triangle$. $\triangle$ is a scope modifier, and it allows us to write:
+\subsubsection{Scope Modifier}
+We won't spend much time with the above monoid though, since we are immediately going to introduce a generalization! We are going to introduce the scope modifier $\triangle$, which allows us to write:
 %
 \begin{quote}
 A farmer owns a donkey. He beats it.
@@ -627,20 +626,14 @@ A farmer owns a donkey. He beats it.
 (that is just some single farmer and donkey) as
 %
 \begin{equation}
-\triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot beats(x,y)
+\exists x \cdot farmer(x) \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot beats(x,y)
 \end{equation}
 %
 That is very close to the order of the natural language!
 
-And combining the two monoids we can do our original sentence as
-%
-\begin{quote}
-If a farmer owns a donkey, he beats it
-\end{quote}
-%
-as
+And combining the scope modifier with the polarity switched we can finally, as promised, write our original sentence `If a farmer owns a donkey, he beats it' as:
 \begin{equation}
-\Bowtie \cdot \triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \Bowtie \cdot beats(x,y)
+\Bowtie \cdot \exists x \cdot farmer(x) \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \Bowtie \cdot beats(x,y)
 \end{equation}
 %
 In stream form, that is:
@@ -648,48 +641,49 @@ In stream form, that is:
 \begin{equation}
 \begin{tabular}{|cllll|}
     \hline
-    $(-,1)$ & $\exists x \cdot farmer(x)$ & ~ & ~ $ \exists y \cdot donkey(y)$ & ~ \\\hline
-    $(-,0)$ & ~ & $owns(x,y)$ & ~ & ~ \\\hline
+    $(-,1)$ & ~ & ~ & ~ $ \exists y \cdot donkey(y)$ & ~ \\\hline
+    $(-,0)$ & $\exists x \cdot farmer(x)$ & $owns(x,y)$ & ~ & ~ \\\hline
     $(+,1)$ & ~ & ~ & ~ & ~ \\\hline
     $(+,0)$ & ~ & ~ & ~ & $beats(x,y)$ \\\hline
 \end{tabular}
 \end{equation}
 %
-With the meaning being $(-,1) \cdot (-,0) \rightarrow (+,1) \cdot (+,0)$. Notice that the negative relations are again put on the left side of the implication, and the relations with larger scope value are put before those of lower value.
+With the DPL interpretation being $(-,1) \cdot (-,0) \rightarrow (+,1) \cdot (+,0)$. Notice that the negative relations are again put on the left side of the implication, and the relations with larger scope value are put before those of lower value. We see $\Bowtie$ and $\triangle$ are commutative, since they work entirely on their own indicator.
 
-Notice $\Bowtie$ and $\triangle$ are commutative, since they work entirely on their own indicator. It's an interesting question to consider what sentences might require three or more levels of scoping. We could define $\triangle$ to go up in scope and $\bigtriangledown$ to go down. Instead of ${0,1}$ we would work on $\mathbb{Z}$.
-
-For now we define the monoid as follows:
-%
-\begin{flalign}
-&\top := \langle \top, \top, \top, \top, +, 0 \rangle & \\
-&\bot := \langle \top, \top, \top, \bot, +, 0 \rangle & \\
-&\Bowtie := \langle \top, \top, \top, \top -, 0 \rangle & \\
-&\triangle := \langle \top, \top, \top, \top +, 1 \rangle & \\
-&\langle q_{-,1}, q_{-,0}, q_{+,1}, q_{+,0}, \alpha, i \rangle \cdot \langle r_{-,1}, r_{-,0}, r_{+,1}, r_{+,0}, \beta, j \rangle := &\\
-&\hspace{1cm}\langle q_{-,1} \cdot r_{-\alpha,1+i}, q_{-,0} \cdot r_{-\alpha,i}, q_{+,1} \cdot r_{\alpha,1+i}, q_{+,0} \cdot r_{\alpha,i}, \alpha\beta, i+j \rangle& \nonumber
-\end{flalign}
-
-In his paper Visser now goes on to define $\triangleleft$ and $\triangleright$ which work similarly to $\Bowtie$ except they work in different directions. 
-%
+As expected from the above diagram, we are going to define our new monoid $\langle\mathcal{D},\cdot\rangle$ as having the domain\footnote{We have chosen to model our scopes in $\mathbb{Z}_2$. It's an interesting question to consider what sentences might require three or more levels of scoping. If we chose to work on the entire $\mathbb{Z}$, we could define $\triangle$ to go up in scope and $\triangledown$ to go down.} $DPL^4\times\{+,-\}\times\mathbb{Z}_2$ with the elements:
 \begin{equation}
-\Bowtie \cdot \triangle \cdot \exists x \cdot farmer(x) \cdot \triangle \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \triangleleft \cdot beats(x,y)
+\langle \top, \top, \top, \phi, +, 0 \rangle \in \mathcal{D} \quad \text{for all}\enspace \phi\in\text{DPL}
+\end{equation}
+In addition to $\Bowtie$ and $\triangle$ defined as:
+\begin{align}
+\top &:= \langle \top, \top, \top, \top, +, 0 \rangle \\
+\bot &:= \langle \top, \top, \top, \bot, +, 0 \rangle \\
+\Bowtie &:= \langle \top, \top, \top, \top -, 0 \rangle \\
+\triangle &:= \langle \top, \top, \top, \top +, 1 \rangle
+\end{align}
+For $\cdot$ the definition works just like in the previous case, though slightly more complicated:
+\begin{align}
+&\langle q_{-,1}, q_{-,0}, q_{+,1}, q_{+,0}, \alpha, i \rangle \cdot \langle r_{-,1}, r_{-,0}, r_{+,1}, r_{+,0}, \beta, j \rangle := &\\
+&\hspace{1cm}\langle q_{-,1} \cdot r_{-\alpha,1+i},\enspace q_{-,0} \cdot r_{-\alpha,i},\enspace q_{+,1} \cdot r_{\alpha,1+i},\enspace q_{+,0} \cdot r_{\alpha,i},\enspace \alpha\beta,\enspace i+j \rangle& \nonumber
+\end{align}
+
+In his paper Visser now goes on to define $\triangleleft$ and $\triangleright$ which work similarly to $\Bowtie$ except they work `backwards and forward in time'. This allows us to model `if he beats it' entirely on its own as $\triangleleft\cdot beats(x,y)$ in
+\begin{equation}
+  \exists x \cdot farmer(x) \cdot owns(x,y) \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle \cdot \triangleleft \cdot beats(x,y)
 \end{equation}
 %
-This is quite interesting for certain sentences containing `surprises', like
-%
+If we immagined a system that tried to build meaning from its input as soon as it came in, $\triangleleft$ would allow us to account for `surprises' like in the sentence:
 \begin{quotation}
 He sees... no donkey
 \end{quotation}
 %
-In this case we would compositionally assume to start out with
-$sees(x,y)$ and finish with $\cdot \exists y \cdot donkey(y)\triangle$ hence we want to write something like:
+In this case we would compositionally like to start out with $sees(x,y)$ expecting a $\triangle\cdot\exists y\cdot\triangle$ somehow, but when we instead see the negation, we end up with the formula:
 %
 \begin{equation}
 sees(x,y) \cdot \triangleleft \cdot \bot \cdot \triangleright \cdot \triangle \cdot \exists y \cdot donkey(y) \cdot \triangle
 \end{equation}
 %
-Notice that that means the word `no'/`not' must be $\triangleleft\cdot\bot\cdot\triangleright$. Unfortunately these retrospective triangles tend to mess sentence enough up, that they require lots of `stream unification brackets', and don't generally give very nice formulas. In the semantic parsing in the next section, they wont be used at all.
+Visser suggests $\triangleleft\cdot\bot\cdot\triangleright$ often is a good candidate for words like `no' and `nobody'. Unfortunately these retrospective triangles tend to mess sentences enough up, that I had to include brackets everywhere to keep things under control. More brackets are seldom the way to beautiful formulas, so in the automatic framework in the next section, we will settle with the $\Bowtie$ and $\triangle$ monoid.
 
 \subsection{Montague Semantics}
 Montague semantics is a theory of natural language that believes its semantics can be described thoroughly in terms of standard mathematical models. Logician Richard Montague (1930-1971) famously wrote
@@ -742,7 +736,7 @@ Later in the implementation section we will look at more issues regarding to usi
 
 `Weak' and `strong' are quite accepted terms in linguistics for describing different ways to interpret quantifiers. In line with information theory, we can say that weak readings are about weak information and strong readings about strong information.
 
-Makoto Kanazawa has written an entire paper on issues with weak and strong readings of donkey sentences\cite{kanazawa1994weak}. For the donkey sentence, we may have at least the following readings of the second `a':
+Makoto Kanazawa has written an entire paper on issues with weak and strong readings of donkey sentences\cite{kanazawa1994weak}. For our main donkey sentence, we may have at least the following readings of the second `a':
 \begin{enumerate}
 \item Weak reading: A farmer who owns a donkey beats a donkey he owns. 
 \item Strong reading: A farmer who owns a donkey beats every donkey he owns 
@@ -840,7 +834,7 @@ Obviously this means we can't get any information from the graph that we couldn'
 
 I've worked hard on trying to define a Montague like set of equations for English, but over the dependency graph. This has however failed, mostly due to one simple reason: In a Montague grammar we expect every type of phrase to have a specific logical type. E.g. all NPs are `VP $\rightarrow$ Bool' and VPs are `Entity $\rightarrow$ Bool'. This makes it fit very nice in a programming context, where we can define a function `parseNP :: ConstituentTree $\rightarrow$ (VP $\rightarrow$ Bool)'. With the dependency approach we don't have this option. A `subj' arrow can mean many different things. Sometimes it points at a noun, sometimes at a proper noun, sometimes something else.
 
-In conclusion, Montague like grammars for dependency graphs could be very interesting to make. It would however require some well defined rules for what we can expect to find under each type of arrow. This was a blind road.
+In conclusion, Montague like grammars for dependency graphs could be very interesting to make. It would however require some well defined rules for what we can expect to find under each type of arrow. This was a blind alley.
 
 \subsection{Coreferences}\label{sec:coreferences}
 Coreferences (or anaphora) is essential in order to create advanced discourse, since it is what allows us maintain a topic beyond the first mention. Without coreferences we couldn't even express simple logical statements such as transitivity: `a man's brother's brother is his brother' etc.
@@ -997,7 +991,7 @@ Some people are however wondering if there might still be things to learn from M
 
 Nonetheless, while that particular paper does have some interesting lists, it is worrying that not even Montague's original papers supply more than a few examples.
 
-This means that nearly all of the rules I shall present are of my own creation. Because these rules are tested in practice on a large set of English sentences, they will hopefully avoid some simple mistakes and oversights that are easy to make in purely theoretical settings. It seams like a good approach to start from a small working fragment, and slowly add more phrase rules and sentences. The opposite of this approach is what is often observed when logicians and philosophers go astray in very abstract corners of English, without having covered the basic ground.
+This means that nearly all of the rules I shall present are of my own creation. Because these rules are tested in practice on a large set of English sentences, they will hopefully avoid some simple mistakes and oversights that are easy to make in purely theoretical settings. It seems like a good approach to start from a small working fragment, and slowly add more phrase rules and sentences. The opposite of this approach is what is often observed when logicians and philosophers go astray in very abstract corners of English, without having covered the basic ground.
 
 The following describes the set of rules I use in my program:
 
