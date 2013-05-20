@@ -61,6 +61,7 @@ simp p = p
 simplify :: Visser -> Visser
 simplify p = iterate simp p !! 2
 
+-- Renames variables to [a..], removing gaps.
 cleanVariables :: Visser -> Visser
 cleanVariables p = foldl rename p (zip used im ++ zip im variables)
   where

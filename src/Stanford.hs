@@ -34,6 +34,7 @@ lemmas doc = map lemma (findElements (unqual "sentence") sentences)
 
 ------------------
 
+-- Extracts the constituent tree from a document.
 postrees :: Element -> [PosTree Word]
 postrees doc = map rootfilter roots
 	where
@@ -66,10 +67,12 @@ posLeaf =
 		word <- many (noneOf " ()")
 		return (L tag word)
 
-
+-- Takes a postree and a lemmaized list of words for each sentence
+-- and produces a cleaned up and index tagged tree
 cleanTrees :: [PosTree Word] -> [Sentence] -> [PosTree IWord]
 cleanTrees trees ls = map cleanElements $ map cleanTags $ improveTrees trees ls
 
+-- Tags leafs with indicies
 improveTrees :: [PosTree Word] -> [Sentence] -> [PosTree IWord]
 improveTrees trees ls = [improve t l s | (t, l, s) <- zip3 trees ls [0..]]
 	where improve t l s = substitute t (zip l (zip (repeat s) [0..]))
@@ -127,6 +130,7 @@ substitute tree list = snd (substitute_ tree list)
 
 ------------------
 
+-- Extract the deptree for each sentence
 deps :: Element -> String -> [DepTree]
 deps doc name = map (buildTree deps) roots
 	where
@@ -135,15 +139,19 @@ deps doc name = map (buildTree deps) roots
 		rights = nub [dep | (typ, gov, dep) <- deps]
 		roots = lefts \\ rights
 
+-- The dependency information comes in tuples of (label, arrow_from, arrow_to)
+-- This function transforms a set of tuples into an algebraic tree structure
 buildTree :: [(String, Int, Int)] -> Int -> DepTree
 buildTree deps root = Dep root [(name, buildTree deps dep) | (name, gov, dep) <- deps, gov == root]
 
+-- Extract dependecy tuples form xml
 listDeps :: Element -> String -> [(String, Int, Int)]
 listDeps doc name = map parseDep deps
 	where
 		Just dep = findElement (unqual name) doc
 		deps = findElements (unqual "dep") dep
 
+-- Extract single tuple from `dep' element
 parseDep :: Element -> (String, Int, Int)
 parseDep e = (typ, read gov - 1, read dep - 1)
 	where
@@ -153,6 +161,16 @@ parseDep e = (typ, read gov - 1, read dep - 1)
 
 ------------------
 
+-- Calls `corefs' to extract a map from word-index to variable name.
+-- In case the index has no assigned variable, a globally free variable is returned
+allRefs :: Element -> [Ref] -> Store
+allRefs doc vs = searcher
+	where (vs', comap) = corefs doc vs
+	      searcher i = findWithDefault (vs' !! diagonal i) i comap
+	      diagonal (j,k) = (j+k)*(j+k+1)`div`2 + j
+
+-- Builds a map from word-index to variable name for a single coreference element.
+-- Additionally returns a list of unused variable names.
 corefs :: Element -> [Ref] -> ([Ref], Map Index Ref)
 corefs doc vs = (vs', unions [singleton i v | (men, v) <- zip ments vs,
 	                                         indices <- map parseMention men,
@@ -162,6 +180,7 @@ corefs doc vs = (vs', unions [singleton i v | (men, v) <- zip ments vs,
 		ments = map (findElements (unqual "mention")) corefs
 		vs' = drop (length corefs) vs
 
+-- Extracts indicies governed by a single mention element
 parseMention :: Element -> [Index]
 parseMention men = [(toint sentence-1, i) | i <- [toint start-1..toint end-2]]
 	where
@@ -170,28 +189,17 @@ parseMention men = [(toint sentence-1, i) | i <- [toint start-1..toint end-2]]
 		Just end = findChild (unqual "end") men
 		toint = read . strContent
 
-allRefs :: Element -> [Ref] -> Store
-allRefs doc vs = searcher
-	where (vs', comap) = corefs doc vs
-	      searcher i = findWithDefault (vs' !! diagonal i) i comap
-	      diagonal (j,k) = (j+k)*(j+k+1)`div`2 + j
-
 --------------------
 
-alphabet = [c:"" | c <- "abcdefghijklmnopqrstuvwxyz"]
-
+-- An infinite list of possible variable names
 variables :: [Ref]
 variables = alphabet ++ [b++a | b <- variables, a <- alphabet]
+	where alphabet = [c:"" | c <- "abcdefghijklmnopqrstuvwxyz"]
 
+-- A list of tempoary filenames for the produced xml files
 filenames = ["/tmp/donkey_input" ++ show i | i <- [0..]]
 
-runDry :: [String] -> IO [(Store, [PosTree IWord])]
-runDry sentences =
-	do
-		sequence [runOnFile (name ++ ".xml") | name <- names]
-	where
-		names = take (length sentences) filenames
-
+-- Runs the Stanford toolchain on each of a list of Strings.
 run :: [String] -> IO [(Store, [PosTree IWord])]
 run sentences =
 	do
@@ -207,6 +215,16 @@ run sentences =
 		names = take (length sentences) filenames
 		writeFileLn path s = writeFile path (s ++ "\n")
 
+-- Like `run', but doesn't actually call the Stanford toolchain.
+-- It is assumed the previous tempoary xml files still eixst
+runDry :: [String] -> IO [(Store, [PosTree IWord])]
+runDry sentences =
+	do
+		sequence [runOnFile (name ++ ".xml") | name <- names]
+	where
+		names = take (length sentences) filenames
+
+-- Extracts the usable information from a single generated xml file
 runOnFile :: FilePath -> IO (Store, [PosTree IWord])
 runOnFile name =
 	do

@@ -19,8 +19,7 @@ data Dpl =
   | DP Ref [Ref]
   deriving (Eq, Show)
 
-
-
+-- Printing functions
 
 tex :: Dpl -> String
 tex = fst . tex' where
@@ -45,16 +44,14 @@ pretty = fst . pretty' where
   pretty' (DP f ks) = (f ++ "(" ++ concat (intersperse "," ks) ++ ")", 0)
 
 
+simplify :: Dpl -> Dpl
+simplify p = iterate simp p !! 10
+
 simp :: Dpl -> Dpl
 simp (DC p DT) = simp p
 simp (DC DT p) = simp p
 simp (DC p DF) = DF
 simp (DC DF p) = DF
--- These disjunction rules are a bit doubtful
--- simp (DD p DT) = DT
--- simp (DD DT p) = DT
--- simp (DD p DF) = simp p
--- simp (DD DF p) = simp p
 simp (DI p DF) = DN p
 -- scope related
 simp (DI DT (DI DT p)) = DT `DI` simp p
@@ -65,8 +62,11 @@ simp (DD p q) = simp p `DD` simp q
 simp (DI p q) = simp p `DI` simp q
 simp (DN p) = DN (simp p)
 simp p = p
-simplify :: Dpl -> Dpl
-simplify p = iterate simp p !! 10
+-- See the paper on why the following disjunction rules are invalid
+-- simp (DD p DT) = DT
+-- simp (DD DT p) = DT
+-- simp (DD p DF) = simp p
+-- simp (DD DF p) = simp p
 
 -----------------------------------------------------------
 -- Interpretation
@@ -86,6 +86,8 @@ intDpl (DI p q) i x y                = intDpl (DN (p `DC` (DN q))) i x y
 intDpl (DE var) i x y                = hide var x == hide var y where hide key = filter (\(x,y) -> x /= key)
 intDpl (DP name args) (_,_,intp) x y = x == y && intp name (map (lookup' x) args)
 
+-- Like `lookup', but throws an error in case the entity was not available.
+-- We can use this version since our formulas are guarenteed to be valid.
 lookup' :: Assignment -> Ref -> Entity
 lookup' xys key | Just e <- lookup key xys = e
                 | otherwise                = error ("Variable not in scope: " ++ key)

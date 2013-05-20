@@ -12,6 +12,7 @@ import Data.Maybe
 import System.Environment
 import System.IO
 
+-- Reads and returns every line from a file, modulo comments and blanks
 readSentences :: FilePath -> IO [String]
 readSentences path = do
 		handle <- openFile path ReadMode

@@ -11,8 +11,12 @@ import Data.Maybe
 type Predicate = Ref -> Visser
 type Predicate2 = Ref -> Ref -> Visser
 
+-- Runs a montague grammar transformation on a constituent tree and a
+-- word-index to variable name map. The produced logic is a
+-- polarity-switch + scope-modifier donkey monoid
 montague :: (Store, [PosTree IWord]) -> Visser
 montague (refs, tree) = cleanVariables $ intRoot tree refs
+
 
 intRoot :: [PosTree IWord] -> Store -> Visser
 intRoot ((P "S" s):ss) r = intS s r `VC` intRoot ss r
