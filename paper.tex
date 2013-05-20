@@ -544,7 +544,7 @@ To smoothen the following derivations, we will define the function $\langle\psi\
 \alpha\models\langle\psi\rangle\phi\ \leftrightarrow\ \exists\beta(\alpha\llbracket\psi\rrbracket\beta \wedge \beta\models\phi)\label{foldpl}
 \end{align}
 Notice from this definition that $\langle\psi\rangle\top$ is the conversion function from DPL to FOL.
-Using definition \eqref{foldpl} and formulas \eqref{sem_and} to \eqref{sem_exists} we can derive the following equivalences. See appendix~\ref{sec:derivation_dpl} for my full derivations.
+Using definition \eqref{foldpl} and formulas \eqref{sem_and} to \eqref{sem_exists} we can derive the following equivalences. See appendix~\ref{sec:derivation_dpl} for my full proofs of meaning preservation.
 %
 \begin{align}
 \langle\exists x\rangle\phi & \equiv \exists x (\phi) \label{conv_exists}\\
@@ -1052,7 +1052,7 @@ In DPL we don't have that particular problem, but instead we can run into proble
 
 Hence, as reasonable as the introduced grammar seems, we want to reduce the likelihood of conflicts as much as possible. Until now we have been very focused on the same one or two simple sentences, or whatever sentences were relevant to the features we were discussing, but now we are going to introduce a much larger set of complicated test cases. Ideally we want test cases for testing every combination of grammar rules imaginable.
 
-In the test of this program, we used a branch of 100 sentences. Some copied from the papers referenced, others invented based on features considered or the daily life of farmers and donkeys as imagined by the author. The sentences were converted to Visser, DPL and FOL, and the meanings were checked manually to make sense.
+In the test of this program, we used a branch of 53 sentences. Some copied from the papers referenced, others invented based on features considered or the daily life of farmers and donkeys as imagined by the author. The sentences were converted to Visser, DPL and FOL, and the meanings were checked manually to make sense. See appendix~\ref{sec:sample_output} for the raw program output.
 
 In the following section we will run through the most interesting sentences used, and hopefully make it a bit clearer how the different steps of translation work.
 
@@ -1199,7 +1199,7 @@ Higher up are things like adverbs. This will require a more complicated treatmen
 
 Even higher up are lots of classical linguistic problems. Sentences such as `The golden mountain does not exist', `The ancient Greeks thought the morning star was the evening star' have had entire papers written on them, without any definite answers. Probably we'll have to consider the use case to know how a well defined computational logic should work. Another thing at the top level is novel words and sentence structures. These will clearly require some sort of machine learning.
 
-Finally I have mentioned that we might be able to expand the Donkey Monoids with more functionality as we sees fit during Montague rule making. The possibility for pushing control elements into the semantic of the logic is really the beauty of Visser's approach and unfortunately a road I haven't studied much in this paper. It is not hard to imagine $(Dpl,Dpl,Dpl,Dpl,Integer,Integer)$ exchanged for something like $(Dpl,...,PosTag)$ and corresponding composition rules.
+Finally I have mentioned that we might be able to expand the Donkey Monoids with more functionality as we sees fit during Montague rule making. The possibility for pushing control elements into the semantic of the logic is really the beauty of Visser's approach and unfortunately a road I haven't studied much in this paper. It is not hard to imagine $(Dpl,Dpl,Dpl,Dpl,Integer,Integer)$ exchanged for something like $(Dpl,\dots,PosTag)$ and corresponding composition rules.
 
 \section{Acknowledgments}
 I would like to thank Samson Abramsky for introducing me to the world of Natural Language parsing and semantics and for helpful and stimulating discussions.
@@ -1343,11 +1343,13 @@ The derivation of $\vee$ can be done from the previous results alone:}
 & \equiv (\langle\psi_1\rangle\top \vee \langle\psi_2\rangle\top) \wedge\phi &\text{by \eqref{sem_or_def}} \tag{$\ref{conv_vee}$}
 \end{align}
 
-\subsection{Sample Output}
+\subsection{Sample Output}\label{sec:sample_output}
 
 \lstinputlisting[style=bashstyle]{sample_output}
 
 \subsection{Source Code}\label{sec:source_code}
+
+An online repository of the source code can be found at\cite{ahle2013donkey}.
 
 \lstinputlisting[style=bashstyle,caption=\lstname]{run.sh}
 \lstinputlisting[style=haskellstyle,caption=\lstname]{src/Main.hs}
