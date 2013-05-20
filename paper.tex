@@ -1177,9 +1177,9 @@ This concludes the implementation part of the paper.
 
 I have successfully developed a testing framework that lets researchers define logics and interpretation functions and test them on large inputs of interesting text. I have discussed many possible directions I could have taken, I have proved every result involved, and I have done extensive testing.
 
-My program can correctly logify entire paragraphs of text containing advanced anaphora, conjunctive nouns, verbs and adjectives, implications and scoping. It handles sentences with free variables as well as entirely factual sentences.
+My program can correctly logify entire paragraphs of text containing advanced anaphora, conjunctive nouns, verbs and adjectives, implications and scoping. In some cases the my defined rules create quite creative FOL formulas that would likely have taken a person a few tries to get right. In addition to factual sentences my program also handles query type sentences with free variables.
 
-A few examples of sentences that my framework already supports, but which fail due to shortcomings in the Stanford toolkit are `Every dog sees a cat. It chases it.' where the anaphora doesn't get resolved, and `Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo' that manages to slightly confuse the parser.
+My fragment of English is however quite limited to the extent that most sentences require some adaption to pass through. Word classes such as adverbs and plurals are not supported, and in some cases my framework supports a sentence, but logification still fails due to shortcomings in the Stanford toolkit. For example in `Every dog sees a cat. It chases it.' where the anaphora doesn't get resolved, and `Buffalo buffalo Buffalo buffalo buffalo buffalo Buffalo buffalo'\cite{rapaport2006september} that also manages to slightly confuse the parser.
 
 My tests of Visser's Donkey Monoids show that they can be used for automatic logification, but that they lose some of their charm. Mainly it seems that the $\Bowtie$ and $\triangle$ switches are a bit too strong, and hence require extensive use of the scoping function $?(\cdot)$. At least the rules I came up with essentially uses Donkey Monoids as if they were DPL.
 
